@@ -25,19 +25,6 @@
 
     <!-- Container for dropdown and search box -->
     <div class="controls">
-
-        <!-- Dropdown to select map type -->
-        <div>
-            <label for="mapTypeSelect">Select Map Type:</label>
-            <select id="mapTypeSelect">
-                <option value="roadmap">Roadmap</option>
-                <option value="satellite">Satellite</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="terrain">Terrain</option>
-            </select>
-        </div>
-
-
         <!-- Dropdown to center the map -->
         <div>
             <label for="locationSelect">Center Map at:</label>
@@ -56,6 +43,23 @@
             <input type="text" id="locationInput" placeholder="Enter a city or place">
             <button id="searchButton">Go</button>
         </div>
+
+        <select id="zoomSelect">
+            <!-- Options for zoom levels -->
+        </select>
+
+        <!-- Dropdown to select map type -->
+        <div>
+            <label for="mapTypeSelect">Select Map Type:</label>
+            <select id="mapTypeSelect">
+                <option value="roadmap">Roadmap</option>
+                <option value="satellite">Satellite</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="terrain">Terrain</option>
+            </select>
+        </div>
+
+
     </div>
 
 
@@ -74,6 +78,7 @@
         async defer></script>
 
     <!-- <script src="scripts/firebase.js"></script> -->
+    <script src="scripts/data.js"></script>
     <script src="scripts/map.js"></script>
     <script src="scripts/app.js"></script>
 </body>

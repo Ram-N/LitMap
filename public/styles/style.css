@@ -15,10 +15,84 @@ h1 {
 /* Container for the controls (dropdown and search box) */
 .controls {
     display: flex;
-    gap: 20px;
-    /* Space between dropdown and search box */
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    justify-content: center;
+    /* Center items horizontally */
+    align-items: center;
+    /* Center items vertically */
+    gap: 10px;
+    /* Space between items, adjust as needed */
+    padding: 10px;
+    /* Optional padding around the controls */
 }
+
+
+/* Style all select dropdowns */
+select {
+    font-family: Arial, sans-serif;
+    /* Change font family */
+    font-size: 16px;
+    /* Font size */
+    padding: 10px;
+    /* Padding inside the dropdown */
+    border: 1px solid #ccc;
+    /* Border color and style */
+    border-radius: 4px;
+    /* Rounded corners */
+    background-color: #f9f9f9;
+    /* Background color */
+    color: #333;
+    /* Text color */
+    width: 200px;
+    /* Width of the dropdown */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Optional: shadow for a 3D effect */
+}
+
+select:focus {
+    border-color: #007bff;
+    /* Border color when focused */
+    outline: none;
+    /* Remove default outline */
+}
+
+
+/* Style all input text boxes */
+input[type="text"] {
+    font-family: Arial, sans-serif;
+    /* Change font family */
+    font-size: 16px;
+    /* Font size */
+    padding: 10px;
+    /* Padding inside the text box */
+    border: 1px solid #ccc;
+    /* Border color and style */
+    border-radius: 4px;
+    /* Rounded corners */
+    background-color: #f9f9f9;
+    /* Background color */
+    color: #333;
+    /* Text color */
+    width: 200px;
+    /* Width of the text box */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Optional: shadow for a 3D effect */
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width and height */
+}
+
+input[type="text"]:focus {
+    border-color: #007bff;
+    /* Border color when focused */
+    outline: none;
+    /* Remove default outline */
+}
+
+
+
+
+
+
 
 /* Basic styles for the map container */
 #map {
@@ -32,8 +106,7 @@ form {
     display: inline-block;
 }
 
-/* public/styles/style.css */
-#mapTypeSelect {
+/* #mapTypeSelect {
     margin: 20px;
     padding: 5px;
-}
+} */

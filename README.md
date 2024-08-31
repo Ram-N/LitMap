@@ -3,6 +3,7 @@
 A Literary map of the world.
 Go to any marker (location) in the world and see which books are written about the place.
 
+```
 LitMap/
 │
 ├── public/
@@ -17,7 +18,7 @@ LitMap/
 │
 ├── firebase.json
 └── README.md
-
+```
 
 ## File Descriptions
 
