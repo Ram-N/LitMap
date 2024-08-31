@@ -1,0 +1,39 @@
+/* public/styles/style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+h1 {
+    background-color: #f0f0f0;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Container for the controls (dropdown and search box) */
+.controls {
+    display: flex;
+    gap: 20px;
+    /* Space between dropdown and search box */
+    margin-bottom: 20px;
+}
+
+/* Basic styles for the map container */
+#map {
+    height: 500px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+form {
+    margin: 20px auto;
+    display: inline-block;
+}
+
+/* public/styles/style.css */
+#mapTypeSelect {
+    margin: 20px;
+    padding: 5px;
+}
