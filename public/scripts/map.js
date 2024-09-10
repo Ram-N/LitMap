@@ -1,8 +1,6 @@
 // public/scripts/map.js
-
 let map;
 let geocoder;
-
 
 // Predefined locations (latitude, longitude)
 const locations = {
@@ -12,111 +10,20 @@ const locations = {
   sydney: { lat: -33.8688, lng: 151.2093 }
 };
 
-
-
-
-
-
-async function initMap() {
-  // map = new google.maps.Map(document.getElementById("map"), {
-  //     center: { lat: 20.5937, lng: 78.9629 }, // Centered on India
-  //     zoom: 5,
-  // });
-
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 4,                      // Zoom level
-    center: { lat: 51.5074, lng: -0.1278 },  // Centered on London
-    mapTypeId: 'terrain',          // Show terrain view
-  });
-
-  // Initialize the geocoder
-  geocoder = new google.maps.Geocoder();
-
-  // Populate zoom level dropdown
-  populateZoomDropdown();
-
-  // Function to get the appropriate icon based on book type
-  function getIcon(booktype) {
-    switch (booktype) {
-      case 'Fiction':
-        return 'images/icons/red_book.png';
-      case 'Non-Fiction':
-        return 'images/icons/blue_book.png';
-      case 'Travel Book':
-        return 'images/icons/brown_book.png';
-      case 'Science Fiction':
-        return 'images/icons/purple_book.png';
-      default:
-        return 'images/icons/default.png'; // Fallback icon
-    }
+// Function to get the appropriate icon based on book type
+function getIcon(booktype) {
+  switch (booktype) {
+    case 'fiction':
+      return 'images/icons/red_book.png';
+    case 'nonfiction':
+      return 'images/icons/blue_book.png';
+    case 'travel':
+      return 'images/icons/brown_book.png';
+    case 'science-fiction':
+      return 'images/icons/purple_book.png';
+    default:
+      return 'images/icons/default.png'; // Fallback icon
   }
-
-
-  // Access locations from the global window object
-  const bookLocations = window.bookLocations;
-
-  // Add markers with info windows
-  bookLocations.forEach(location => {
-    const marker = new google.maps.Marker({
-      position: { lat: location.lat, lng: location.lng },
-      map: map,
-      title: location.title,
-      icon: {
-        url: getIcon(location.booktype), // Path to your icon
-        scaledSize: new google.maps.Size(32, 32) // Adjust size here
-      }
-    });
-
-    const infoWindowContent = `
-    <div style="width: 200px;">
-      <h3>${location.title}</h3>
-      <p><strong>Author:</strong> ${location.author}</p>
-      <p>${location.description}</p>
-      ${location.image ? `<img src="${location.image}" alt="${location.title}" style="width: 100%;">` : ''}
-    </div>
-  `;
-
-    const infoWindow = new google.maps.InfoWindow({
-      content: infoWindowContent
-    });
-
-    marker.addListener('click', () => {
-      infoWindow.open(map, marker);
-    });
-  });
-
-  // Other event listeners ---------------------------------
-  // Add event listener for map type dropdown
-  document.getElementById('mapTypeSelect').addEventListener('change', (event) => {
-    const selectedMapType = event.target.value;
-    map.setMapTypeId(selectedMapType);
-  });
-
-  // Listen for changes in the location dropdown
-  document.getElementById('locationSelect').addEventListener('change', (event) => {
-    const selectedLocation = event.target.value;
-
-    // If a valid location is selected, center the map
-    if (locations[selectedLocation]) {
-      map.setCenter(locations[selectedLocation]);
-      map.setZoom(5); // Adjust zoom level as needed
-    }
-  });
-
-  // Search button event listener for the search box
-  document.getElementById('searchButton').addEventListener('click', () => {
-    const location = document.getElementById('locationInput').value;
-    if (location) {
-      geocodeAddress(location);
-    }
-  });
-
-  // Add event listener for zoom level dropdown
-  document.getElementById('zoomSelect').addEventListener('change', (event) => {
-    const zoomLevel = parseInt(event.target.value, 10);
-    map.setZoom(zoomLevel);
-  });
-
 }
 
 
@@ -152,4 +59,129 @@ function geocodeAddress(location) {
 }
 
 
-window.initMap = initMap; // Expose the function to global scope for the Google Maps API callback
+async function initMap() {
+
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 4,                      // Zoom level
+    center: { lat: 51.5074, lng: -0.1278 },  // Centered on London
+    mapTypeId: 'terrain',          // Show terrain view
+  });
+
+  // Initialize the geocoder
+  geocoder = new google.maps.Geocoder();
+
+  // Populate zoom level dropdown
+  populateZoomDropdown();
+
+  // Map type dropdown
+  document.getElementById('mapTypeSelect').addEventListener('change', (event) => {
+    const selectedMapType = event.target.value;
+    map.setMapTypeId(selectedMapType);
+  });
+
+  // Listen for changes in the location dropdown
+  document.getElementById('locationSelect').addEventListener('change', (event) => {
+    const selectedLocation = event.target.value;
+
+    // If a valid location is selected, center the map
+    if (locations[selectedLocation]) {
+      map.setCenter(locations[selectedLocation]);
+      map.setZoom(5); // Adjust zoom level as needed
+    }
+  });
+
+  // Search button event listener for the search box
+  document.getElementById('searchButton').addEventListener('click', () => {
+    const location = document.getElementById('locationInput').value;
+    if (location) {
+      geocodeAddress(location);
+    }
+  });
+
+  // Add event listener for zoom level dropdown
+  document.getElementById('zoomSelect').addEventListener('change', (event) => {
+    const zoomLevel = parseInt(event.target.value, 10);
+    map.setZoom(zoomLevel);
+  });
+
+}
+
+
+
+function renderBooksOnMap() {
+  if (window.books && window.books.length > 0) {
+    window.books.forEach((book) => {
+      console.log('inside render', book);
+      const position = new google.maps.LatLng(book.lat, book.lng);
+
+      // Create content for the marker
+      const content = document.createElement('div');
+      content.innerHTML = `<div style="padding: 5px; background-color: white; border-radius: 5px;">
+                             <strong>${book.title}</strong><br>
+                             <em>${book.author}</em><br>
+                             <span>${book.booktype}</span>
+                           </div>`;
+
+
+      const marker = new google.maps.Marker({
+        position: position,
+        map: map,  // Attach the marker to the map
+        title: `${book.title} by ${book.author}`,  // Title displayed on hover
+        icon: {
+          url: getIcon(book.booktype), // Path to your icon
+          scaledSize: new google.maps.Size(32, 32) // Adjust size here
+        }
+      });
+
+      const infoWindowContent = `
+      <div style="width: 200px;">
+        <h3>${book.title}</h3>
+        <p><strong>Author:</strong> ${book.author}</p>
+        <p>${book.description}</p>
+        ${book.image ? `<img src="${book.image}" alt="${book.title}" style="width: 100%;">` : ''}
+      </div>
+    `;
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: infoWindowContent
+      });
+
+      // Attach click event to open info window
+      marker.addListener("click", () => {
+        infoWindow.open({
+          anchor: marker,
+          map,
+          shouldFocus: false,
+        });
+      });
+    });
+  } else {
+    console.log("Books data is not available yet.");
+  }
+}
+
+function printAllBooks() {
+  window.books.forEach((book, index) => {
+    console.log(`Book ${index + 1}:`);
+    console.log(`Title: ${book.title}`);
+    console.log(`Author: ${book.author}`);
+    console.log(`Latitude: ${book.lat}`);
+    console.log(`Longitude: ${book.lng}`);
+    console.log(`Book Type: ${book.booktype}`);
+    console.log('----------------------');
+  });
+}
+
+// Listen for the custom event 'booksReady'
+window.addEventListener('booksReady', () => {
+  if (window.books && window.books.length > 0) {
+    renderBooksOnMap(); // This function will render books on the map once they're ready
+  } else {
+    console.log("No books found in window.books.");
+  }
+});
+
+
+// window.initMap = initMap; // Expose the function to global scope for the Google Maps API callback
+initMap();
+

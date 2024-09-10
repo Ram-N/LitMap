@@ -1,6 +1,5 @@
-// public/scripts/app.js
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { db } from './firebase.js'; // Import Firestore from firebase.js
+// Managing the App Tabs -- Map, List of Books, List of places
+// Add/Delete to the list
 
 // Handle form submission
 document.getElementById('locationForm').addEventListener('submit', async (e) => {
@@ -29,30 +28,30 @@ document.getElementById('locationForm').addEventListener('submit', async (e) => 
     }
 });
 
-map.addListener("click", (e) => {
-    const latLng = e.latLng;
+// map.addListener("click", (e) => {
+//     const latLng = e.latLng;
 
-    // Create a marker at the clicked location
-    const marker = new google.maps.Marker({
-        position: latLng,
-        map: map,
-    });
+//     // Create a marker at the clicked location
+//     const marker = new google.maps.Marker({
+//         position: latLng,
+//         map: map,
+//     });
 
-    // Example: add marker details (book info) here
-    const bookTitle = prompt("Enter the book title:");
-    const bookAuthor = prompt("Enter the book author:");
+//     // Example: add marker details (book info) here
+//     const bookTitle = prompt("Enter the book title:");
+//     const bookAuthor = prompt("Enter the book author:");
 
-    // Attach info window to marker (to show book details)
-    const infoWindow = new google.maps.InfoWindow({
-        content: `<h4>${bookTitle}</h4><p>${bookAuthor}</p>`
-    });
+//     // Attach info window to marker (to show book details)
+//     const infoWindow = new google.maps.InfoWindow({
+//         content: `<h4>${bookTitle}</h4><p>${bookAuthor}</p>`
+//     });
 
-    marker.addListener("click", () => {
-        infoWindow.open(map, marker);
-    });
+//     marker.addListener("click", () => {
+//         infoWindow.open(map, marker);
+//     });
 
     // Optionally, save the marker data to Firestore or local storage
-});
+// });
 
 
 
