@@ -10,6 +10,19 @@ const locations = {
   sydney: { lat: -33.8688, lng: 151.2093 }
 };
 
+function printAllBooks() {
+  window.books.forEach((book, index) => {
+    console.log(`Book ${index + 1}:`);
+    console.log(`Title: ${book.title}`);
+    console.log(`Author: ${book.author}`);
+    console.log(`Latitude: ${book.lat}`);
+    console.log(`Longitude: ${book.lng}`);
+    console.log(`Book Type: ${book.booktype}`);
+    console.log('----------------------');
+  });
+}
+
+
 // Function to get the appropriate icon based on book type
 function getIcon(booktype) {
   switch (booktype) {
@@ -58,14 +71,99 @@ function geocodeAddress(location) {
   });
 }
 
+function renderBooksOnMap() {
+
+
+  if (window.books && window.books.length > 0) {
+
+    window.books.forEach((book) => {
+
+      console.log('inside render', book.title);
+
+      // Create content for the marker
+      const content = document.createElement('div');
+      content.innerHTML = `<div style="padding: 5px; background-color: white; border-radius: 5px;">
+                             <strong>${book.title}</strong><br>
+                             <em>${book.author}</em><br>
+                             <span>${book.booktype}</span>
+                           </div>`;
+
+      // Determine the latitude and longitude based on the presence of the location object
+      if (book.locations && Array.isArray(book.locations)) {
+        // Loop through each location in the locations array
+        book.locations.forEach((location) => {
+          // Get the latitude and longitude from the current location
+          const lat = location.lat;
+          const lng = location.lng;
+
+          // Create the position using the latitude and longitude
+          const position = new google.maps.LatLng(lat, lng);
+
+          console.log(book.title, lat, lng);
+
+          // Create the AdvancedMarkerElement for each location
+          const marker = new google.maps.marker.AdvancedMarkerElement({
+            position: position,
+            map: map,  // Assuming 'map' is your Google map instance
+            title: `${book.title} by ${book.author}`,  // Title displayed on hover
+            // content: `<div class="marker-content">${book.title}</div>` // Custom content for the marker
+          });
+
+          // icon: {
+          //   url: getIcon(book.booktype), // Path to your icon
+          //   scaledSize: new google.maps.Size(32, 32) // Adjust size here
+          // }
+
+          const infoWindowContent = `
+          <div style="width: 200px;">
+            <h3>${book.title}</h3>
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p>${book.description}</p>
+            ${book.image ? `<img src="${book.image}" alt="${book.title}" style="width: 100%;">` : ''}
+          </div>
+        `;
+          const infoWindow = new google.maps.InfoWindow({
+            content: infoWindowContent
+          });
+
+          // Attach click event to open info window
+          marker.addListener("click", () => {
+            infoWindow.open({
+              anchor: marker,
+              map,
+              shouldFocus: false
+            })
+          });
+
+        });
+      }
+      else {
+        console.log("Books data is not available yet.");
+      }
+    });
+
+  }
+
+}
+
+
 
 async function initMap() {
 
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 4,                      // Zoom level
-    center: { lat: 51.5074, lng: -0.1278 },  // Centered on London
+  const { Map } = await google.maps.importLibrary("maps");
+  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+
+  london = { lat: 51.5074, lng: -0.1278 }
+
+
+  map = new Map(document.getElementById("map"), {
+    zoom: 4,
+    center: london,
+    mapId: "DEMO_MAP_ID",
     mapTypeId: 'terrain',          // Show terrain view
   });
+
 
   // Initialize the geocoder
   geocoder = new google.maps.Geocoder();
@@ -104,78 +202,17 @@ async function initMap() {
     map.setZoom(zoomLevel);
   });
 
+  renderBooksOnMap(); // This function will render books on the map once they're ready
 }
 
 
 
-function renderBooksOnMap() {
-  if (window.books && window.books.length > 0) {
-    window.books.forEach((book) => {
-      console.log('inside render', book);
-      const position = new google.maps.LatLng(book.lat, book.lng);
 
-      // Create content for the marker
-      const content = document.createElement('div');
-      content.innerHTML = `<div style="padding: 5px; background-color: white; border-radius: 5px;">
-                             <strong>${book.title}</strong><br>
-                             <em>${book.author}</em><br>
-                             <span>${book.booktype}</span>
-                           </div>`;
-
-
-      const marker = new google.maps.Marker({
-        position: position,
-        map: map,  // Attach the marker to the map
-        title: `${book.title} by ${book.author}`,  // Title displayed on hover
-        icon: {
-          url: getIcon(book.booktype), // Path to your icon
-          scaledSize: new google.maps.Size(32, 32) // Adjust size here
-        }
-      });
-
-      const infoWindowContent = `
-      <div style="width: 200px;">
-        <h3>${book.title}</h3>
-        <p><strong>Author:</strong> ${book.author}</p>
-        <p>${book.description}</p>
-        ${book.image ? `<img src="${book.image}" alt="${book.title}" style="width: 100%;">` : ''}
-      </div>
-    `;
-
-      const infoWindow = new google.maps.InfoWindow({
-        content: infoWindowContent
-      });
-
-      // Attach click event to open info window
-      marker.addListener("click", () => {
-        infoWindow.open({
-          anchor: marker,
-          map,
-          shouldFocus: false,
-        });
-      });
-    });
-  } else {
-    console.log("Books data is not available yet.");
-  }
-}
-
-function printAllBooks() {
-  window.books.forEach((book, index) => {
-    console.log(`Book ${index + 1}:`);
-    console.log(`Title: ${book.title}`);
-    console.log(`Author: ${book.author}`);
-    console.log(`Latitude: ${book.lat}`);
-    console.log(`Longitude: ${book.lng}`);
-    console.log(`Book Type: ${book.booktype}`);
-    console.log('----------------------');
-  });
-}
 
 // Listen for the custom event 'booksReady'
 window.addEventListener('booksReady', () => {
   if (window.books && window.books.length > 0) {
-    renderBooksOnMap(); // This function will render books on the map once they're ready
+    initMap();
   } else {
     console.log("No books found in window.books.");
   }
@@ -183,5 +220,4 @@ window.addEventListener('booksReady', () => {
 
 
 // window.initMap = initMap; // Expose the function to global scope for the Google Maps API callback
-initMap();
 
