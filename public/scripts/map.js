@@ -2,6 +2,8 @@
 let map;
 let geocoder;
 
+import { MarkerClusterer } from "https://cdn.skypack.dev/@googlemaps/markerclusterer@2.3.1";
+
 // Predefined locations (latitude, longitude)
 const locations = {
   new_york: { lat: 40.7128, lng: -74.0060 },
@@ -75,10 +77,9 @@ function renderBooksOnMap() {
 
 
   if (window.books && window.books.length > 0) {
+    const markers = [];
 
     window.books.forEach((book) => {
-
-      console.log('inside render', book.title);
 
       // Create content for the marker
       const content = document.createElement('div');
@@ -92,29 +93,25 @@ function renderBooksOnMap() {
       if (book.locations && Array.isArray(book.locations)) {
         // Loop through each location in the locations array
         book.locations.forEach((location) => {
+
           // Get the latitude and longitude from the current location
-          const lat = location.lat;
-          const lng = location.lng;
+          const lat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
+          const lng = location.lng || location.longitude; // Fallback to longitude if lng is not present
 
-          // Create the position using the latitude and longitude
-          const position = new google.maps.LatLng(lat, lng);
+          // Check if lat and lng are defined
+          if (lat && lng) {
+            // Create the position using the latitude and longitude
+            const position = new google.maps.LatLng(lat, lng);
 
-          console.log(book.title, lat, lng);
+            // Create the AdvancedMarkerElement for each location
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+              position: position,
+              map: map,  // Assuming 'map' is your Google map instance
+              title: `${book.title} by ${book.author}`,  // Title displayed on hover
+              // content: `<div class="marker-content">${book.title}</div>` // Custom content for the marker
+            });
 
-          // Create the AdvancedMarkerElement for each location
-          const marker = new google.maps.marker.AdvancedMarkerElement({
-            position: position,
-            map: map,  // Assuming 'map' is your Google map instance
-            title: `${book.title} by ${book.author}`,  // Title displayed on hover
-            // content: `<div class="marker-content">${book.title}</div>` // Custom content for the marker
-          });
-
-          // icon: {
-          //   url: getIcon(book.booktype), // Path to your icon
-          //   scaledSize: new google.maps.Size(32, 32) // Adjust size here
-          // }
-
-          const infoWindowContent = `
+            const infoWindowContent = `
           <div style="width: 200px;">
             <h3>${book.title}</h3>
             <p><strong>Author:</strong> ${book.author}</p>
@@ -122,39 +119,68 @@ function renderBooksOnMap() {
             ${book.image ? `<img src="${book.image}" alt="${book.title}" style="width: 100%;">` : ''}
           </div>
         `;
-          const infoWindow = new google.maps.InfoWindow({
-            content: infoWindowContent
-          });
 
-          // Attach click event to open info window
-          marker.addListener("click", () => {
-            infoWindow.open({
-              anchor: marker,
-              map,
-              shouldFocus: false
-            })
-          });
+            // Create the info window without close button
+            const infoWindow = new google.maps.InfoWindow({
+              content: infoWindowContent,
+              disableAutoPan: true // Optional: Prevents automatic panning of the map when the InfoWindow is shown
+            });
 
+            // Attach mouseover event to open info window
+            marker.addListener("mouseover", () => {
+              infoWindow.open({
+                anchor: marker,
+                map,
+                shouldFocus: true
+              });
+            });
+
+            // Attach mouseout event to close info window
+            marker.addListener("mouseout", () => {
+              infoWindow.close();
+            });
+
+            // Also, ensure to close any previous InfoWindow if another one is opened.
+            marker.addListener("click", () => {
+              infoWindow.open({
+                anchor: marker,
+                map
+              });
+            });
+
+            // Add the marker to the markers array
+            markers.push(marker);
+
+
+          }
         });
       }
       else {
-        console.log("Books data is not available yet.");
+        console.log("Books data unavailable", book.title);
       }
     });
 
-  }
+    // Add a marker clusterer to manage the markers
+    new MarkerClusterer({
+      markers: markers,
+      map: map
+    });
 
+  }
 }
 
 
 
 async function initMap() {
 
-  const { Map } = await google.maps.importLibrary("maps");
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+  const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+  const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
+    "marker",
+  );
 
 
-  london = { lat: 51.5074, lng: -0.1278 }
+
+  const london = { lat: 51.5074, lng: -0.1278 };
 
 
   map = new Map(document.getElementById("map"), {

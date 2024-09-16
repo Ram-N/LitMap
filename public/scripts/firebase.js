@@ -33,8 +33,8 @@ const fsLocations = collection(db, 'locations');
 
 
 // Save books to Firestore (from data.js)
-function addBooksToFirestore() {
-    window.booklist.forEach((book) => {
+function addBooksToFirestore(newbooks) {
+    newbooks.forEach((book) => {
         // Create an object to store all book properties dynamically
         let bookData = {};
 
@@ -50,7 +50,7 @@ function addBooksToFirestore() {
         // Add the dynamically created bookData object to Firestore
         addDoc(fsBooks, bookData)
             .then((docRef) => {
-                console.log("Book successfully written with ID: ", docRef.id);
+                console.log("Book successfully written: ", docRef.id, book.title);
             })
             .catch((error) => {
                 console.error("Error adding book: ", error);
@@ -117,6 +117,22 @@ async function printNumberOfDocs(collectionName) {
         console.error("Error getting documents: ", error);
     }
 }
+
+
+document.getElementById('uploadBooksButton').addEventListener('click', async () => {
+    // Import newbooks from newdata.js
+    const script = document.createElement('script');
+    script.src = 'scripts/newdata.js';
+    document.head.appendChild(script);
+
+    script.onload = () => {
+        if (window.newbooks && Array.isArray(window.newbooks)) {
+            addBooksToFirestore(window.newbooks);
+        } else {
+            console.error('newbooks list is not available or not an array.');
+        }
+    };
+});
 
 // Example usage
 printNumberOfDocs("books"); // For the 'books' collection
