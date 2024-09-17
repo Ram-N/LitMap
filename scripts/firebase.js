@@ -112,7 +112,7 @@ if (0) {
 async function printNumberOfDocs(collectionName) {
     try {
         const querySnapshot = await getDocs(collection(db, collectionName));
-        console.log(`Number of documents in the '${collectionName}' collection: ${querySnapshot.size}`);
+        console.log(`'${collectionName}' contains: ${querySnapshot.size}`);
     } catch (error) {
         console.error("Error getting documents: ", error);
     }
