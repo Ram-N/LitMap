@@ -91,22 +91,145 @@ input[type="text"]:focus {
 
 
 
+.nav-button {
+    display: inline-block;
+    width: 30%;
+    padding: 10px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.nav-button.active {
+    background-color: #aaa;
+}
+
+.nav-button:hover {
+    background-color: #cbc;
+}
+
+.tab-content {
+    margin-top: 20px;
+    display: none;
+
+}
+
+
+.tab.active {
+    background-color: #ddd;
+    /* Highlight the active tab */
+}
 
 
 
-/* Basic styles for the map container */
-#map {
-    height: 500px;
-    width: 100%;
+.hidden {
+    display: none;
+}
+
+/* end of nav styling */
+
+/* Style for the container holding the map and side panel */
+#container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+
+/* Side panel styling */
+#side-panel {
+    width: 20%;
+    height: 100vh;
+    float: left;
+    background-color: #f4f4f4;
+    padding: 10px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* Style for the controls and form inside the side panel */
+#form-container,
+#controls {
     margin-bottom: 20px;
 }
+
+#form-container input,
+#form-container button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Map styling to take the remaining space */
+#map {
+    width: 80%;
+    /* Adjust according to side-panel width */
+    height: 100%;
+    float: right;
+
+}
+
+/* Optional styling to make it responsive */
+@media screen and (max-width: 768px) {
+    #side-panel {
+        width: 30%;
+    }
+
+    #map {
+        width: 70%;
+    }
+}
+
+
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    /* Stack items vertically within each control group */
+    margin-bottom: 15px;
+}
+
+.control-item {
+    width: 100%;
+    /* Make the controls take full width of the container */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    /* Ensure padding is included in width */
+}
+
+#zoomControl {
+    width: 100%;
+    /* Ensure the zoom slider takes full width */
+}
+
+#zoomValue {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+
+#mapControls {
+    padding: 10px;
+    display: flex;
+    display: block;
+    /* Map controls visible by default */
+
+    flex-direction: column;
+    /* Stack items vertically */
+}
+
+
+
 
 form {
     margin: 20px auto;
     display: inline-block;
 }
-
-/* #mapTypeSelect {
-    margin: 20px;
-    padding: 5px;
-} */

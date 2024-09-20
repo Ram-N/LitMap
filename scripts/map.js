@@ -42,16 +42,16 @@ function getIcon(booktype) {
 }
 
 
-// Function to populate zoom level dropdown
-function populateZoomDropdown() {
-  const zoomSelect = document.getElementById('zoomSelect');
-  for (let zoom = 17; zoom >= 2; zoom -= 2) {
-    const option = document.createElement('option');
-    option.value = zoom;
-    option.text = `Zoom ${zoom}`;
-    zoomSelect.appendChild(option);
-  }
-}
+// // Function to populate zoom level dropdown
+// function populateZoomDropdown() {
+//   const zoomSelect = document.getElementById('zoomSelect');
+//   for (let zoom = 17; zoom >= 2; zoom -= 2) {
+//     const option = document.createElement('option');
+//     option.value = zoom;
+//     option.text = `Zoom ${zoom}`;
+//     zoomSelect.appendChild(option);
+//   }
+// }
 
 
 // Function to geocode a location and center the map
@@ -194,8 +194,6 @@ async function initMap() {
   // Initialize the geocoder
   geocoder = new google.maps.Geocoder();
 
-  // Populate zoom level dropdown
-  populateZoomDropdown();
 
   // Map type dropdown
   document.getElementById('mapTypeSelect').addEventListener('change', (event) => {
@@ -222,10 +220,12 @@ async function initMap() {
     }
   });
 
-  // Add event listener for zoom level dropdown
-  document.getElementById('zoomSelect').addEventListener('change', (event) => {
-    const zoomLevel = parseInt(event.target.value, 10);
-    map.setZoom(zoomLevel);
+  document.getElementById('zoomControl').addEventListener('input', function () {
+    const zoomValue = document.getElementById('zoomValue');
+    zoomValue.textContent = this.value;
+
+    // Assuming map is your Google Map instance
+    map.setZoom(parseInt(this.value));
   });
 
   renderBooksOnMap(); // This function will render books on the map once they're ready

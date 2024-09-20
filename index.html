@@ -7,76 +7,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LitMap</title>
     <link rel="stylesheet" href="styles/style.css">
-    <style>
-        /* Ensure the map takes up full width and height */
-        #map {
-            height: 100vh;
-            /* Full-screen height */
-            width: 100%;
-            /* Full-screen width */
-        }
-    </style>
-
-
 </head>
 
 <body>
     <h1>LitMap - Explore Book Locations!</h1>
 
-    <!-- Container for dropdown and search box -->
-    <div class="controls">
-        <!-- Dropdown to center the map -->
-        <div>
-            <label for="locationSelect">Center Map at:</label>
-            <select id="locationSelect">
-                <option value="default">-- Select a Location --</option>
-                <option value="new_york">New York</option>
-                <option value="london">London</option>
-                <option value="tokyo">Tokyo</option>
-                <option value="sydney">Sydney</option>
-            </select>
+    <div id="container">
+        <!-- Side Panel -->
+        <div id="side-panel">
+            <div id="navbar">
+                <button id="mapTab" class="nav-button active">Map</button>
+                <button id="bookListTab" class="nav-button">Book List</button>
+                <button id="adminTab" class="nav-button">Admin</button>
+            </div>
+
+            <div id="mapControls" class="tab-content hidden">
+
+                <!-- Dropdown to center the map -->
+                <div class="control-group">
+                    <label for="locationSelect">Center Map at:</label>
+                    <select id="locationSelect" class="control-item">
+                        <option value="default">-- Select a Location --</option>
+                        <option value="new_york">New York</option>
+                        <option value="london">London</option>
+                        <option value="tokyo">Tokyo</option>
+                        <option value="sydney">Sydney</option>
+                    </select>
+                </div>
+
+                <!-- Search box to center map -->
+                <div class="control-group">
+                    <label for="locationInput">Enter Location:</label>
+                    <input type="text" id="locationInput" placeholder="Enter a city or place" class="control-item">
+                    <button id="searchButton" class="control-item">Go</button>
+                </div>
+
+                <!-- Map Zoom control (slider instead of dropdown) -->
+                <div class="control-group">
+                    <label for="zoomControl">Zoom Level:</label>
+                    <input type="range" id="zoomControl" class="control-item" min="2" max="17" step="1" value="10">
+                    <span id="zoomValue">10</span>
+                </div>
+
+                <!-- Dropdown to select map type -->
+                <div class="control-group">
+                    <label for="mapTypeSelect">Select Map Type:</label>
+                    <select id="mapTypeSelect" class="control-item">
+                        <option value="roadmap">Roadmap</option>
+                        <option value="satellite">Satellite</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="terrain">Terrain</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="bookListControls" class="tab-content hidden style=" display: none;">
+                <!-- Book list content -->
+                <h3>Book List</h3>
+                <ul id="bookList">
+                    <!-- Book items will be dynamically added here -->
+                </ul>
+            </div>
+
+            <div id="adminControls" class="tab-content hidden style=" display: none;">
+                <!-- Admin content -->
+                <h3>Admin Panel</h3>
+                <p>Admin functionalities go here.</p>
+                <!-- Form to add a book with a location -->
+                <div id="form-container">
+                    <form id="locationForm">
+                        <input type="text" id="locationInput" placeholder="Enter location (e.g., New Delhi)" required>
+                        <input type="text" id="bookTitle" placeholder="Book title" required>
+                        <input type="text" id="bookAuthor" placeholder="Author name" required>
+                        <button type="submit">Add Book</button>
+                    </form>
+                    <div id="controls">
+                        <button id="uploadBooksButton">Upload More Books</button>
+                        <!-- You can add other buttons and dropdowns here -->
+                    </div>
+
+
+                </div>
+            </div>
+
         </div>
 
-        <!-- Search box to center map -->
-        <div>
-            <label for="locationInput">Enter Location:</label>
-            <input type="text" id="locationInput" placeholder="Enter a city or place">
-            <button id="searchButton">Go</button>
-        </div>
-
-        <select id="zoomSelect">
-            <!-- Options for zoom levels -->
-        </select>
-
-        <!-- Dropdown to select map type -->
-        <div>
-            <label for="mapTypeSelect">Select Map Type:</label>
-            <select id="mapTypeSelect">
-                <option value="roadmap">Roadmap</option>
-                <option value="satellite">Satellite</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="terrain">Terrain</option>
-            </select>
-        </div>
-
-
+        <!-- Map Section -->
+        <div id="map"></div>
     </div>
 
 
-
-    <div id="map"></div>
-    <div>
-        <form id="locationForm">
-            <input type="text" id="locationInput" placeholder="Enter location (e.g., New Delhi)" required>
-            <input type="text" id="bookTitle" placeholder="Book title" required>
-            <input type="text" id="bookAuthor" placeholder="Author name" required>
-            <button type="submit">Add Book</button>
-        </form>
-    </div>
-
-    <div id="controls">
-        <button id="uploadBooksButton">Upload More Books</button>
-    </div>
 
     <!-- prettier-ignore -->
     <script>(g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
@@ -88,6 +108,7 @@
     <script type="module" src="scripts/firebase.js"></script>
     <!-- <script src="scripts/app.js"></script> -->
     <script type="module" src="scripts/map.js"></script>
+    <script src="scripts/app.js"></script>
 
 
 </body>
