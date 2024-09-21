@@ -42,18 +42,6 @@ function getIcon(booktype) {
 }
 
 
-// // Function to populate zoom level dropdown
-// function populateZoomDropdown() {
-//   const zoomSelect = document.getElementById('zoomSelect');
-//   for (let zoom = 17; zoom >= 2; zoom -= 2) {
-//     const option = document.createElement('option');
-//     option.value = zoom;
-//     option.text = `Zoom ${zoom}`;
-//     zoomSelect.appendChild(option);
-//   }
-// }
-
-
 // Function to geocode a location and center the map
 function geocodeAddress(location) {
   geocoder.geocode({ address: location }, (results, status) => {
@@ -215,6 +203,7 @@ async function initMap() {
   // Search button event listener for the search box
   document.getElementById('searchButton').addEventListener('click', () => {
     const location = document.getElementById('locationInput').value;
+    console.log(location);
     if (location) {
       geocodeAddress(location);
     }

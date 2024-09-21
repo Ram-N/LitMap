@@ -11,40 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const bookListContent = document.getElementById("bookListContent");
     const adminContent = document.getElementById("adminContent");
 
-    document.getElementById('mapTab').addEventListener('click', function () {
-        // Show map controls and hide others
-        document.getElementById('mapControls').style.display = 'block';
-        document.getElementById('bookListControls').style.display = 'none';
-        document.getElementById('adminControls').style.display = 'none';
-
-        // Add 'active' class to the clicked tab and remove from others
-        this.classList.add('active');
-        document.getElementById('bookListTab').classList.remove('active');
-        document.getElementById('adminTab').classList.remove('active');
-    });
-
-    document.getElementById('bookListTab').addEventListener('click', function () {
+    document.getElementById('searchTab').addEventListener('click', function () {
         // Show book list controls and hide others
-        document.getElementById('mapControls').style.display = 'none';
-        document.getElementById('bookListControls').style.display = 'block';
+        document.getElementById('searchControls').style.display = 'block';
         document.getElementById('adminControls').style.display = 'none';
 
         // Add 'active' class to the clicked tab and remove from others
         this.classList.add('active');
-        document.getElementById('mapTab').classList.remove('active');
         document.getElementById('adminTab').classList.remove('active');
     });
 
     document.getElementById('adminTab').addEventListener('click', function () {
         // Show admin controls and hide others
-        document.getElementById('mapControls').style.display = 'none';
-        document.getElementById('bookListControls').style.display = 'none';
+        document.getElementById('searchControls').style.display = 'none';
         document.getElementById('adminControls').style.display = 'block';
 
         // Add 'active' class to the clicked tab and remove from others
         this.classList.add('active');
-        document.getElementById('mapTab').classList.remove('active');
-        document.getElementById('bookListTab').classList.remove('active');
+        document.getElementById('searchTab').classList.remove('active');
     });
 
 });

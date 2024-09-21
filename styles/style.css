@@ -130,15 +130,16 @@ input[type="text"]:focus {
 /* end of nav styling */
 
 /* Style for the container holding the map and side panel */
-#container {
+.main-container {
     display: flex;
     height: 100vh;
     width: 100vw;
 }
 
 
+
 /* Side panel styling */
-#side-panel {
+.side-panel {
     width: 20%;
     height: 100vh;
     float: left;
@@ -148,11 +149,31 @@ input[type="text"]:focus {
     overflow-y: auto;
 }
 
+.side-panel nav button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+}
+
+.side-panel nav button.active {
+    background-color: #bbb;
+}
+
+.side-panel nav button:hover {
+    background-color: #ccc;
+}
+
+
 /* Style for the controls and form inside the side panel */
 #form-container,
 #controls {
     margin-bottom: 20px;
 }
+
 
 #form-container input,
 #form-container button {
@@ -163,13 +184,21 @@ input[type="text"]:focus {
     box-sizing: border-box;
 }
 
-/* Map styling to take the remaining space */
-#map {
+/* Map container */
+.map-container {
     width: 80%;
-    /* Adjust according to side-panel width */
-    height: 100%;
-    float: right;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
 
+/* Map styling */
+#map {
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    float: right;
 }
 
 /* Optional styling to make it responsive */
@@ -183,13 +212,21 @@ input[type="text"]:focus {
     }
 }
 
+/* Navbar styles */
+.map-navbar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    background-color: #eee;
+    border-bottom: 1px solid #ccc;
+}
 
 
 .control-group {
     display: flex;
-    flex-direction: column;
-    /* Stack items vertically within each control group */
-    margin-bottom: 15px;
+    align-items: center;
+    gap: 10px;
 }
 
 .control-item {
@@ -216,7 +253,7 @@ input[type="text"]:focus {
 }
 
 
-#mapControls {
+#searchControls {
     padding: 10px;
     display: flex;
     display: block;
@@ -225,8 +262,6 @@ input[type="text"]:focus {
     flex-direction: column;
     /* Stack items vertically */
 }
-
-
 
 
 form {
