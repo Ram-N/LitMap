@@ -167,6 +167,87 @@ input[type="text"]:focus {
     background-color: #ccc;
 }
 
+/* Map or List buttons in the Sidebar */
+.view-toggle {
+    display: flex;
+    /* Use flexbox for alignment */
+    justify-content: space-between;
+    /* Space buttons evenly */
+    gap: 10px;
+    /* Add a little gap between the buttons */
+    padding: 10px;
+}
+
+.view-toggle-btn {
+    flex: 1;
+    /* Allow buttons to take equal space */
+    width: 20%;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.view-toggle-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.searchControls {
+    /* width: 300px; */
+    padding: 20px;
+    background-color: #f4f4f4;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-right: 1px solid #ccc;
+}
+
+.searchControls h2 {
+    text-align: center;
+}
+
+.searchControls label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+}
+
+.searchControls input,
+.searchControls select {
+    width: 100%;
+    padding: 8px;
+    /* margin-top: 5px; */
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.searchControls .search-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.searchControls .search-btn:hover {
+    background-color: #45a049;
+}
+
+.advanced-search {
+    display: none;
+    margin-top: 15px;
+}
+
+
 
 /* Style for the controls and form inside the side panel */
 #form-container,
@@ -184,13 +265,24 @@ input[type="text"]:focus {
     box-sizing: border-box;
 }
 
-/* Map container */
-.map-container {
+
+.map-container,
+.list-container {
+    display: none;
+    /* position: fixed; */
+    /* top: 0; */
+    right: 0;
+    height: 100vh;
     width: 80%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    /* flex-direction: column; */
+    /* position: relative; */
 }
+
+.map-container.active,
+.list-container.active {
+    display: block;
+}
+
 
 /* Map styling */
 #map {

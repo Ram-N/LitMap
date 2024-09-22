@@ -18,9 +18,72 @@
                 <button id="searchTab" class="nav-button active">Search</button>
                 <button id="adminTab" class="nav-button">Admin</button>
             </div>
+
+            <!-- View Toggle Buttons -->
+
+            <div class="view-toggle">
+                <button class="view-toggle-btn" id="map-btn" onclick="showMap()">Map</button>
+                <button class="view-toggle-btn" id="list-btn" onclick="showList()">List</button>
+            </div>
+
             <div id="searchControls" class="tab-content style=" display: block;">
                 <!-- Book list content -->
-                <h3>Search for Books</h3>
+                <h3>Books Search</h3>
+
+                <!-- Search Bar -->
+                <label for="search-bar">General Search</label>
+                <input type="text" id="search-bar" placeholder="Search by keyword...">
+
+                <!-- Author -->
+                <label for="author">Author</label>
+                <input type="text" id="author" placeholder="Search by author...">
+
+                <!-- Publish Date -->
+                <label for="publish-date">Publish Year</label>
+                <input type="number" id="publish-date" placeholder="Enter publish year">
+
+                <!-- Title -->
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="Search by title...">
+
+                <!-- Topic -->
+                <label for="topic">Topic</label>
+                <input type="text" id="topic" placeholder="Search by topic...">
+
+                <!-- Tags -->
+                <label for="tags">Tags</label>
+                <input type="text" id="tags" placeholder="Search by tags (comma separated)">
+
+                <!-- Genre -->
+                <label for="genre">Genre</label>
+                <select id="genre">
+                    <option value="">Select genre</option>
+                    <option value="Fiction">Fiction</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Romance">Romance</option>
+                    <!-- Add more genres as needed -->
+                </select>
+
+                <!-- Location -->
+                <label for="location">Location</label>
+                <input type="text" id="location" placeholder="Search by location...">
+
+                <!-- Advanced Search Toggle -->
+                <button type="button" onclick="toggleAdvancedSearch()">Advanced Search</button>
+
+                <!-- Advanced Search Options -->
+                <div class="advanced-search">
+                    <label for="language">Language</label>
+                    <input type="text" id="language" placeholder="Search by language">
+
+                    <label for="isbn">ISBN</label>
+                    <input type="text" id="isbn" placeholder="Search by ISBN">
+                </div>
+
+                <!-- Search Button -->
+                <button class="search-btn" onclick="searchBooks()">Search</button>
+
                 <ul id="bookList">
                     <!-- Book items will be dynamically added here -->
                 </ul>
@@ -52,49 +115,31 @@
         </div> <!-- side panel-->
 
         <!-- Map container -->
-        <div class="map-container">
-            <!-- Navbar for map controls -->
-            <div class="map-navbar">
-                <!-- Center Map control -->
-                <div class="control-group">
-                    <label for="locationSelect">Center Map at:</label>
-                    <select id="locationSelect" class="control-item">
-                        <option value="default">-- Select a Location --</option>
-                        <option value="new_york">New York</option>
-                        <option value="london">London</option>
-                        <option value="tokyo">Tokyo</option>
-                        <option value="sydney">Sydney</option>
-                    </select>
-                </div>
-
-                <!-- Search Location control -->
-                <div class="control-group">
-                    <label for="locationInput">Enter Location:</label>
-                    <input type="text" id="locationInput" placeholder="Enter a city or place" class="control-item">
-                    <button id="searchButton" class="control-item">Go</button>
-                </div>
-
-                <div class="control-group">
-                    <label for="zoomControl">Zoom Level:</label>
-                    <input type="range" id="zoomControl" class="control-item" min="2" max="17" step="1" value="10">
-                    <span id="zoomValue">10</span>
-                </div>
-
-                <!-- Map Type control -->
-                <div class="control-group">
-                    <label for="mapTypeSelect">Select Map Type:</label>
-                    <select id="mapTypeSelect" class="control-item">
-                        <option value="roadmap">Roadmap</option>
-                        <option value="satellite">Satellite</option>
-                        <option value="hybrid">Hybrid</option>
-                        <option value="terrain">Terrain</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Map div -->
-            <div id="map"></div>
+        <div class="map-container" id="map-container">
+            <script>
+                // Load the map.html content into #map-container
+                document.addEventListener('DOMContentLoaded', function () {
+                    fetch('map.html')
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById('map-container').innerHTML = data;
+                            // // Call map initialization after loading the content
+                            // initializeMap();
+                            console.log('map loaded');
+                        });
+                });
+            </script>
         </div>
+
+        <!-- List Container -->
+        <div class="list-container" id="list-container">
+            <h3>List View</h3>
+            <div class="list-content">
+                <!-- Placeholder for the actual list of books -->
+                List of books goes here.
+            </div>
+        </div>
+
     </div>
 
     <!-- prettier-ignore -->

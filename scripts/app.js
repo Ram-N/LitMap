@@ -61,16 +61,58 @@ document.getElementById('locationForm').addEventListener('submit', async (e) => 
     }
 });
 
-// dynamically update the zoom level display when the range slider is used:
-document.getElementById('zoomControl').addEventListener('input', function () {
-    const zoomValue = document.getElementById('zoomValue');
-    zoomValue.textContent = this.value;
+// Toggle advanced search
+function toggleAdvancedSearch() {
+    const advSearch = document.querySelector('.advanced-search');
+    advSearch.style.display = (advSearch.style.display === 'none' || advSearch.style.display === '') ? 'block' : 'none';
+}
 
-    // Now 'map' is globally accessible
-    if (map) {
-        map.setZoom(parseInt(this.value));  // Ensure map is defined
-    } else {
-        console.error('Map is not initialized');
-    }
-});
+// Function to handle search logic
+function searchBooks() {
+    const searchQuery = {
+        searchBar: document.getElementById('search-bar').value,
+        author: document.getElementById('author').value,
+        publishDate: document.getElementById('publish-date').value,
+        title: document.getElementById('title').value,
+        topic: document.getElementById('topic').value,
+        tags: document.getElementById('tags').value,
+        genre: document.getElementById('genre').value,
+        location: document.getElementById('location').value,
+        language: document.getElementById('language').value,
+        isbn: document.getElementById('isbn').value
+    };
+
+    // Output search query to console (you can replace this with an API call or some other functionality)
+    console.log('Search Query:', searchQuery);
+}
+
+// Function to show the map and hide the list
+function showMap() {
+    document.getElementById('map-container').classList.add('active');
+    document.getElementById('list-container').classList.remove('active');
+
+    // Disable the Map button and enable the List button
+    document.getElementById('map-btn').classList.add('disabled');
+    document.getElementById('map-btn').setAttribute('disabled', true);
+    document.getElementById('list-btn').classList.remove('disabled');
+    document.getElementById('list-btn').removeAttribute('disabled');
+}
+
+// Function to show the list and hide the map
+function showList() {
+    document.getElementById('list-container').classList.add('active');
+    document.getElementById('map-container').classList.remove('active');
+
+    // Disable the List button and enable the Map button
+    document.getElementById('list-btn').classList.add('disabled');
+    document.getElementById('list-btn').setAttribute('disabled', true);
+    document.getElementById('map-btn').classList.remove('disabled');
+    document.getElementById('map-btn').removeAttribute('disabled');
+}
+
+// Default behavior: show the map view on load
+window.onload = function () {
+    showMap();
+};
+
 
