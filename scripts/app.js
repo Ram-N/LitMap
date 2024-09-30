@@ -69,7 +69,7 @@ function toggleAdvancedSearch() {
 }
 
 // Function to handle search logic
-function searchBooks() {
+function oldsearchBooks() {
     const searchQuery = {
         searchBar: document.getElementById('search-bar').value,
         author: document.getElementById('author').value,

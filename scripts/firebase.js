@@ -83,6 +83,52 @@ function addLocationsToFirestore() {
 }
 
 
+// Function to get all books from Firestore
+async function getAllBooks() {
+    const booksRef = collection(db, 'books');
+    const querySnapshot = await getDocs(booksRef);
+    const books = [];
+
+    querySnapshot.forEach((doc) => {
+        books.push(doc.data());
+    });
+
+    return books;  // Return all books to be filtered in the next step
+}
+
+
+// Simple fuzzy search function (substring match)
+function fuzzyBookSearch(books, searchTerm) {
+    searchTerm = searchTerm.toLowerCase();  // Normalize the search term to lowercase
+
+    return books.filter(book => {
+        const title = book.title.toLowerCase();
+        const author = book.author.toLowerCase();
+        const description = book.description.toLowerCase();  // Example field
+
+        // Check if the search term is in any of the fields
+        return title.includes(searchTerm) ||
+            author.includes(searchTerm) ||
+            description.includes(searchTerm);
+    });
+}
+
+async function searchBooks(searchTerm) {
+    try {
+        const books = await getAllBooks();  // Get all books
+        const results = fuzzyBookSearch(books, searchTerm);  // Perform fuzzy search
+        console.log('Search Results:', results);  // Display the results or pass to the table update function
+
+        // Dispatch a custom event with the books data
+        const event = new CustomEvent('booksFetched', { detail: results });
+        document.dispatchEvent(event);  // Trigger the event, app.js will update the UI
+
+    } catch (error) {
+        console.error('Error fetching books:', error);
+    }
+}
+
+
 async function searchByField(field, queryString) {
     try {
         const booksRef = collection(db, 'books');
@@ -126,7 +172,7 @@ document.querySelector('form[name="searchForm"]').addEventListener('submit', fun
     // Perform the appropriate Firestore query
     if (searchFieldAll) {
         //TODO: FIX THIS LATER
-        searchByField('title', searchQuery);
+        searchBooks(searchQuery);
     } else if (searchFieldTitle) {
         searchByField('title', searchQuery);
     } else if (searchFieldAuthor) {
@@ -151,13 +197,6 @@ async function getBooks() {
     const event = new CustomEvent('booksReady');
     console.log('FS books are ready');
     window.dispatchEvent(event);
-}
-
-if (0) {
-    // Call the functions to save the data to Firestore
-    // addBooksToFirestore();
-    // addLocationsToFirestore();
-    // console.log('books and locations saved')
 }
 
 
