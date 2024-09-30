@@ -25,21 +25,32 @@ function printAllBooks() {
 }
 
 
-// Function to get the appropriate icon based on book type
-function getIcon(booktype) {
+// Function to get background color based on book type
+function getBgColor(booktype) {
   switch (booktype) {
-    case 'fiction':
-      return 'images/icons/red_book.png';
-    case 'nonfiction':
-      return 'images/icons/blue_book.png';
-    case 'travel':
-      return 'images/icons/brown_book.png';
-    case 'science-fiction':
-      return 'images/icons/purple_book.png';
+    case 'Fiction':
+      return "#FBBC04";  // Fiction books get yellow background      
+    case 'Nonfiction':
+      return '#001FFE';    // Nonfiction books get blue background
+    case 'Non-fiction':
+      return 'blue';    // Nonfiction books get blue background
+    case 'Poetry':
+      return 'pink';    // Nonfiction books get blue background
     default:
-      return 'images/icons/default.png'; // Fallback icon
+      return 'gray';    // Default background color if type is unknown
   }
 }
+
+// Function to get background color based on book type
+function getGlyphColor(booktype) {
+  switch (booktype) {
+    case 'Poetry':
+      return 'pink';    // Nonfiction books get blue background
+    default:
+      return 'white';
+  }
+}
+
 
 
 // Function to geocode a location and center the map
@@ -62,7 +73,6 @@ function geocodeAddress(location) {
 }
 
 function renderBooksOnMap() {
-
 
   if (window.books && window.books.length > 0) {
     const markers = [];
@@ -91,12 +101,26 @@ function renderBooksOnMap() {
             // Create the position using the latitude and longitude
             const position = new google.maps.LatLng(lat, lng);
 
+            // Get background color based on book type
+            const bgColor = getBgColor(book.booktype);
+            const glyphColor = getGlyphColor(book.booktype);
+
+            // Create the PinElement with dynamic background color and a scale of 0.5
+            const pin = new google.maps.marker.PinElement({
+              scale: 0.5,
+              background: bgColor,  // Set the background color based on book type
+              borderColor: "#137333",
+              glyphColor: glyphColor,
+              glyph: "NF",
+            });
+
             // Create the AdvancedMarkerElement for each location
             const marker = new google.maps.marker.AdvancedMarkerElement({
               position: position,
               map: map,  // Assuming 'map' is your Google map instance
               title: `${book.title} by ${book.author}`,  // Title displayed on hover
               // content: `<div class="marker-content">${book.title}</div>` // Custom content for the marker
+              content: pin.element,  // Attach the PinElement
             });
 
             const infoWindowContent = `
@@ -139,7 +163,6 @@ function renderBooksOnMap() {
             // Add the marker to the markers array
             markers.push(marker);
 
-
           }
         });
       }
@@ -165,8 +188,6 @@ async function initMap() {
   const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
     "marker",
   );
-
-
 
   const london = { lat: 51.5074, lng: -0.1278 };
 
@@ -228,6 +249,7 @@ async function initMap() {
 window.addEventListener('booksReady', () => {
   if (window.books && window.books.length > 0) {
     initMap();
+
   } else {
     console.log("No books found in window.books.");
   }

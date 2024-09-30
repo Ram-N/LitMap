@@ -1,0 +1,42 @@
+<!-- Navbar for map controls -->
+<div class="map-navbar">
+    <!-- Center Map control -->
+    <div class="control-group">
+        <label for="locationSelect">Center Map at:</label>
+        <select id="locationSelect" class="control-item">
+            <option value="default">-- Select a Location --</option>
+            <option value="new_york">New York</option>
+            <option value="london">London</option>
+            <option value="tokyo">Tokyo</option>
+            <option value="sydney">Sydney</option>
+        </select>
+    </div>
+
+    <!-- Search Location control -->
+    <div class="control-group">
+        <label for="locationInput">Enter Location:</label>
+        <input type="text" id="locationInput" placeholder="Enter a city or place" class="control-item">
+        <button id="searchButton" class="control-item">Go</button>
+    </div>
+
+    <div class="control-group">
+        <label for="zoomControl">Zoom Level:</label>
+        <input type="range" id="zoomControl" class="control-item" min="2" max="17" step="1" value="10">
+        <span id="zoomValue">10</span>
+    </div>
+
+    <!-- Map Type control -->
+    <div class="control-group">
+        <label for="mapTypeSelect">Select Map Type:</label>
+        <select id="mapTypeSelect" class="control-item">
+            <option value="roadmap">Roadmap</option>
+            <option value="satellite">Satellite</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="terrain">Terrain</option>
+        </select>
+    </div>
+</div>
+
+<!-- Map div -->
+<div id="map"></div>
+</div>

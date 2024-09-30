@@ -30,63 +30,23 @@
                 <!-- Book list content -->
                 <h3>Books Search</h3>
 
-                <!-- Search Bar -->
-                <label for="search-bar">General Search</label>
-                <input type="text" id="search-bar" placeholder="Search by keyword...">
+                <form name="searchForm" class="stacked greyBox searchBox searchBox--large" action="/search"
+                    accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
+                    <div class="greyText" style="padding-bottom: 10px">
+                        <input type="text" name="q" size="55" id="search_query_main"
+                            class="searchBox__input searchBox--large__input"
+                            placeholder="Search by Book Title, Author, or ISBN">
+                        <input type="submit" value="Search" class="searchBox__button">
+                    </div>
 
-                <!-- Author -->
-                <label for="author">Author</label>
-                <input type="text" id="author" placeholder="Search by author...">
+                    <div>
+                        <input type="radio" checked="checked" name="search[field]" id="search_field"> all
+                        <input type="radio" value="title" name="search[field]" id="search_field_title"> title
+                        <input type="radio" value="author" name="search[field]" id="search_field_author"> author
+                    </div>
+                    <div class="clear"></div>
+                </form>
 
-                <!-- Publish Date -->
-                <label for="publish-date">Publish Year</label>
-                <input type="number" id="publish-date" placeholder="Enter publish year">
-
-                <!-- Title -->
-                <label for="title">Title</label>
-                <input type="text" id="title" placeholder="Search by title...">
-
-                <!-- Topic -->
-                <label for="topic">Topic</label>
-                <input type="text" id="topic" placeholder="Search by topic...">
-
-                <!-- Tags -->
-                <label for="tags">Tags</label>
-                <input type="text" id="tags" placeholder="Search by tags (comma separated)">
-
-                <!-- Genre -->
-                <label for="genre">Genre</label>
-                <select id="genre">
-                    <option value="">Select genre</option>
-                    <option value="Fiction">Fiction</option>
-                    <option value="Non-Fiction">Non-Fiction</option>
-                    <option value="Thriller">Thriller</option>
-                    <option value="Romance">Romance</option>
-                    <!-- Add more genres as needed -->
-                </select>
-
-                <!-- Location -->
-                <label for="location">Location</label>
-                <input type="text" id="location" placeholder="Search by location...">
-
-                <!-- Advanced Search Toggle -->
-                <button type="button" onclick="toggleAdvancedSearch()">Advanced Search</button>
-
-                <!-- Advanced Search Options -->
-                <div class="advanced-search">
-                    <label for="language">Language</label>
-                    <input type="text" id="language" placeholder="Search by language">
-
-                    <label for="isbn">ISBN</label>
-                    <input type="text" id="isbn" placeholder="Search by ISBN">
-                </div>
-
-                <!-- Search Button -->
-                <button class="search-btn" onclick="searchBooks()">Search</button>
-
-                <ul id="bookList">
-                    <!-- Book items will be dynamically added here -->
-                </ul>
             </div>
 
             <div id="adminControls" class="tab-content hidden style=" display: none;">
@@ -111,7 +71,6 @@
                 </div>
             </div>
 
-            <!-- Other side panel content -->
         </div> <!-- side panel-->
 
         <!-- Map container -->
@@ -135,8 +94,9 @@
         <div class="list-container" id="list-container">
             <h3>List View</h3>
             <div class="list-content">
-                <!-- Placeholder for the actual list of books -->
-                List of books goes here.
+                <table id="bookTable" class="styled-table">
+                    <!-- Thead and tbody will be added by apps.js -->
+                </table>
             </div>
         </div>
 
@@ -152,7 +112,7 @@
     <script type="module" src="scripts/firebase.js"></script>
     <!-- <script src="scripts/app.js"></script> -->
     <script type="module" src="scripts/map.js"></script>
-    <script src="scripts/app.js"></script>
+    <script type="module" src="scripts/app.js"></script>
 
 
 </body>

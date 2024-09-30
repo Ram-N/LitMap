@@ -6,6 +6,7 @@ import {
 
 import {
     getFirestore, collection, getDocs,
+    query, where,
     addDoc, deleteDoc, doc
 } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
@@ -27,8 +28,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 console.log('init');
 // init services
-const db = getFirestore()
-const fsBooks = collection(db, 'books');
+export const db = getFirestore()
+export const fsBooks = collection(db, 'books');
 const fsLocations = collection(db, 'locations');
 
 
@@ -81,6 +82,57 @@ function addLocationsToFirestore() {
     });
 }
 
+
+async function searchByField(field, queryString) {
+    try {
+        const booksRef = collection(db, 'books');
+
+        // Perform the query using the provided field (e.g., title or author)
+        const q = query(
+            booksRef,
+            where(field, '>=', queryString),
+            where(field, '<=', queryString + '\uf8ff')
+        );
+
+        const querySnapshot = await getDocs(q);
+        const books = [];
+
+        querySnapshot.forEach((doc) => {
+            books.push(doc.data());
+        });
+
+        // Dispatch a custom event with the books data
+        const event = new CustomEvent('booksFetched', { detail: books });
+        document.dispatchEvent(event);  // Trigger the event, app.js will handle the response
+
+    } catch (error) {
+        console.error('Error searching Firestore:', error);
+    }
+}
+
+// Listen for form submission
+document.querySelector('form[name="searchForm"]').addEventListener('submit', function (event) {
+    event.preventDefault();  // Prevent the default form submission
+
+    // Get the search query
+    const searchQuery = document.getElementById('search_query_main').value.trim();
+    console.log('searching', searchQuery);
+
+    // Check which radio button is selected (all, title, or author)
+    const searchFieldAll = document.querySelector('input[id="search_field"]:checked');
+    const searchFieldTitle = document.querySelector('input[id="search_field_title"]:checked');
+    const searchFieldAuthor = document.querySelector('input[id="search_field_author"]:checked');
+
+    // Perform the appropriate Firestore query
+    if (searchFieldAll) {
+        //TODO: FIX THIS LATER
+        searchByField('title', searchQuery);
+    } else if (searchFieldTitle) {
+        searchByField('title', searchQuery);
+    } else if (searchFieldAuthor) {
+        searchByField('author', searchQuery);
+    }
+});
 
 
 

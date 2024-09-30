@@ -1,6 +1,7 @@
 // Managing the App Tabs -- Map, List of Books, List of places
 // Add/Delete to the list
 
+import { db, fsBooks } from './firebase.js';  // Importing db from firebase.js
 
 document.addEventListener("DOMContentLoaded", () => {
     const mapTab = document.getElementById("mapTab");
@@ -110,9 +111,81 @@ function showList() {
     document.getElementById('map-btn').removeAttribute('disabled');
 }
 
-// Default behavior: show the map view on load
-window.onload = function () {
+// Function to initialize table structure (thead and tbody)
+function initializeBookTable() {
+    const bookTable = document.getElementById('bookTable');
+
+    // Create thead and its content
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    const headers = ['Title', 'Author', 'Type', 'Location'];
+    headers.forEach(headerText => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    bookTable.appendChild(thead);
+
+    // Create tbody
+    const tbody = document.createElement('tbody');
+    bookTable.appendChild(tbody);
+}
+
+
+
+// Function to update the book table with filtered or selected books
+function updateBookTable(books) {
+    const tableBody = document.querySelector('#bookTable tbody');
+    tableBody.innerHTML = '';  // Clear any existing rows
+
+    console.log(books.length, "books updateTable");
+    books.forEach((book) => {
+        // Loop through each book location if there are multiple locations
+        book.locations.forEach((location) => {
+            const row = document.createElement('tr');
+
+            // Create cells for title, author, type, and location
+            const titleCell = document.createElement('td');
+            titleCell.textContent = book.title;
+
+            const authorCell = document.createElement('td');
+            authorCell.textContent = book.author;
+
+            const typeCell = document.createElement('td');
+            typeCell.textContent = book.booktype;
+
+            const locationCell = document.createElement('td');
+            locationCell.textContent = `${location.lat || location.latitude}, ${location.lng || location.longitude}`;
+
+            // Append cells to the row
+            row.appendChild(titleCell);
+            row.appendChild(authorCell);
+            row.appendChild(typeCell);
+            row.appendChild(locationCell);
+
+            // Append row to the table body
+            tableBody.appendChild(row);
+        });
+    });
+}
+
+// Call the initializeBookTable function to setup the table structure when the page loads
+document.addEventListener('DOMContentLoaded', function () {
     showMap();
-};
+    initializeBookTable();
+});
 
 
+// Listen for the 'booksFetched' event and update the table
+// this event happens in firebase.js
+document.addEventListener('booksFetched', function (e) {
+    const books = e.detail;  // Retrieve the books list from the event
+    updateBookTable(books);  // Call your function to update the table
+});
+
+// Attach the function to the window object to make it globally accessible
+window.showList = showList;
+window.showMap = showMap;

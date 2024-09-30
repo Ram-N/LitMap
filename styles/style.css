@@ -196,6 +196,37 @@ input[type="text"]:focus {
     cursor: not-allowed;
 }
 
+.searchBox--large {
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px
+}
+
+.searchBox {
+    box-sizing: border-box;
+    flex: 1;
+    position: relative;
+}
+
+.greyBox {
+    background-color: #bac0bc;
+    padding: 10px;
+    max-width: 625px;
+}
+
+.searchBox--large {
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.searchBox {
+    box-sizing: border-box;
+    flex: 1;
+    position: relative;
+}
+
+
 .searchControls {
     /* width: 300px; */
     padding: 20px;
@@ -359,4 +390,25 @@ input[type="text"]:focus {
 form {
     margin: 20px auto;
     display: inline-block;
+}
+
+/* Style Table Output */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.styled-table thead tr {
+    background-color: #f4f4f4;
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
