@@ -111,14 +111,23 @@ function showList() {
     document.getElementById('map-btn').removeAttribute('disabled');
 }
 
-// Function to initialize table structure (thead and tbody)
 function initializeBookTable() {
-    const bookTable = document.getElementById('bookTable');
+    // Check if the table already exists, if not, create it
+    let bookTable = document.getElementById('bookTable');
 
-    // Create thead and its content
+    if (!bookTable) {
+        // If the table doesn't exist, create it
+        bookTable = document.createElement('table');
+        bookTable.id = 'bookTable';  // Assign an ID to the newly created table
+        bookTable.className = 'styled-table';  // Add the class for styling
+        document.getElementById('list-container').appendChild(bookTable); // Append to the container
+    }
+
+    // Create thead and append header row
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
+    // Create and append the table headers
     const headers = ['Title', 'Author', 'Type', 'Location'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
@@ -132,8 +141,15 @@ function initializeBookTable() {
     // Create tbody
     const tbody = document.createElement('tbody');
     bookTable.appendChild(tbody);
+    // The table is now initialized and ready for data rows to be appended
 }
 
+function removeBookTable() {
+    const bookTable = document.getElementById('bookTable');
+    if (bookTable) {
+        bookTable.remove();  // Remove the table element from the DOM
+    }
+}
 
 
 // Function to update the book table with filtered or selected books
@@ -172,10 +188,9 @@ function updateBookTable(books) {
     });
 }
 
-// Call the initializeBookTable function to setup the table structure when the page loads
 document.addEventListener('DOMContentLoaded', function () {
     showMap();
-    initializeBookTable();
+    // initializeBookTable();
 });
 
 
@@ -183,7 +198,15 @@ document.addEventListener('DOMContentLoaded', function () {
 // this event happens in firebase.js
 document.addEventListener('booksFetched', function (e) {
     const books = e.detail;  // Retrieve the books list from the event
-    updateBookTable(books);  // Call your function to update the table
+    removeBookTable();
+    if (books && books.length > 0) {
+        // The array is non-null, is indeed an array, and contains elements
+        initializeBookTable();
+        updateBookTable(books);  // Call your function to update the table
+    } else {
+        console.log("Nothing Found");
+    }
+
 });
 
 // Attach the function to the window object to make it globally accessible

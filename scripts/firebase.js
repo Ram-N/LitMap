@@ -97,26 +97,37 @@ async function getAllBooks() {
 }
 
 
-// Simple fuzzy search function (substring match)
-function fuzzyBookSearch(books, searchTerm) {
+// Extended fuzzy search function with support for a single field or a fieldList
+function fuzzyBookSearch(books, searchTerm, field = null, fieldList = null) {
     searchTerm = searchTerm.toLowerCase();  // Normalize the search term to lowercase
 
     return books.filter(book => {
+        // If a specific field is provided, search only in that field
+        if (field && book[field]) {
+            return book[field].toString().toLowerCase().includes(searchTerm);
+        }
+
+        // If a fieldList is provided, search only in those fields
+        if (fieldList && Array.isArray(fieldList)) {
+            return fieldList.some(field => book[field] && book[field].toString().toLowerCase().includes(searchTerm));
+        }
+
+        // Default: Search in title, author, and description
         const title = book.title.toLowerCase();
         const author = book.author.toLowerCase();
-        const description = book.description.toLowerCase();  // Example field
+        const description = book.description ? book.description.toLowerCase() : '';
 
-        // Check if the search term is in any of the fields
-        return title.includes(searchTerm) ||
-            author.includes(searchTerm) ||
-            description.includes(searchTerm);
+        // Check if the search term is in any of the default fields
+        return title.includes(searchTerm) || author.includes(searchTerm) || description.includes(searchTerm);
     });
 }
 
-async function searchBooks(searchTerm) {
+
+// Called when the all radiobutton and Search is pressed
+async function searchBooks(searchTerm, field = null, fieldList = null) {
     try {
         const books = await getAllBooks();  // Get all books
-        const results = fuzzyBookSearch(books, searchTerm);  // Perform fuzzy search
+        const results = fuzzyBookSearch(books, searchTerm, field, fieldList);  // Perform fuzzy search
         console.log('Search Results:', results);  // Display the results or pass to the table update function
 
         // Dispatch a custom event with the books data
@@ -124,7 +135,7 @@ async function searchBooks(searchTerm) {
         document.dispatchEvent(event);  // Trigger the event, app.js will update the UI
 
     } catch (error) {
-        console.error('Error fetching books:', error);
+        console.error('Error fetching books:', searchTerm, error);
     }
 }
 
@@ -168,11 +179,16 @@ document.querySelector('form[name="searchForm"]').addEventListener('submit', fun
     const searchFieldAll = document.querySelector('input[id="search_field"]:checked');
     const searchFieldTitle = document.querySelector('input[id="search_field_title"]:checked');
     const searchFieldAuthor = document.querySelector('input[id="search_field_author"]:checked');
+    const searchFieldKeyword = document.querySelector('input[id="search_field_keyword"]:checked');
 
     // Perform the appropriate Firestore query
     if (searchFieldAll) {
         //TODO: FIX THIS LATER
         searchBooks(searchQuery);
+    } else if (searchFieldKeyword) {
+        console.log('kw search');
+        const fieldList = ['tags', 'genre'];
+        searchBooks(searchQuery, null, fieldList);
     } else if (searchFieldTitle) {
         searchByField('title', searchQuery);
     } else if (searchFieldAuthor) {
