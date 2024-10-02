@@ -139,7 +139,9 @@ async function searchBooks(searchTerm, field = null, fieldList = null) {
     }
 }
 
-
+//Deprecated...
+//This searches the firestore DB directly.
+//Instead, I am pulling down all data and searching locally searchBooks()
 async function searchByField(field, queryString) {
     try {
         const booksRef = collection(db, 'books');
@@ -183,16 +185,16 @@ document.querySelector('form[name="searchForm"]').addEventListener('submit', fun
 
     // Perform the appropriate Firestore query
     if (searchFieldAll) {
-        //TODO: FIX THIS LATER
-        searchBooks(searchQuery);
+        const fieldList = ['author', 'title', 'description'];
+        searchBooks(searchQuery, null, fieldList);
     } else if (searchFieldKeyword) {
         console.log('kw search');
         const fieldList = ['tags', 'genre'];
         searchBooks(searchQuery, null, fieldList);
     } else if (searchFieldTitle) {
-        searchByField('title', searchQuery);
+        searchBooks(searchQuery, 'title', null);
     } else if (searchFieldAuthor) {
-        searchByField('author', searchQuery);
+        searchBooks(searchQuery, 'author', null);
     }
 });
 

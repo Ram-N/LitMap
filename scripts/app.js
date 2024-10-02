@@ -68,24 +68,6 @@ function toggleAdvancedSearch() {
     advSearch.style.display = (advSearch.style.display === 'none' || advSearch.style.display === '') ? 'block' : 'none';
 }
 
-// Function to handle search logic
-function oldsearchBooks() {
-    const searchQuery = {
-        searchBar: document.getElementById('search-bar').value,
-        author: document.getElementById('author').value,
-        publishDate: document.getElementById('publish-date').value,
-        title: document.getElementById('title').value,
-        topic: document.getElementById('topic').value,
-        tags: document.getElementById('tags').value,
-        genre: document.getElementById('genre').value,
-        location: document.getElementById('location').value,
-        language: document.getElementById('language').value,
-        isbn: document.getElementById('isbn').value
-    };
-
-    // Output search query to console (you can replace this with an API call or some other functionality)
-    console.log('Search Query:', searchQuery);
-}
 
 // Function to show the map and hide the list
 function showMap() {
@@ -160,31 +142,42 @@ function updateBookTable(books) {
     console.log(books.length, "books updateTable");
     books.forEach((book) => {
         // Loop through each book location if there are multiple locations
+        const row = document.createElement('tr');
+
+        // Create cells for title, author, type, and location
+        const titleCell = document.createElement('td');
+        titleCell.textContent = book.title;
+
+        const authorCell = document.createElement('td');
+        authorCell.textContent = book.author;
+
+        const typeCell = document.createElement('td');
+        typeCell.textContent = book.booktype;
+
+        const locationCell = document.createElement('td');
+
+        // Initialize an empty array to hold city names
+        let cityNames = [];
+
+        // Iterate through the locations of the book
         book.locations.forEach((location) => {
-            const row = document.createElement('tr');
-
-            // Create cells for title, author, type, and location
-            const titleCell = document.createElement('td');
-            titleCell.textContent = book.title;
-
-            const authorCell = document.createElement('td');
-            authorCell.textContent = book.author;
-
-            const typeCell = document.createElement('td');
-            typeCell.textContent = book.booktype;
-
-            const locationCell = document.createElement('td');
-            locationCell.textContent = `${location.lat || location.latitude}, ${location.lng || location.longitude}`;
-
-            // Append cells to the row
-            row.appendChild(titleCell);
-            row.appendChild(authorCell);
-            row.appendChild(typeCell);
-            row.appendChild(locationCell);
-
-            // Append row to the table body
-            tableBody.appendChild(row);
+            // Check if the location has a 'city' field
+            if (location.city) {
+                cityNames.push(location.city);
+            }
         });
+
+        // Set the textContent of the cell to the concatenated city names, joined by commas
+        locationCell.textContent = cityNames.length > 0 ? cityNames.join(', ') : 'Unknown';
+
+        // Append cells to the row
+        row.appendChild(titleCell);
+        row.appendChild(authorCell);
+        row.appendChild(typeCell);
+        row.appendChild(locationCell);
+
+        // Append row to the table body
+        tableBody.appendChild(row);
     });
 }
 
