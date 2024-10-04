@@ -29,7 +29,12 @@ const app = initializeApp(firebaseConfig);
 console.log('init');
 // init services
 export const db = getFirestore()
-export const fsBooks = collection(db, 'books');
+
+// const collection_name = 'books'
+
+const collection_name = 'small_books' //useful for testing
+
+export const fsBooks = collection(db, collection_name);
 const fsLocations = collection(db, 'locations');
 
 
@@ -85,7 +90,7 @@ function addLocationsToFirestore() {
 
 // Function to get all books from Firestore
 async function getAllBooks() {
-    const booksRef = collection(db, 'books');
+    const booksRef = collection(db, collection_name);
     const querySnapshot = await getDocs(booksRef);
     const books = [];
 
@@ -144,7 +149,7 @@ async function searchBooks(searchTerm, field = null, fieldList = null) {
 //Instead, I am pulling down all data and searching locally searchBooks()
 async function searchByField(field, queryString) {
     try {
-        const booksRef = collection(db, 'books');
+        const booksRef = collection(db, collection_name);
 
         // Perform the query using the provided field (e.g., title or author)
         const q = query(
@@ -177,24 +182,37 @@ document.querySelector('form[name="searchForm"]').addEventListener('submit', fun
     const searchQuery = document.getElementById('search_query_main').value.trim();
     console.log('searching', searchQuery);
 
-    // Check which radio button is selected (all, title, or author)
-    const searchFieldAll = document.querySelector('input[id="search_field"]:checked');
-    const searchFieldTitle = document.querySelector('input[id="search_field_title"]:checked');
-    const searchFieldAuthor = document.querySelector('input[id="search_field_author"]:checked');
-    const searchFieldKeyword = document.querySelector('input[id="search_field_keyword"]:checked');
 
-    // Perform the appropriate Firestore query
-    if (searchFieldAll) {
-        const fieldList = ['author', 'title', 'description'];
-        searchBooks(searchQuery, null, fieldList);
-    } else if (searchFieldKeyword) {
-        console.log('kw search');
-        const fieldList = ['tags', 'genre'];
-        searchBooks(searchQuery, null, fieldList);
-    } else if (searchFieldTitle) {
-        searchBooks(searchQuery, 'title', null);
-    } else if (searchFieldAuthor) {
-        searchBooks(searchQuery, 'author', null);
+    // Get the currently selected radio button
+    const getSelectedRadio = () => {
+        return document.querySelector('input[name="search_field"]:checked');
+    };
+
+    const getSelectedValue = () => {
+        const selectedRadio = getSelectedRadio();
+        return selectedRadio ? selectedRadio.value : null;
+    };
+
+    let fieldList;  // Declare fieldList outside the switch statement
+
+    switch (getSelectedValue()) {
+        case 'all':
+            fieldList = ['author', 'title', 'description'];
+            searchBooks(searchQuery, null, fieldList);
+            break;
+        case 'title':
+            searchBooks(searchQuery, 'title', null);
+            break;
+        case 'author':
+            searchBooks(searchQuery, 'author', null);
+            break;
+        case 'keyword':
+            fieldList = ['tags', 'genre'];
+            searchBooks(searchQuery, null, fieldList);
+            break;
+        default:
+            console.log('Invalid search field selected');
+            return;  // Exit the function if an invalid option is somehow selected
     }
 });
 
@@ -244,7 +262,7 @@ document.getElementById('uploadBooksButton').addEventListener('click', async () 
 });
 
 // Example usage
-printNumberOfDocs("books"); // For the 'books' collection
+printNumberOfDocs(collection_name); // For the 'books' collection
 printNumberOfDocs("locations"); // For the 'locations' collection
 
 // Call the function to fetch books

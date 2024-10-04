@@ -72,6 +72,54 @@ function geocodeAddress(location) {
   });
 }
 
+//Utility function
+function getTitleInitials(title) {
+  if (title.length < 4) {
+    return title;
+  }
+
+  const wordsToIgnore = ['the', 'and', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with'];
+
+  const words = title.toLowerCase().split(' ');
+
+  const initials = words
+    .filter(word => !wordsToIgnore.includes(word))
+    .map(word => word[0].toUpperCase())
+    .join('');
+
+  return initials;
+}
+
+
+function toggleHighlight(markerView, book) {
+  if (markerView.content.classList.contains("highlight")) {
+    markerView.content.classList.remove("highlight");
+    markerView.zIndex = null;
+  } else {
+    markerView.content.classList.add("highlight");
+    markerView.zIndex = 1;
+  }
+}
+
+
+function buildContent(book) {
+  const content = document.createElement("div");
+
+  content.classList.add("bookCard");
+
+  content.innerHTML = `
+  ${getTitleInitials(book.title)}
+    <div class="details">
+      <strong>${book.title}</strong><br>
+      <em>${book.author}</em><br>
+      <span>${book.booktype}</span>
+
+    </div>
+    `;
+  return content;
+}
+
+
 function renderBooksOnMap() {
 
   if (window.books && window.books.length > 0) {
@@ -102,25 +150,26 @@ function renderBooksOnMap() {
             const position = new google.maps.LatLng(lat, lng);
 
             // Get background color based on book type
-            const bgColor = getBgColor(book.booktype);
-            const glyphColor = getGlyphColor(book.booktype);
+            // const bgColor = getBgColor(book.booktype);
+            // const glyphColor = getGlyphColor(book.booktype);
 
             // Create the PinElement with dynamic background color and a scale of 0.5
-            const pin = new google.maps.marker.PinElement({
-              scale: 0.5,
-              background: bgColor,  // Set the background color based on book type
-              borderColor: "#137333",
-              glyphColor: glyphColor,
-              glyph: "NF",
-            });
+            // const pin = new google.maps.marker.PinElement({
+            //   scale: 0.5,
+            //   background: bgColor,  // Set the background color based on book type
+            //   borderColor: "#137333",
+            //   glyphColor: glyphColor,
+            //   glyph: "NF",
+            // });
+
 
             // Create the AdvancedMarkerElement for each location
             const marker = new google.maps.marker.AdvancedMarkerElement({
               position: position,
               map: map,  // Assuming 'map' is your Google map instance
               title: `${book.title} by ${book.author}`,  // Title displayed on hover
-              // content: `<div class="marker-content">${book.title}</div>` // Custom content for the marker
-              content: pin.element,  // Attach the PinElement
+              // content: pin.element,  // Attach the PinElement
+              content: buildContent(book),
             });
 
             const infoWindowContent = `
@@ -153,11 +202,15 @@ function renderBooksOnMap() {
             });
 
             // Also, ensure to close any previous InfoWindow if another one is opened.
+            // marker.addListener("click", () => {
+            //   infoWindow.open({
+            //     anchor: marker,
+            //     map
+            //   });
+            // });
+
             marker.addListener("click", () => {
-              infoWindow.open({
-                anchor: marker,
-                map
-              });
+              toggleHighlight(marker, book);
             });
 
             // Add the marker to the markers array
@@ -178,6 +231,7 @@ function renderBooksOnMap() {
     });
 
   }
+
 }
 
 

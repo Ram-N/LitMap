@@ -13,7 +13,7 @@
     <h1>LitMap - Explore Book Locations!</h1>
 
     <div class="main-container">
-        <div class="side-panel">
+        <div class="sidebar-container">
             <div id="navbar">
                 <button id="searchTab" class="nav-button active">Search</button>
                 <button id="adminTab" class="nav-button">Admin</button>
@@ -39,11 +39,23 @@
                         <input type="submit" value="Search" class="searchBox__button">
                     </div>
 
-                    <div>
-                        <input type="radio" checked="checked" name="search[field]" id="search_field"> all
-                        <input type="radio" value="title" name="search[field]" id="search_field_title"> Title
-                        <input type="radio" value="author" name="search[field]" id="search_field_author"> author
-                        <input type="radio" value="keyword" name="search[field]" id="search_field_keyword"> keyword
+                    <div class="radio-container">
+                        <label>
+                            <input type="radio" checked name="search_field" value="all">
+                            <span>All</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="search_field" value="title">
+                            <span>Title</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="search_field" value="author">
+                            <span>Author</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="search_field" value="keyword">
+                            <span>Keyword</span>
+                        </label>
                     </div>
                     <div class="clear"></div>
                 </form>
@@ -91,14 +103,23 @@
             </script>
         </div>
 
-        <!-- List Container -->
-        <div class="list-container" id="list-container">
-            <h3>List View</h3>
-            <div class="list-content">
-                <table id="bookTable" class="styled-table">
-                    <!-- Thead and tbody will be added by apps.js -->
-                </table>
+        <!-- MapList Container -->
+        <div class="list-map-container" id="list-map-container">
+            <!-- List Container -->
+            <div class="list-container" id="list-container">
+                <h3>List View</h3>
+                <div class="list-content">
+                    <table id="bookTable" class="styled-table">
+                        <!-- Table content will be populated dynamically -->
+                    </table>
+                </div>
             </div>
+            <!-- Map Container -->
+            <div class="map-container2" id="map-container2">
+                <h3>Map View</h3>
+                <div id="map2" class="map-content"></div>
+            </div>
+
         </div>
 
     </div>

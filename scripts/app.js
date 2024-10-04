@@ -72,7 +72,7 @@ function toggleAdvancedSearch() {
 // Function to show the map and hide the list
 function showMap() {
     document.getElementById('map-container').classList.add('active');
-    document.getElementById('list-container').classList.remove('active');
+    document.getElementById('list-map-container').classList.remove('active');
 
     // Disable the Map button and enable the List button
     document.getElementById('map-btn').classList.add('disabled');
@@ -83,7 +83,7 @@ function showMap() {
 
 // Function to show the list and hide the map
 function showList() {
-    document.getElementById('list-container').classList.add('active');
+    document.getElementById('list-map-container').classList.add('active');
     document.getElementById('map-container').classList.remove('active');
 
     // Disable the List button and enable the Map button
@@ -183,7 +183,6 @@ function updateBookTable(books) {
 
 document.addEventListener('DOMContentLoaded', function () {
     showMap();
-    // initializeBookTable();
 });
 
 

@@ -1,4 +1,17 @@
 /* public/styles/style.css */
+
+
+/* Box-sizing */
+html {
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -137,35 +150,18 @@ input[type="text"]:focus {
 }
 
 
-
-/* Side panel styling */
-.side-panel {
-    width: 20%;
-    height: 100vh;
-    float: left;
-    background-color: #f4f4f4;
-    padding: 10px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
+/* Sidebar container (15-20% width) */
+.sidebar-container {
+    flex: 0 0 15%;
+    /* Sidebar takes 15% of the width */
+    max-width: 20%;
+    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
 }
 
-.side-panel nav button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 5px;
-    background-color: #ddd;
-    border: none;
-    cursor: pointer;
-}
-
-.side-panel nav button.active {
-    background-color: #bbb;
-}
-
-.side-panel nav button:hover {
-    background-color: #ccc;
-}
 
 /* Map or List buttons in the Sidebar */
 .view-toggle {
@@ -273,11 +269,21 @@ input[type="text"]:focus {
     background-color: #45a049;
 }
 
-.advanced-search {
-    display: none;
-    margin-top: 15px;
+.radio-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
+.radio-container label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.radio-container input[type="radio"] {
+    margin-right: 10px;
+}
 
 
 /* Style for the controls and form inside the side panel */
@@ -298,21 +304,99 @@ input[type="text"]:focus {
 
 
 .map-container,
-.list-container {
+.list-map-container {
     display: none;
-    /* position: fixed; */
-    /* top: 0; */
-    right: 0;
-    height: 100vh;
+    height: 90vh;
     width: 80%;
-    /* flex-direction: column; */
-    /* position: relative; */
+
 }
 
-.map-container.active,
-.list-container.active {
+.map-container.active {
     display: block;
 }
+
+.list-map-container.active {
+    display: flex;
+    flex-direction: row;
+    /* or row, depending on your layout needs */
+    justify-content: space-between;
+    /* distributes space between flex items */
+    align-items: stretch;
+    /* stretches items to fill the container's cross axis */
+}
+
+
+/* Map container (40% width) */
+.map-container2 {
+    width: 50%;
+    height: 100%;
+    border: 1px solid #ccc;
+    background-color: #f0f3f0;
+}
+
+
+.list-container {
+    width: 50%;
+    overflow-y: scroll;
+    max-height: 100vh;
+    background-color: #d0d0d0;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
+
+.list-content {
+    max-height: 100%;
+    /* Ensure the table occupies full height */
+    overflow-y: auto;
+    /* Vertical scroll if content exceeds the container */
+    padding: 10px;
+}
+
+/* Table styling */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Scrollbar styling */
+.list-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-content::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+.list-content::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+
+.map-content {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #007bff;
+}
+
 
 
 /* Map styling */
@@ -384,6 +468,53 @@ input[type="text"]:focus {
 
     flex-direction: column;
     /* Stack items vertically */
+}
+
+
+/*
+ * Book Marker styles in unhighlighted state.
+ */
+.bookCard {
+    background-color: #4285F4;
+    border-radius: 2px;
+    color: #FFFFFF;
+    font-size: 8 px;
+    padding: 3px 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.bookCard::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 0);
+    width: 10;
+    height: 10;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #4285F4;
+}
+
+/*
+ * Book Marker styles in highlighted state.
+ */
+.bookCard.highlight {
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2);
+    height: 80px;
+    padding: 8px 15px;
+    width: auto;
+}
+
+.bookCard.highlight::after {
+    border-top: 9px solid #FFFFFF;
+}
+
+.bookCard.highlight .details {
+    display: flex;
 }
 
 
