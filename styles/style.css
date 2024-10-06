@@ -497,6 +497,14 @@ input[type="text"]:focus {
     border-top: 4px solid #4285F4;
 }
 
+.bookCard .details {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+}
+
+
+
 /*
  * Book Marker styles in highlighted state.
  */
@@ -504,9 +512,9 @@ input[type="text"]:focus {
     background-color: #FFFFFF;
     border-radius: 8px;
     box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2);
-    height: 80px;
-    padding: 8px 15px;
-    width: auto;
+    /* height: 80px; */
+    padding: 10px 8px;
+    /* width: 100px; */
 }
 
 .bookCard.highlight::after {
@@ -515,6 +523,19 @@ input[type="text"]:focus {
 
 .bookCard.highlight .details {
     display: flex;
+    color: #09090F;
+    font-size: 8 px;
+    flex-direction: column;
+    flex: 1;
+
+
+}
+
+.bookCard.highlight .location {
+    display: flex;
+    color: #0909FF;
+    font-size: 8 px;
+
 }
 
 

@@ -102,17 +102,19 @@ function toggleHighlight(markerView, book) {
 }
 
 
-function buildContent(book) {
+function buildContent(book, location) {
   const content = document.createElement("div");
 
   content.classList.add("bookCard");
-
   content.innerHTML = `
   ${getTitleInitials(book.title)}
     <div class="details">
-      <strong>${book.title}</strong><br>
+    <div class = 'title'>
+      <strong>${book.title}</strong><br> </div>
       <em>${book.author}</em><br>
       <span>${book.booktype}</span>
+      <div class = 'location'>
+      ${location.city} </div>
 
     </div>
     `;
@@ -153,15 +155,6 @@ function renderBooksOnMap() {
             // const bgColor = getBgColor(book.booktype);
             // const glyphColor = getGlyphColor(book.booktype);
 
-            // Create the PinElement with dynamic background color and a scale of 0.5
-            // const pin = new google.maps.marker.PinElement({
-            //   scale: 0.5,
-            //   background: bgColor,  // Set the background color based on book type
-            //   borderColor: "#137333",
-            //   glyphColor: glyphColor,
-            //   glyph: "NF",
-            // });
-
 
             // Create the AdvancedMarkerElement for each location
             const marker = new google.maps.marker.AdvancedMarkerElement({
@@ -169,7 +162,7 @@ function renderBooksOnMap() {
               map: map,  // Assuming 'map' is your Google map instance
               title: `${book.title} by ${book.author}`,  // Title displayed on hover
               // content: pin.element,  // Attach the PinElement
-              content: buildContent(book),
+              content: buildContent(book, location),
             });
 
             const infoWindowContent = `
