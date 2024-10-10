@@ -497,7 +497,7 @@ input[type="text"]:focus {
     border-top: 4px solid #4285F4;
 }
 
-.bookCard .details {
+.bookCard .book-info {
     display: none;
     flex-direction: column;
     flex: 1;
@@ -509,25 +509,114 @@ input[type="text"]:focus {
  * Book Marker styles in highlighted state.
  */
 .bookCard.highlight {
+    display: flex;
     background-color: #FFFFFF;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2);
-    /* height: 80px; */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
     padding: 10px 8px;
-    /* width: 100px; */
+    max-width: 400px;
+    overflow: hidden;
+    width: 100%;
+}
+
+
+
+.bookCard.highlight::before {
+    content: "📚";
+    /* later on use different icons for books */
+    font-size: 2em;
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background-color: #fff;
+    border-radius: 50%;
+    padding: 3px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .bookCard.highlight::after {
     border-top: 9px solid #FFFFFF;
 }
 
-.bookCard.highlight .details {
+.bookCard.highlight .book-info {
+    display: flex;
+    flex-direction: row;
+    align-items: left;
+    color: #09090F;
+    font-size: 8 px;
+    flex: 1;
+
+}
+
+
+.bookCard.highlight .image {
+    width: 50px;
+    height: 75px;
+    background-color: #f0f0f0;
+    /* Placeholder for actual image */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #888;
+}
+
+
+.bookCard.highlight .content {
     display: flex;
     color: #09090F;
     font-size: 8 px;
     flex-direction: column;
     flex: 1;
+    /* padding: 5%; */
 
+}
+
+.bookCard.highlight .top-content .content.title {
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 10%;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.bookCard.highlight .author {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.bookCard.highlight .description {
+    display: flex;
+    color: #09090F;
+    font-size: 8 px;
+    flex-direction: row;
+    flex: 1;
+    /* padding: 5%; */
+
+}
+
+
+.bookCard.highlight .genre {
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    display: inline-block;
+}
+
+
+.bookCard.highlight .description .bkdesc {
+    font-size: 0.85em;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* Limits text to 3 lines */
+    -webkit-box-orient: vertical;
 
 }
 

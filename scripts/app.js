@@ -133,7 +133,6 @@ function removeBookTable() {
     }
 }
 
-
 // Function to update the book table with filtered or selected books
 function updateBookTable(books) {
     const tableBody = document.querySelector('#bookTable tbody');
@@ -181,6 +180,103 @@ function updateBookTable(books) {
     });
 }
 
+
+async function renderSearchResultsMap(books) {
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+
+    // Create a new div element for the second map
+    const secondMapDiv = document.createElement('div');
+    secondMapDiv.id = 'search-results-map';
+    secondMapDiv.style.width = '100%';
+    secondMapDiv.style.height = '400px'; // Adjust as needed
+    document.getElementById('map-container2').appendChild(secondMapDiv);
+
+    // Calculate the bounds of all locations
+    const bounds = new google.maps.LatLngBounds();
+    books.forEach(book => {
+        console.log(book.locations, book.title);
+        book.locations.forEach(location => {
+            const llat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
+            const llng = location.lng || location.longitude; // Fallback to longitude if lng is not present
+            bounds.extend(new google.maps.LatLng(llat, llng));
+        });
+    });
+    // Create the new map
+    const searchResultsMap = new Map(document.getElementById("search-results-map"), {
+        mapId: "DEMO_MAP_ID",
+        zoom: 10, // This will be adjusted by fitBounds()
+        center: bounds.getCenter(), // Center the map on the bounds
+
+    });
+
+    // Add markers for each book location
+    books.forEach((book, bookIndex) => {
+        book.locations.forEach((location, locationIndex) => {
+            // Get the latitude and longitude from the current location
+            const lat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
+            const lng = location.lng || location.longitude; // Fallback to longitude if lng is not present
+
+            const pin = new PinElement({
+                background: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+                scale: 1.5,
+                glyph: `${bookIndex + 1}.${locationIndex + 1}`,
+            });
+
+            const marker = new AdvancedMarkerElement({
+                map: searchResultsMap,
+                position: { lat: lat, lng: lng },
+                title: `${book.title} - Location ${locationIndex + 1}`,
+                content: pin.element,
+            });
+
+            // Add click listener to show info window
+            marker.addListener("click", () => {
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h3>${book.title}</h3>
+                              <p>Author: ${book.author}</p>
+                              <p>Location: ${location.name || `Location ${locationIndex + 1}`}</p>`
+                });
+                infoWindow.open(searchResultsMap, marker);
+            });
+        });
+    });
+
+    // Fit the map to the bounds of all markers with error handling
+    try {
+        searchResultsMap.fitBounds(bounds);
+    } catch (error) {
+        console.error("Error in fitBounds:", error.message);
+        console.error("Error stack:", error.stack);
+        console.log("Bounds object:", bounds);
+        console.log("Number of locations:", books.reduce((sum, book) => sum + book.locations.length, 0));
+
+        // Fallback: set a default center and zoom if fitBounds fails
+        searchResultsMap.setCenter({ lat: 0, lng: 0 });
+        searchResultsMap.setZoom(2);
+    }
+}
+
+// Example usage:
+// const searchResults = [
+//     { 
+//         title: "Book 1", 
+//         author: "Author 1",
+//         locations: [
+//             { name: "Store A", lat: 40.7128, lng: -74.0060 },
+//             { name: "Library B", lat: 40.7580, lng: -73.9855 }
+//         ]
+//     },
+//     { 
+//         title: "Book 2", 
+//         author: "Author 2",
+//         locations: [
+//             { name: "Bookshop C", lat: 40.7308, lng: -73.9973 }
+//         ]
+//     },
+// ];
+// renderSearchResultsMap(searchResults);
+
 document.addEventListener('DOMContentLoaded', function () {
     showMap();
 });
@@ -195,6 +291,7 @@ document.addEventListener('booksFetched', function (e) {
         // The array is non-null, is indeed an array, and contains elements
         initializeBookTable();
         updateBookTable(books);  // Call your function to update the table
+        renderSearchResultsMap(books);
     } else {
         console.log("Nothing Found");
     }

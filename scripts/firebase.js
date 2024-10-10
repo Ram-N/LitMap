@@ -31,8 +31,8 @@ console.log('init');
 export const db = getFirestore()
 
 // const collection_name = 'books'
-
-const collection_name = 'small_books' //useful for testing
+// const collection_name = 'small_books' //useful for testing
+const collection_name = 'newbooks' //useful for testing
 
 export const fsBooks = collection(db, collection_name);
 const fsLocations = collection(db, 'locations');

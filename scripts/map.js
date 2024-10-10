@@ -9,7 +9,8 @@ const locations = {
   new_york: { lat: 40.7128, lng: -74.0060 },
   london: { lat: 51.5074, lng: -0.1278 },
   tokyo: { lat: 35.6762, lng: 139.6503 },
-  sydney: { lat: -33.8688, lng: 151.2093 }
+  sydney: { lat: -33.8688, lng: 151.2093 },
+  india: { lat: 20.8688, lng: 50.2093 }
 };
 
 function printAllBooks() {
@@ -72,20 +73,33 @@ function geocodeAddress(location) {
   });
 }
 
-//Utility function
+//Utility function - thanks to Claude
 function getTitleInitials(title) {
+  // Handle titles shorter than 4 characters
   if (title.length < 4) {
     return title;
   }
 
-  const wordsToIgnore = ['the', 'and', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with'];
+  // Remove everything after colon, if present
+  const titleBeforeColon = title.split(':')[0];
 
-  const words = title.toLowerCase().split(' ');
+  // Words to ignore, excluding 'on' and 'of'
+  const wordsToIgnore = ['the', 'and', 'a', 'an', 'in', 'at', 'to', 'for', 'with'];
+
+  const words = titleBeforeColon.toLowerCase().split(' ');
 
   const initials = words
     .filter(word => !wordsToIgnore.includes(word))
-    .map(word => word[0].toUpperCase())
-    .join('');
+    .map(word => {
+      // For 'on' and 'of', return the whole word
+      if (word === 'on' || word === 'of') {
+        return word.toLowerCase();
+      }
+      // For other words, return the first character
+      return word[0];
+    })
+    .join('')
+    .toUpperCase();
 
   return initials;
 }
@@ -108,15 +122,30 @@ function buildContent(book, location) {
   content.classList.add("bookCard");
   content.innerHTML = `
   ${getTitleInitials(book.title)}
-    <div class="details">
-    <div class = 'title'>
-      <strong>${book.title}</strong><br> </div>
-      <em>${book.author}</em><br>
-      <span>${book.booktype}</span>
-      <div class = 'location'>
-      ${location.city} </div>
-
+    <div class='book-info'>
+      <div class="image">Book Cover
+      </div>
+      <div class="content">
+        <div class = 'top-content'>
+            <div class = 'title'>
+              ${book.title}
+            </div>
+            <div class = 'author'>
+              ${book.author}
+            </div>
+        </div>
+        <div class="description">
+            ${book.booktype} <br>
+            <div class="bk-desc">
+            ${book.description}
+            </div>
+        </div>
+        <div class = 'location'>
+          ${location.city} 
+        </div>
+      </div>    
     </div>
+  </div>
     `;
   return content;
 }
@@ -228,7 +257,6 @@ function renderBooksOnMap() {
 }
 
 
-
 async function initMap() {
 
   const { Map, InfoWindow } = await google.maps.importLibrary("maps");
@@ -237,11 +265,12 @@ async function initMap() {
   );
 
   const london = { lat: 51.5074, lng: -0.1278 };
+  const india = { lat: 20.5074, lng: 65.1278 };
 
 
   map = new Map(document.getElementById("map"), {
     zoom: 4,
-    center: london,
+    center: india,
     mapId: "DEMO_MAP_ID",
     mapTypeId: 'terrain',          // Show terrain view
   });
