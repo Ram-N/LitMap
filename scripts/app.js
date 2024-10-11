@@ -3,6 +3,27 @@
 
 import { db, fsBooks } from './firebase.js';  // Importing db from firebase.js
 
+// utility function
+function generateBookColor(book) {
+    // Combine relevant book properties into a single string
+    const bookString = `${book.title}|${book.author}|${book.type}.join(',')}`;
+
+    // Generate a hash from the string
+    let hash = 0;
+    for (let i = 0; i < bookString.length; i++) {
+        const char = bookString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    // Convert the hash to a hex color
+    const color = Math.abs(hash).toString(16).substring(0, 6);
+
+    // Ensure the color is 6 digits long
+    return '#' + ('000000' + color).slice(-6);
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const mapTab = document.getElementById("mapTab");
     const bookListTab = document.getElementById("bookListTab");
@@ -189,7 +210,9 @@ async function renderSearchResultsMap(books) {
     const secondMapDiv = document.createElement('div');
     secondMapDiv.id = 'search-results-map';
     secondMapDiv.style.width = '100%';
-    secondMapDiv.style.height = '400px'; // Adjust as needed
+    // secondMapDiv.style.height = '400px'; // Adjust as needed
+    secondMapDiv.style.height = '100%'; // Adjust as needed
+
     document.getElementById('map-container2').appendChild(secondMapDiv);
 
     // Calculate the bounds of all locations
@@ -212,13 +235,14 @@ async function renderSearchResultsMap(books) {
 
     // Add markers for each book location
     books.forEach((book, bookIndex) => {
+        const bookColor = generateBookColor(book);
         book.locations.forEach((location, locationIndex) => {
             // Get the latitude and longitude from the current location
             const lat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
             const lng = location.lng || location.longitude; // Fallback to longitude if lng is not present
 
             const pin = new PinElement({
-                background: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+                background: bookColor,
                 scale: 1.5,
                 glyph: `${bookIndex + 1}.${locationIndex + 1}`,
             });
@@ -245,6 +269,13 @@ async function renderSearchResultsMap(books) {
     // Fit the map to the bounds of all markers with error handling
     try {
         searchResultsMap.fitBounds(bounds);
+        // Add a listener for when the bounds_changed event is fired
+        google.maps.event.addListenerOnce(searchResultsMap, 'bounds_changed', function () {
+            const MAX_ZOOM = 15; // Adjust this value as needed
+            if (searchResultsMap.getZoom() > MAX_ZOOM) {
+                searchResultsMap.setZoom(MAX_ZOOM);
+            }
+        });
     } catch (error) {
         console.error("Error in fitBounds:", error.message);
         console.error("Error stack:", error.stack);

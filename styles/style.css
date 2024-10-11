@@ -475,7 +475,6 @@ input[type="text"]:focus {
  * Book Marker styles in unhighlighted state.
  */
 .bookCard {
-    background-color: #4285F4;
     border-radius: 2px;
     color: #FFFFFF;
     font-size: 8 px;

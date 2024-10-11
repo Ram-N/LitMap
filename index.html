@@ -95,8 +95,6 @@
                         .then(response => response.text())
                         .then(data => {
                             document.getElementById('map-container').innerHTML = data;
-                            // // Call map initialization after loading the content
-                            // initializeMap();
                             console.log('map loaded');
                         });
                 });
@@ -116,7 +114,6 @@
             </div>
             <!-- Map Container -->
             <div class="map-container2" id="map-container2">
-                <h3>Map View</h3>
             </div>
 
         </div>

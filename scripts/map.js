@@ -5,12 +5,26 @@ let geocoder;
 import { MarkerClusterer } from "https://cdn.skypack.dev/@googlemaps/markerclusterer@2.3.1";
 
 // Predefined locations (latitude, longitude)
-const locations = {
+const presetLocations = {
+  //cities
   new_york: { lat: 40.7128, lng: -74.0060 },
   london: { lat: 51.5074, lng: -0.1278 },
   tokyo: { lat: 35.6762, lng: 139.6503 },
   sydney: { lat: -33.8688, lng: 151.2093 },
-  india: { lat: 20.8688, lng: 50.2093 }
+  // Countries
+  india: { lat: 20.5937, lng: 78.9629 },
+  uk: { lat: 55.3781, lng: -3.4360 },
+  usa: { lat: 37.0902, lng: -95.7129 },
+
+  // Continents
+  africa: { lat: 8.7832, lng: 34.5085 },
+  south_america: { lat: -8.7832, lng: -55.4915 },
+
+  // Regions
+  sub_saharan_africa: { lat: 2.4604, lng: 21.7093 },
+  middle_east: { lat: 29.2985, lng: 42.5510 },
+  eastern_europe: { lat: 54.5260, lng: 25.2551 }
+
 };
 
 function printAllBooks() {
@@ -53,17 +67,59 @@ function getGlyphColor(booktype) {
 }
 
 
+// utility function
+function generateBookColor(book) {
+  // Combine relevant book properties into a single string
+  const bookString = `${book.title}|${book.author}|${book.type}.join(',')}`;
+
+  // Generate a hash from the string
+  let hash = 0;
+  for (let i = 0; i < bookString.length; i++) {
+    const char = bookString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Convert the hash to a hex color
+  const color = Math.abs(hash).toString(16).substring(0, 6);
+
+  // Ensure the color is 6 digits long
+  return '#' + ('000000' + color).slice(-6);
+}
+
+
+
+
+function getZoomLevelForLocationType(types) {
+  if (types.includes('continent')) return 3;
+  if (types.includes('country')) return 5;
+  if (types.includes('administrative_area_level_1')) return 7;
+  if (types.includes('administrative_area_level_2')) return 9;
+  if (types.includes('locality') || types.includes('postal_town')) return 11;
+  if (types.includes('neighborhood') || types.includes('sublocality')) return 13;
+  if (types.includes('route')) return 15;
+  return 10; // default zoom level
+}
 
 // Function to geocode a location and center the map
 function geocodeAddress(location) {
   geocoder.geocode({ address: location }, (results, status) => {
     if (status === "OK") {
-      const resultLocation = results[0].geometry.location;
+      const result = results[0];
+      const resultLocation = result.geometry.location;
 
       // Ensure the resultLocation exists and is valid before setting it on the map
       if (resultLocation) {
         map.setCenter(resultLocation);
-        map.setZoom(10);
+
+        // Get the appropriate zoom level based on the result type
+        const zoomLevel = getZoomLevelForLocationType(result.types);
+        map.setZoom(zoomLevel);
+        document.getElementById('zoomControl').value = zoomLevel;
+        document.getElementById('zoomValue').textContent = zoomLevel;
+
+
+        console.log(`Location: ${location}, Type: ${result.types[0]}, Zoom: ${zoomLevel}`);
       } else {
         alert("No valid location found.");
       }
@@ -72,6 +128,7 @@ function geocodeAddress(location) {
     }
   });
 }
+
 
 //Utility function - thanks to Claude
 function getTitleInitials(title) {
@@ -118,8 +175,8 @@ function toggleHighlight(markerView, book) {
 
 function buildContent(book, location) {
   const content = document.createElement("div");
-
   content.classList.add("bookCard");
+  content.style.backgroundColor = generateBookColor(book);
   content.innerHTML = `
   ${getTitleInitials(book.title)}
     <div class='book-info'>
@@ -287,24 +344,53 @@ async function initMap() {
   });
 
   // Listen for changes in the location dropdown
-  document.getElementById('locationSelect').addEventListener('change', (event) => {
-    const selectedLocation = event.target.value;
+  document.getElementById('locationSelect').addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const zoomLevelAttr = selectedOption.getAttribute('data-zoom');
+    const locationName = selectedOption.value;
 
+    // Parse zoom level and ensure it's a valid number
+    let zoomLevel = parseInt(zoomLevelAttr, 10);
+    if (isNaN(zoomLevel)) {
+      console.error(`Invalid zoom level: ${zoomLevelAttr} for location: ${locationValue}`);
+      zoomLevel = 10; // Set a default zoom level
+    }
+
+    console.log(`Selected location: ${locationName}, Zoom level: ${zoomLevel}`);
+
+    // Update the zoom control
     // If a valid location is selected, center the map
-    if (locations[selectedLocation]) {
-      map.setCenter(locations[selectedLocation]);
-      map.setZoom(5); // Adjust zoom level as needed
+    if (presetLocations[locationName]) {
+      const { lat, lng } = presetLocations[locationName];
+      console.log(`Setting view to: lat ${lat}, lng ${lng}, zoom ${zoomLevel}`);
+
+      // Update map view
+      try {
+        document.getElementById('zoomControl').value = zoomLevel;
+        document.getElementById('zoomValue').textContent = zoomLevel;
+        map.setCenter(presetLocations[locationName]);
+        map.setZoom(zoomLevel); // Adjust zoom level of map
+      } catch (error) {
+        console.error('Error setting map view:', error);
+      }
+    } else {
+      console.error(`Coordinates not found for location: ${locationName}`);
+    }
+
+
+  });
+
+  document.getElementById('locationInput').addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent form submission if it's within a form
+      const location = this.value.trim();
+      if (location) {
+        geocodeAddress(location);
+      }
     }
   });
 
-  // Search button event listener for the search box
-  document.getElementById('searchButton').addEventListener('click', () => {
-    const location = document.getElementById('locationInput').value;
-    console.log(location);
-    if (location) {
-      geocodeAddress(location);
-    }
-  });
+
 
   document.getElementById('zoomControl').addEventListener('input', function () {
     const zoomValue = document.getElementById('zoomValue');

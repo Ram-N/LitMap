@@ -4,11 +4,27 @@
     <div class="control-group">
         <label for="locationSelect">Center Map at:</label>
         <select id="locationSelect" class="control-item">
-            <option value="default">-- Select a Location --</option>
-            <option value="new_york">New York</option>
-            <option value="london">London</option>
-            <option value="tokyo">Tokyo</option>
-            <option value="sydney">Sydney</option>
+            <option value="default" data-zoom="3">-- Select a Location --</option>
+            <optgroup label="Cities">
+                <option value="new_york" data-zoom="10">New York</option>
+                <option value="london" data-zoom="10">London</option>
+                <option value="tokyo" data-zoom="10">Tokyo</option>
+                <option value="sydney" data-zoom="10">Sydney</option>
+            </optgroup>
+            <optgroup label="Countries">
+                <option value="india" data-zoom="5">India</option>
+                <option value="uk" data-zoom="6">UK</option>
+                <option value="usa" data-zoom="4">USA</option>
+            </optgroup>
+            <optgroup label="Continents">
+                <option value="africa" data-zoom="3">Africa</option>
+                <option value="south_america" data-zoom="3">South America</option>
+            </optgroup>
+            <optgroup label="Regions">
+                <option value="sub_saharan_africa" data-zoom="4">Sub-Saharan Africa</option>
+                <option value="middle_east" data-zoom="4">Middle East</option>
+                <option value="eastern_europe" data-zoom="5">Eastern Europe</option>
+            </optgroup>
         </select>
     </div>
 
@@ -16,7 +32,6 @@
     <div class="control-group">
         <label for="locationInput">Enter Location:</label>
         <input type="text" id="locationInput" placeholder="Enter a city or place" class="control-item">
-        <button id="searchButton" class="control-item">Go</button>
     </div>
 
     <div class="control-group">
@@ -35,6 +50,8 @@
             <option value="terrain">Terrain</option>
         </select>
     </div>
+
+
 </div>
 
 <!-- Map div -->
