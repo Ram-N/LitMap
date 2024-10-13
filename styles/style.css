@@ -286,6 +286,52 @@ input[type="text"]:focus {
 }
 
 
+/* Sidebar --> Collection  */
+.collection-selector {
+    margin-top: 20px;
+    max-width: 100%;
+    /* Ensure it doesn't exceed the width of its container */
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width */
+}
+
+.collection-options {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow options to wrap to the next line if needed */
+    justify-content: space-between;
+    margin-top: 10px;
+    max-width: 100%;
+    /* Ensure it doesn't exceed the width of its container */
+}
+
+.collection-option {
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+    /* Add some space between wrapped items */
+    flex-grow: 1;
+    /* Allow items to grow and fill the space */
+    flex-basis: calc(50% - 5px);
+    /* Set a base width for two items per row, adjusting for margin */
+    max-width: calc(50% - 5px);
+    /* Ensure items don't grow too large */
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width */
+}
+
+.collection-option:hover {
+    background-color: #f0f0f0;
+}
+
+.collection-option.active {
+    background-color: #007bff;
+    color: white;
+}
+
 /* Style for the controls and form inside the side panel */
 #form-container,
 #controls {

@@ -30,41 +30,35 @@ console.log('init');
 // init services
 export const db = getFirestore()
 
-// const collection_name = 'books'
-// const collection_name = 'small_books' //useful for testing
-const collection_name = 'newbooks' //useful for testing
 
-export const fsBooks = collection(db, collection_name);
+let currentCollection = 'newbooks'; // Default collection
+document.addEventListener('DOMContentLoaded', () => {
+    const collectionOptions = document.querySelectorAll('.collection-option');
+
+    collectionOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            currentCollection = this.getAttribute('data-collection');
+            updateActiveCollection(this);
+            loadBooks(currentCollection);
+        });
+    });
+
+    // Set initial active state
+    updateActiveCollection(document.querySelector('[data-collection="newbooks"]'));
+});
+
+
+function updateActiveCollection(selectedOption) {
+    document.querySelectorAll('.collection-option').forEach(option => {
+        option.classList.remove('active');
+    });
+    selectedOption.classList.add('active');
+}
+
 const fsLocations = collection(db, 'locations');
 
 
-// Save books to Firestore (from data.js)
-function addBooksToFirestore(newbooks) {
-    newbooks.forEach((book) => {
-        // Create an object to store all book properties dynamically
-        let bookData = {};
-
-        // Loop through each property in the book object
-        for (let key in book) {
-            if (book.hasOwnProperty(key)) {
-                bookData[key] = book[key]; // Add the key-value pair dynamically
-            }
-        }
-
-        console.log(db);
-
-        // Add the dynamically created bookData object to Firestore
-        addDoc(fsBooks, bookData)
-            .then((docRef) => {
-                console.log("Book successfully written: ", docRef.id, book.title);
-            })
-            .catch((error) => {
-                console.error("Error adding book: ", error);
-            });
-    });
-}
-
-
+// deprecated
 function addLocationsToFirestore() {
     window.locations.forEach((location) => {
         // Create an object to store all location properties dynamically
@@ -90,7 +84,7 @@ function addLocationsToFirestore() {
 
 // Function to get all books from Firestore
 async function getAllBooks() {
-    const booksRef = collection(db, collection_name);
+    const booksRef = collection(db, currentCollection);
     const querySnapshot = await getDocs(booksRef);
     const books = [];
 
@@ -144,37 +138,7 @@ async function searchBooks(searchTerm, field = null, fieldList = null) {
     }
 }
 
-//Deprecated...
-//This searches the firestore DB directly.
-//Instead, I am pulling down all data and searching locally searchBooks()
-async function searchByField(field, queryString) {
-    try {
-        const booksRef = collection(db, collection_name);
-
-        // Perform the query using the provided field (e.g., title or author)
-        const q = query(
-            booksRef,
-            where(field, '>=', queryString),
-            where(field, '<=', queryString + '\uf8ff')
-        );
-
-        const querySnapshot = await getDocs(q);
-        const books = [];
-
-        querySnapshot.forEach((doc) => {
-            books.push(doc.data());
-        });
-
-        // Dispatch a custom event with the books data
-        const event = new CustomEvent('booksFetched', { detail: books });
-        document.dispatchEvent(event);  // Trigger the event, app.js will handle the response
-
-    } catch (error) {
-        console.error('Error searching Firestore:', error);
-    }
-}
-
-// Listen for form submission
+// Sidebar -- Search for some books 
 document.querySelector('form[name="searchForm"]').addEventListener('submit', function (event) {
     event.preventDefault();  // Prevent the default form submission
 
@@ -217,22 +181,23 @@ document.querySelector('form[name="searchForm"]').addEventListener('submit', fun
 });
 
 
-
-async function getBooks() {
-    const querySnapshot = await getDocs(fsBooks);
-    window.books = [];
-
-    querySnapshot.forEach((doc) => {
-        window.books.push({
-            id: doc.id,
-            ...doc.data()
+async function loadBooks(collectionName) {
+    try {
+        const querySnapshot = await getDocs(collection(db, collectionName));
+        window.books = [];
+        querySnapshot.forEach((doc) => {
+            window.books.push({ id: doc.id, ...doc.data() });
         });
-    });
+        printNumberOfDocs(collectionName);
 
-    // Dispatch a custom event after books are fetched
-    const event = new CustomEvent('booksReady');
-    console.log('FS books are ready');
-    window.dispatchEvent(event);
+        // Dispatch a custom event after books are fetched
+        const event = new CustomEvent('booksReady');
+        console.log('FS books are ready');
+        window.dispatchEvent(event);
+
+    } catch (error) {
+        console.error("Error loading books: ", error);
+    }
 }
 
 
@@ -262,9 +227,8 @@ document.getElementById('uploadBooksButton').addEventListener('click', async () 
 });
 
 // Example usage
-printNumberOfDocs(collection_name); // For the 'books' collection
+printNumberOfDocs(currentCollection); // For the 'books' collection
 printNumberOfDocs("locations"); // For the 'locations' collection
 
-// Call the function to fetch books
-getBooks();
+loadBooks(currentCollection);
 

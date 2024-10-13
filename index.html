@@ -10,26 +10,18 @@
 </head>
 
 <body>
-    <h1>LitMap - Explore Book Locations!</h1>
-
     <div class="main-container">
         <div class="sidebar-container">
-            <div id="navbar">
-                <button id="searchTab" class="nav-button active">Search</button>
-                <button id="adminTab" class="nav-button">Admin</button>
-            </div>
+            <h1>LitMap</h1>
 
             <!-- View Toggle Buttons -->
 
             <div class="view-toggle">
-                <button class="view-toggle-btn" id="map-btn" onclick="showMap()">Map</button>
-                <button class="view-toggle-btn" id="list-btn" onclick="showList()">List</button>
+                <button class="view-toggle-btn" id="map-btn" onclick="showMap()">Explore</button>
+                <button class="view-toggle-btn" id="list-btn" onclick="showList()">Focus</button>
             </div>
 
             <div id="searchControls" class="tab-content style=" display: block;">
-                <!-- Book list content -->
-                <h3>Books Search</h3>
-
                 <form name="searchForm" class="stacked greyBox searchBox searchBox--large" action="/search"
                     accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
                     <div class="greyText" style="padding-bottom: 10px">
@@ -83,6 +75,20 @@
 
                 </div>
             </div>
+
+            <div id="navbar">
+                <button id="searchTab" class="nav-button active">Search</button>
+                <button id="adminTab" class="nav-button">Admin</button>
+            </div>
+
+            <div class="collection-selector">
+                <div class="collection-options">
+                    <span class="collection-option" data-collection="newbooks">newbooks</span>
+                    <span class="collection-option" data-collection="small_books">midbooks</span>
+                    <span class="collection-option" data-collection="books">All-Books</span>
+                </div>
+            </div>
+
 
         </div> <!-- side panel-->
 

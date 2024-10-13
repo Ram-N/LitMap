@@ -1,7 +1,7 @@
 // Managing the App Tabs -- Map, List of Books, List of places
 // Add/Delete to the list
 
-import { db, fsBooks } from './firebase.js';  // Importing db from firebase.js
+import { db } from './firebase.js';  // Importing db from firebase.js
 
 // utility function
 function generateBookColor(book) {
