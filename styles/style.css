@@ -447,16 +447,32 @@ input[type="text"]:focus {
     /* Ensure padding is included in width */
 }
 
-#zoomControl {
-    width: 100%;
-    /* Ensure the zoom slider takes full width */
+
+.control-group button {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    line-height: 1;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.control-group button:hover {
+    background-color: #f0f0f0;
 }
 
 #zoomValue {
-    display: block;
+    display: inline-block;
+    width: 30px;
     text-align: center;
-    font-weight: bold;
-    margin-top: 5px;
+    /* font-weight: bold;
+    margin-top: 5px; */
+}
+
+#zoomControl {
+    width: 100%;
+    /* Ensure the zoom slider takes full width */
 }
 
 

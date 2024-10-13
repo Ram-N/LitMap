@@ -115,7 +115,6 @@ function geocodeAddress(location) {
         // Get the appropriate zoom level based on the result type
         const zoomLevel = getZoomLevelForLocationType(result.types);
         map.setZoom(zoomLevel);
-        document.getElementById('zoomControl').value = zoomLevel;
         document.getElementById('zoomValue').textContent = zoomLevel;
 
 
@@ -332,6 +331,11 @@ async function initMap() {
     mapTypeId: 'terrain',          // Show terrain view
   });
 
+  // Initialize zoom level
+  let currentZoom = 4;
+  const minZoom = 2;
+  const maxZoom = 17;
+
 
   // Initialize the geocoder
   geocoder = new google.maps.Geocoder();
@@ -366,7 +370,6 @@ async function initMap() {
 
       // Update map view
       try {
-        document.getElementById('zoomControl').value = zoomLevel;
         document.getElementById('zoomValue').textContent = zoomLevel;
         map.setCenter(presetLocations[locationName]);
         map.setZoom(zoomLevel); // Adjust zoom level of map
@@ -391,16 +394,32 @@ async function initMap() {
   });
 
 
+  // Function to update zoom
+  function updateZoom(newZoom) {
+    currentZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+    document.getElementById('zoomValue').textContent = currentZoom;
 
-  document.getElementById('zoomControl').addEventListener('input', function () {
-    const zoomValue = document.getElementById('zoomValue');
-    zoomValue.textContent = this.value;
+    // Update map zoom
+    map.setZoom(currentZoom);
+  }
 
-    // Assuming map is your Google Map instance
-    map.setZoom(parseInt(this.value));
+  // Zoom out button
+  document.getElementById('zoomOutButton').addEventListener('click', function () {
+    currentZoom = document.getElementById('zoomValue').textContent;
+    currentZoom = parseInt(currentZoom);
+    updateZoom(currentZoom - 1);
+  });
+
+  // Zoom in button
+  document.getElementById('zoomInButton').addEventListener('click', function () {
+    currentZoom = document.getElementById('zoomValue').textContent;
+    currentZoom = parseInt(currentZoom);
+    console.log('current zoom ', currentZoom);
+    updateZoom(currentZoom + 1);
   });
 
   renderBooksOnMap(); // This function will render books on the map once they're ready
+  updateZoom(currentZoom);
 }
 
 
