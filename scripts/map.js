@@ -1,6 +1,8 @@
 // public/scripts/map.js
 let map;
 let geocoder;
+let markerClusterer = null;
+
 
 import { MarkerClusterer } from "https://cdn.skypack.dev/@googlemaps/markerclusterer@2.3.1";
 
@@ -302,14 +304,81 @@ function renderBooksOnMap() {
       }
     });
 
+
+    const smoothZoom = (map, targetZoom, currentZoom) => {
+      if (currentZoom >= targetZoom) {
+        return;
+      }
+      const nextZoom = Math.min(currentZoom + 1, targetZoom);
+      google.maps.event.addListenerOnce(map, 'zoom_changed', () => {
+        smoothZoom(map, targetZoom, nextZoom);
+      });
+      setTimeout(() => {
+        map.setZoom(nextZoom);
+      }, 150);
+    };
+
     // Add a marker clusterer to manage the markers
-    new MarkerClusterer({
-      markers: markers,
-      map: map
+    // const markerClusterer = new MarkerClusterer({
+    //   map: map,
+    //   markers: markers,
+    //   zoomOnClick: false,
+    //   gridSize: 50,
+    //   maxZoom: 15,
+    //   // onClusterClick: (event, cluster, map) => {
+    //   //   console.log(cluster.markers.position);
+    //   //   const currentZoom = map.getZoom();
+    //   //   const targetZoom = Math.min(currentZoom + 3, maxZoom);
+    //   //   // map.setCenter(cluster.getCenter());
+    //   //   smoothZoom(map, targetZoom, currentZoom);
+    //   // }
+    // });
+
+    const clusterToggle = document.getElementById('clusterToggle');
+
+    function toggleClustering() {
+      if (clusterToggle.checked) {
+        enableClustering(markers);
+      } else {
+        disableClustering();
+      }
+    }
+
+    function enableClustering(markers) {
+      markerClusterer = new MarkerClusterer({
+        map: map,
+        markers: markers,
+        zoomOnClick: false,
+        gridSize: 50,
+        maxZoom: 15,
+      });
+    }
+
+    function disableClustering() {
+      if (markerClusterer) {
+        markerClusterer.clearMarkers();
+        markerClusterer = null;
+      }
+      markers.forEach(marker => marker.setMap(map));
+    }
+    // Initial clustering state
+    toggleClustering();
+
+    // Add event listener for the toggle
+    clusterToggle.addEventListener('change', toggleClustering);
+
+
+    google.maps.event.addListener(markerClusterer, 'clusterclick', function (cluster) {
+      var bounds = cluster.getBounds();
+      google.maps.event.addListenerOnce(map, 'zoom_changed', function () {
+        if (map.getZoom() > 10)
+          map.setZoom(10);
+        console.log('Max zoom reached');
+      });
+      map.fitBounds(bounds);
     });
 
   }
-
 }
 
 
