@@ -3,8 +3,9 @@ import streamlit as st
 from pprint import pprint
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
+import json, re
 from collections import defaultdict
+from datetime import datetime
 
 class FirebaseClient:
     def __init__(self, service_account_key: str):
@@ -57,7 +58,18 @@ class FirebaseClient:
 
         return document_list
 
-    def get_document_by_id(self, collection_name: str, doc_id: str, verbose: bool = False) -> dict:
+    def get_document_by_id(self, books, book_id):
+        """Fetch a book from all_books using its ID."""
+
+        for book in books:
+            if book.get('id') == book_id:
+                return book  # Return the matching book
+
+        # If no match is found, return None or an empty dictionary
+        st.write(f"No book found with ID: {book_id}")
+        return None
+
+    def fb_get_document_by_id(self, collection_name: str, doc_id: str, verbose: bool = False) -> dict:
         """
         Get a document by its ID from a Firestore collection.
         Args:
@@ -155,6 +167,42 @@ class FirebaseClient:
             else:
                 st.warning(f"{book['title']} already exists in db")
 
+
+    def compare_books(self, books, book_id1, book_id2):
+        # Fetch the two books from Firestore
+        book1 = self.get_document_by_id(books, book_id1)
+        book2 = self.get_document_by_id(books, book_id2)
+
+        if not book1 or not book2:
+            st.write("One or both books were not found.")
+            return
+
+        st.write(f"## Comparing Books: `{book_id1}` vs `{book_id2}`")
+        st.write("---")  # Horizontal line for visual separation
+
+        # Compare attributes between the two books
+        for key, value1 in book1.items():
+            if key in book2:
+                value2 = book2[key]
+
+                if value1 == value2:
+                    # Attributes are the same, print once
+                    st.write(f" **{key.capitalize()}**: {value1}")
+                else:
+                    # Attributes differ, print both values
+                    st.write(f" **{key.capitalize()}**:")
+                    st.write(f"- Book 1: `{value1}`")
+                    st.write(f"- Book 2: `{value2}`")
+            else:
+                st.write(f"### **{key.capitalize()}** exists only in Book 1: {value1}")
+
+        # Check for any attributes that are in Book 2 but not in Book 1
+        for key in book2.keys():
+            if key not in book1:
+                st.write(f"### **{key.capitalize()}** exists only in Book 2: {book2[key]}")
+
+
+    # deprecated. No need to access the db more than once
     def get_documents_with_case_variants(self, collection_name: str, field: str, value: str) -> list:
         """
         Get documents from Firestore where a field matches different case variants of a given value.
@@ -254,6 +302,42 @@ class FirebaseClient:
         return self.get_documents_with_case_variants(collection_name,  'publisher', publisher)
 
 
+def sanitize_filename(filename):
+    """Remove any characters that are not alphanumeric or underscores."""
+    return re.sub(r'[^a-zA-Z0-9_]', '_', filename)
+
+def write_book_json(title=None, book_id=None, verbose=False):
+    # Validate inputs
+    if not title and not book_id:
+        raise ValueError("Please provide either a title or an ID to search for the book.")
+
+    # Search for the book in all_books
+    books = []
+    if title:
+        books = firebase_client.get_book_by_title(all_books, title)
+    if book_id:
+        books = firebase_client.get_document_by_id(all_books, book_id)
+
+    if not books:
+        print(f"No matching Books found {title} {book_id}")
+        return
+
+    # Create filename: First 20 chars of title + "_" + book ID + ".json"
+    book = books[0]
+    truncated_title = sanitize_filename(book['title'][:20])  # Sanitize to avoid illegal characters
+    filename = f"{truncated_title}_{book['id']}.json"
+
+    # Write book details to JSON file
+    with open(filename, 'w') as f:
+        json.dump(books, f, indent=4)
+
+    if verbose:
+        print(f"Book details saved to: {filename}")
+
+    st.write(f"Book details saved to: `{filename}`")
+
+
+###########################################################################
 # Initialize Firebase client
 service_account_key = "litmap-88358-firebase-adminsdk-9w1l9-73ca515ce7.json"
 firebase_client = FirebaseClient(service_account_key)
@@ -262,13 +346,83 @@ firebase_client = FirebaseClient(service_account_key)
 # Streamlit App UI
 st.title("LitMap Firestore Manager")
 
+top_options =     ["Select",
+    "Document Count", 
+    "Print All Titles", 
+    "Print All Authors",
+    "List All Locations",
+    "Find Duplicates",
+    "Compare 2 Books",
+    "----",
+    "BACKUP Collection to file",    
+    "Write Book to JSON",
+    "Delete Doc by ID",
+    "PURGE - write file and DELete doc"
+    ]
+
+# Add a dropdown to the sidebar
+top_action = st.sidebar.selectbox(
+    "Action",
+    top_options,
+    index=0,
+    #    label_visibility="hidden"
+    )
+
+st.sidebar.markdown("----")
+st.write(f"{top_action}")
+
 # Sidebar: Collection selection
 collection_name = st.sidebar.selectbox(
     "Collection",
-    ("books", "midbooks", "newbooks")
+    ("books", "midbooks", "newbooks"),
+    index=1 #default
 )
-
 all_books = firebase_client.get_all_documents(collection_name)
+
+# NUM DOCS
+if top_action == top_options[1]:
+    doc_count = firebase_client.get_document_count(collection_name)
+    st.write(f"Number of documents in '{collection_name}': {doc_count}")
+
+#ALL TITLES
+if top_action == top_options[2]:
+    # Extract and sort all titles
+    all_titles = sorted([book['title'] for book in all_books if 'title' in book])
+    print(len(all_titles))
+    # Display the sorted titles
+    st.write("### All Titles (Sorted Alphabetically):")
+    for title in all_titles:
+        st.write(title)
+
+#UNQIUE Authors
+if top_action == top_options[3]:
+    # Extract and sort unique authors
+    all_authors = sorted(set(book['author'] for book in all_books if 'author' in book))
+    # Display the sorted authors
+    st.write("### All Unique Authors (Sorted Alphabetically):")
+    for author in all_authors:
+        st.write(author)
+
+#unique Locations
+if top_action == top_options[4]:
+    # Extract all unique cities from the 'locations' field of each book
+    unique_places = set()
+
+    for book in all_books:
+        if 'locations' in book:
+            for location in book['locations']:
+                if 'city' in location:
+                    unique_places.add(location['city'])
+                if 'place' in location:
+                    unique_places.add(location['place'])
+
+    # Display the unique cities using st.write()
+    st.write("### Unique Cities Mentioned in Books:")
+    for city in sorted(unique_places):
+        st.write(city)
+
+    # print(book['locations'])
+
 
 # Sidebar: Search options
 search_option = st.sidebar.selectbox("Search by", ("Author", "Book Title", "Genre"))
@@ -279,10 +433,9 @@ search_input = st.sidebar.text_input(f"Enter {search_option}")
 # Button to trigger search
 search_button = st.sidebar.button("Search")
 
-
 # Search logic and display results
 if search_button:
-
+    st.write(f"{search_option} {search_input}")
     if search_option == "Author":
         books = firebase_client.get_books_by_author(all_books, search_input)
     elif search_option == "Book Title":
@@ -308,10 +461,6 @@ if search_button:
     else:
         st.write(f"No books found for {search_option} {search_input}")
 
-# Button to get the document count for the selected collection
-if st.sidebar.button("NumDocs"):
-    doc_count = firebase_client.get_document_count(collection_name)
-    st.write(f"Number of documents in '{collection_name}': {doc_count}")
 
 # Sidebar: File uploader
 uploaded_file = st.sidebar.file_uploader("Choose a JSON file", type="json")
@@ -362,60 +511,33 @@ st.markdown(
 )
 
 
-# Add a dropdown to the sidebar
-print_option = st.sidebar.selectbox(
-    "Select a Print Option",
-    ("Select an option", "Get All Titles", 
-    "Get All Authors",
-    "List All Locations",
-    "Find Duplicates",
-    ),
-    label_visibility="hidden"
-)
+if top_action == "Write Book to JSON":
+    # Radio button to choose between "Title" and "ID"
+    search_type = st.sidebar.radio("Search by:", ("Title", "ID"))
 
-st.write(f"{print_option}")
+    # Display a text input field based on the selected search type
+    if search_type == "Title":
+        user_input = st.sidebar.text_input("Enter Book Title", "")
+    else:
+        user_input = st.sidebar.text_input("Enter Book ID", "")
 
-if print_option == "Get All Titles":
-    # Extract and sort all titles
-    all_titles = sorted([book['title'] for book in all_books if 'title' in book])
+    # Optional: Display the input value and call your function when the user provides input
+    if user_input:
+        st.write(f"You entered: {user_input}")
 
-    # Display the sorted titles
-    st.write("### All Titles (Sorted Alphabetically):")
-    for title in all_titles:
-        st.write(title)
-
-if print_option == "Get All Authors":
-
-    # Extract and sort unique authors
-    all_authors = sorted(set(book['author'] for book in all_books if 'author' in book))
-    # Display the sorted authors
-    st.write("### All Unique Authors (Sorted Alphabetically):")
-    for author in all_authors:
-        st.write(author)
+        # Call the write_book_json function based on the search type
+        if search_type == "Title":
+            write_book_json(title=user_input, book_id=None, verbose=False)
+            st.write(f"Saving book with Title: {user_input}")
+        else:
+            write_book_json(title=None, book_id=user_input, verbose=False)
+            st.write(f"Saving book with ID: {user_input}")
 
 
-if print_option == "List All Locations":
 
-    # Extract all unique cities from the 'locations' field of each book
-    unique_places = set()
+dupe_ids = []
 
-    for book in all_books:
-        if 'locations' in book:
-            for location in book['locations']:
-                if 'city' in location:
-                    unique_places.add(location['city'])
-                if 'place' in location:
-                    unique_places.add(location['place'])
-
-    # Display the unique cities using st.write()
-    st.write("### Unique Cities Mentioned in Books:")
-    for city in sorted(unique_places):
-        st.write(city)
-
-    print(book['locations'])
-
-
-if print_option == "Find Duplicates":
+if top_action == "Find Duplicates":
 
     # Dictionary to track books by title
     books_by_title = defaultdict(list)
@@ -435,28 +557,51 @@ if print_option == "Find Duplicates":
             st.write(f"**Title:** {title.capitalize()}")
             for book in books:
                 st.write(f"- Book ID: {book.get('id', 'N/A')}")
+                dupe_ids.append(book['id'])
                 print(book)
 
     if not found_duplicates:
         st.write("No duplicate books found.")
 
-# pprint(all_books)
-
-if 0:
-    # Example: Add a new document
-    new_doc_id = firebase_client.add_new_document(collection_name, {'title': 'Dummy Book', 'author': 'Dummy Author Name'}, verbose=True)
-
-    # Example: Delete a document by its ID
-    firebase_client.delete_document_by_id(collection_name, doc_id)
+if len(dupe_ids) > 1:
+    for i in range(0, len(dupe_ids) - 1, 2):
+        book1_id = dupe_ids[i]
+        book2_id = dupe_ids[i+1]
+        firebase_client.compare_books(all_books, book1_id, book2_id)
+        st.markdown("----")
 
 
+# Logic for "Delete Doc by ID"
+if top_action == "Delete Doc by ID":
+    doc_id = st.sidebar.text_input("Enter Document ID", "")
 
-    # Example: Get documents by title with case variants
-    title = 'An Area of Darkness'
-    books_by_title = firebase_client.get_book_by_title('newbooks', title)
-    pprint(books_by_title)
+    if doc_id:
+        if st.sidebar.button("Delete Document"):
+            try:
+                firebase_client.delete_document_by_id(collection_name, doc_id)
+                st.write(f"Document with ID '{doc_id}' deleted successfully.")
+            except Exception as e:
+                st.error(f"Failed to delete document: {e}")
 
-    # Example: Get books by author
-    author_name = 'Chimamanda Ngozi Adichie'
-    books_by_author = firebase_client.get_books_by_author('newbooks', author_name)
-    pprint(books_by_author)
+
+def write_all_books_to_json(collection_name, all_books):
+    """Writes all books from the specified collection to a JSON file."""
+    # Generate filename with current date and time
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M")
+    filename = f"backup/{collection_name}_{timestamp}.json"
+    
+    # Write the list of books to the JSON file
+    with open(filename, "w") as json_file:
+        json.dump(all_books, json_file, indent=4)
+
+    st.success(f"All books saved to {filename}")
+    return filename
+
+
+if top_action == "BACKUP Collection to file":
+    try:
+        # Assume `all_books` and `collection_name` are available
+        filename = write_all_books_to_json(collection_name, all_books)
+        st.write(f"Books exported successfully to `{filename}`.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
