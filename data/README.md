@@ -7,17 +7,11 @@ streamlit run main.py
 
 # Coding Tasks Remaining
 
+In search, make sure "Enter" button works.
 
 ## New Dropdown fields needed
-- Count the number of docs
-- Duplicate related
 - PURGE - write and delete
-- BACKUP - Write all books to file
-
-
-# Write the entire DB to a file
-- spit out a JSON file
-
+- Duplicates related
 
 
 1. Add a new location to a book

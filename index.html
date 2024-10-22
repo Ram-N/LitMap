@@ -18,7 +18,7 @@
 
             <div class="view-toggle">
                 <button class="view-toggle-btn" id="map-btn" onclick="showMap()">Explore</button>
-                <button class="view-toggle-btn" id="list-btn" onclick="showList()">Focus</button>
+                <button class="view-toggle-btn" id="list-btn" onclick="showSearchResults()">Focus</button>
             </div>
 
             <div class="toggle-container">
@@ -39,24 +39,34 @@
                         <input type="submit" value="Search" class="searchBox__button">
                     </div>
 
-                    <div class="radio-container">
-                        <label>
-                            <input type="radio" checked name="search_field" value="all">
-                            <span>All</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="search_field" value="title">
-                            <span>Title</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="search_field" value="author">
-                            <span>Author</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="search_field" value="keyword">
-                            <span>Keyword</span>
-                        </label>
+
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="title" name="search_field" value="title">
+                            <label for="title">Title</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="author" name="search_field" value="author">
+                            <label for="author">Author</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="any" name="search_field" value="any" checked>
+                            <label for="any">Any</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="keyword" name="search_field" value="keyword">
+                            <label for="keyword">Keyword</label>
+                        </div>
+
+                        <div class="radio-item full-width">
+                            <input type="radio" id="location" name="search_field" value="location">
+                            <label for="location">Location</label>
+                        </div>
                     </div>
+
                     <div class="clear"></div>
                 </form>
 
@@ -120,10 +130,7 @@
             <!-- List Container -->
             <div class="list-container" id="list-container">
                 <h3>List View</h3>
-                <div class="list-content">
-                    <table id="bookTable" class="styled-table">
-                        <!-- Table content will be populated dynamically -->
-                    </table>
+                <div id="books-found">
                 </div>
             </div>
             <!-- Map Container -->

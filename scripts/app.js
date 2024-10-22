@@ -102,8 +102,8 @@ function showMap() {
     document.getElementById('list-btn').removeAttribute('disabled');
 }
 
-// Function to show the list and hide the map
-function showList() {
+// Function to show the list and hide the world map (Explore)
+function showSearchResults() {
     document.getElementById('list-map-container').classList.add('active');
     document.getElementById('map-container').classList.remove('active');
 
@@ -114,6 +114,83 @@ function showList() {
     document.getElementById('map-btn').removeAttribute('disabled');
 }
 
+
+// Function to create and display book cards
+function renderCards(books) {
+    // Create container for cards if it doesn't exist
+    let container = document.querySelector('.cards-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'cards-container';
+        document.querySelector('#books-found').appendChild(container);
+    }
+
+    books.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+
+        // Create header section with title, author, and type
+        const header = document.createElement('div');
+        header.className = 'book-card__header';
+
+        const title = document.createElement('h3');
+        title.className = 'book-card__title';
+        title.textContent = book.title;
+
+        const author = document.createElement('p');
+        author.className = 'book-card__author';
+        author.textContent = book.author;
+
+        const type = document.createElement('p');
+        type.className = 'book-card__type';
+        type.textContent = book.type || 'Type not specified';
+
+        header.appendChild(title);
+        header.appendChild(author);
+        header.appendChild(type);
+
+        // Create locations section
+        const locations = document.createElement('div');
+        locations.className = 'book-card__locations';
+
+        let locationNames = [];
+        if (book.locations && Array.isArray(book.locations)) {
+            locationNames = book.locations.map(loc =>
+                loc.place || loc.city || 'Location not specified'
+            );
+        }
+        locations.textContent = locationNames.join(', ') || 'No locations specified';
+
+        // Create description section
+        const description = document.createElement('p');
+        description.className = 'book-card__description';
+        if (book.description) {
+            description.textContent = book.description.length > 80
+                ? book.description.substring(0, 80) + '...'
+                : book.description;
+        } else {
+            description.textContent = 'No description available';
+        }
+
+        // Assemble the card
+        card.appendChild(header);
+        card.appendChild(description);
+        card.appendChild(locations);
+
+        // Add the card to the container
+        container.appendChild(card);
+    });
+}
+
+// Function to remove all cards
+function removeCards() {
+    const container = document.querySelector('.cards-container');
+    if (container) {
+        container.remove();
+    }
+}
+
+//DEPRECATED
 function initializeBookTable() {
     // Check if the table already exists, if not, create it
     let bookTable = document.getElementById('bookTable');
@@ -313,9 +390,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Modified event listener
+document.addEventListener('booksFetched', function (e) {
+    const books = e.detail;
+
+    removeCards(); // Clear existing cards
+
+    if (books && books.length > 0) {
+        renderCards(books);
+        renderSearchResultsMap(books); // Keeping the map rendering
+    } else {
+        console.log("No books Found");
+        // Optionally, display a "no results" message
+        const container = document.createElement('div');
+        container.className = 'cards-container';
+        container.innerHTML = '<div class="book-card">No books found matching your search criteria.</div>';
+        document.querySelector('#books-found').appendChild(container);
+    }
+});
+
+
+// DEPRECATED
 // Listen for the 'booksFetched' event and update the table
 // this event happens in firebase.js
-document.addEventListener('booksFetched', function (e) {
+document.addEventListener('OLDbooksFetched', function (e) {
     const books = e.detail;  // Retrieve the books list from the event
     removeBookTable();
     if (books && books.length > 0) {
@@ -330,5 +428,5 @@ document.addEventListener('booksFetched', function (e) {
 });
 
 // Attach the function to the window object to make it globally accessible
-window.showList = showList;
+window.showSearchResults = showSearchResults;
 window.showMap = showMap;
