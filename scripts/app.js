@@ -117,13 +117,30 @@ function showSearchResults() {
 
 // Function to create and display book cards
 function renderCards(books) {
+
+    // Get the books-found element
+    const booksFoundSection = document.querySelector('#books-found');
+
+    // Remove any existing h3 count display
+    const existingCount = booksFoundSection.querySelector('h3');
+    if (existingCount) {
+        existingCount.remove();
+    }
+
+    // Create new h3 element for book count
+    const countDisplay = document.createElement('h3');
+    countDisplay.textContent = `${books.length} ${books.length === 1 ? 'Book' : 'Books'} Found`;
+
     // Create container for cards if it doesn't exist
     let container = document.querySelector('.cards-container');
     if (!container) {
         container = document.createElement('div');
         container.className = 'cards-container';
-        document.querySelector('#books-found').appendChild(container);
+        booksFoundSection.appendChild(container);
     }
+
+    // Add the new count display at the start of books-found section
+    booksFoundSection.insertBefore(countDisplay, booksFoundSection.firstChild);
 
     books.forEach(book => {
         const card = document.createElement('div');
@@ -188,94 +205,6 @@ function removeCards() {
     if (container) {
         container.remove();
     }
-}
-
-//DEPRECATED
-function initializeBookTable() {
-    // Check if the table already exists, if not, create it
-    let bookTable = document.getElementById('bookTable');
-
-    if (!bookTable) {
-        // If the table doesn't exist, create it
-        bookTable = document.createElement('table');
-        bookTable.id = 'bookTable';  // Assign an ID to the newly created table
-        bookTable.className = 'styled-table';  // Add the class for styling
-        document.getElementById('list-container').appendChild(bookTable); // Append to the container
-    }
-
-    // Create thead and append header row
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    // Create and append the table headers
-    const headers = ['Title', 'Author', 'Type', 'Location'];
-    headers.forEach(headerText => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    bookTable.appendChild(thead);
-
-    // Create tbody
-    const tbody = document.createElement('tbody');
-    bookTable.appendChild(tbody);
-    // The table is now initialized and ready for data rows to be appended
-}
-
-function removeBookTable() {
-    const bookTable = document.getElementById('bookTable');
-    if (bookTable) {
-        bookTable.remove();  // Remove the table element from the DOM
-    }
-}
-
-// Function to update the book table with filtered or selected books
-function updateBookTable(books) {
-    const tableBody = document.querySelector('#bookTable tbody');
-    tableBody.innerHTML = '';  // Clear any existing rows
-
-    console.log(books.length, "books updateTable");
-    books.forEach((book) => {
-        // Loop through each book location if there are multiple locations
-        const row = document.createElement('tr');
-
-        // Create cells for title, author, type, and location
-        const titleCell = document.createElement('td');
-        titleCell.textContent = book.title;
-
-        const authorCell = document.createElement('td');
-        authorCell.textContent = book.author;
-
-        const typeCell = document.createElement('td');
-        typeCell.textContent = book.booktype;
-
-        const locationCell = document.createElement('td');
-
-        // Initialize an empty array to hold city names
-        let cityNames = [];
-
-        // Iterate through the locations of the book
-        book.locations.forEach((location) => {
-            // Check if the location has a 'city' field
-            if (location.city) {
-                cityNames.push(location.city);
-            }
-        });
-
-        // Set the textContent of the cell to the concatenated city names, joined by commas
-        locationCell.textContent = cityNames.length > 0 ? cityNames.join(', ') : 'Unknown';
-
-        // Append cells to the row
-        row.appendChild(titleCell);
-        row.appendChild(authorCell);
-        row.appendChild(typeCell);
-        row.appendChild(locationCell);
-
-        // Append row to the table body
-        tableBody.appendChild(row);
-    });
 }
 
 
@@ -401,11 +330,27 @@ document.addEventListener('booksFetched', function (e) {
         renderSearchResultsMap(books); // Keeping the map rendering
     } else {
         console.log("No books Found");
-        // Optionally, display a "no results" message
+        const booksFoundSection = document.querySelector('#books-found');
+
+        // Remove any existing h3 count display
+        const existingCount = booksFoundSection.querySelector('h3');
+        if (existingCount) {
+            existingCount.remove();
+        }
+
+        const mapContainer = document.querySelector('#map-container2');
+        if (mapContainer) {
+            const existingMap = mapContainer.querySelector('#search-results-map');
+            if (existingMap) {
+                existingMap.remove();
+            }
+        }
+
+        // Create and append the "no results" message
         const container = document.createElement('div');
         container.className = 'cards-container';
         container.innerHTML = '<div class="book-card">No books found matching your search criteria.</div>';
-        document.querySelector('#books-found').appendChild(container);
+        booksFoundSection.appendChild(container);
     }
 });
 

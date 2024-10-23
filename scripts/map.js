@@ -163,6 +163,39 @@ function getTitleInitials(title) {
 }
 
 
+function openHighlight(markerView, book) {
+  // Add the close button dynamically when highlighting
+  const closeButton = document.createElement('div');
+  closeButton.className = 'close-button';
+  closeButton.textContent = 'Close';  // or '×' if you prefer
+  markerView.content.insertBefore(closeButton, markerView.content.firstChild);
+
+  markerView.content.classList.add("highlight");
+  markerView.zIndex = 1;
+
+  // Add click handler for close button
+  closeButton.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    closeHighlight(markerView);
+  });
+}
+
+
+
+function closeHighlight(markerView) {
+  // Remove the close button when un-highlighting
+  const closeButton = markerView.content.querySelector('.close-button');
+  if (closeButton) {
+    closeButton.remove();
+  }
+
+  markerView.content.classList.remove("highlight");
+  markerView.zIndex = null;
+}
+
+
+
+//DEPRECATED by Open and CLoseToggle functions
 function toggleHighlight(markerView, book) {
   if (markerView.content.classList.contains("highlight")) {
     markerView.content.classList.remove("highlight");
@@ -178,10 +211,16 @@ function buildContent(book, location) {
   const content = document.createElement("div");
   content.classList.add("bookCard");
   content.style.backgroundColor = generateBookColor(book);
+
+  // If a location has a desc, use it. If not, use book's
+  const descriptionToShow = location.description || book.description;
+
   content.innerHTML = `
   ${getTitleInitials(book.title)}
-    <div class='book-info'>
-      <div class="image">Book Cover
+  <div class='book-info'>
+      <div class="left-column">
+        <div class="image">Book Cover</div>
+        <div class="location-label">${location.city}</div>
       </div>
       <div class="content">
         <div class = 'top-content'>
@@ -193,13 +232,12 @@ function buildContent(book, location) {
             </div>
         </div>
         <div class="description">
-            ${book.booktype} <br>
             <div class="bk-desc">
-            ${book.description}
+            ${descriptionToShow}
             </div>
         </div>
         <div class = 'location'>
-          ${location.city} 
+        ${book.booktype} 
         </div>
       </div>    
     </div>
@@ -207,7 +245,6 @@ function buildContent(book, location) {
     `;
   return content;
 }
-
 
 function renderBooksOnMap() {
 
@@ -237,11 +274,6 @@ function renderBooksOnMap() {
           if (lat && lng) {
             // Create the position using the latitude and longitude
             const position = new google.maps.LatLng(lat, lng);
-
-            // Get background color based on book type
-            // const bgColor = getBgColor(book.booktype);
-            // const glyphColor = getGlyphColor(book.booktype);
-
 
             // Create the AdvancedMarkerElement for each location
             const marker = new google.maps.marker.AdvancedMarkerElement({
@@ -281,16 +313,12 @@ function renderBooksOnMap() {
               infoWindow.close();
             });
 
-            // Also, ensure to close any previous InfoWindow if another one is opened.
-            // marker.addListener("click", () => {
-            //   infoWindow.open({
-            //     anchor: marker,
-            //     map
-            //   });
-            // });
-
             marker.addListener("click", () => {
-              toggleHighlight(marker, book);
+              // toggleHighlight(marker, book);
+              if (!marker.content.classList.contains("highlight")) {
+                openHighlight(marker, book);
+              }
+
             });
 
             // Add the marker to the markers array
@@ -317,22 +345,6 @@ function renderBooksOnMap() {
         map.setZoom(nextZoom);
       }, 150);
     };
-
-    // Add a marker clusterer to manage the markers
-    // const markerClusterer = new MarkerClusterer({
-    //   map: map,
-    //   markers: markers,
-    //   zoomOnClick: false,
-    //   gridSize: 50,
-    //   maxZoom: 15,
-    //   // onClusterClick: (event, cluster, map) => {
-    //   //   console.log(cluster.markers.position);
-    //   //   const currentZoom = map.getZoom();
-    //   //   const targetZoom = Math.min(currentZoom + 3, maxZoom);
-    //   //   // map.setCenter(cluster.getCenter());
-    //   //   smoothZoom(map, targetZoom, currentZoom);
-    //   // }
-    // });
 
     const clusterToggle = document.getElementById('clusterToggle');
 

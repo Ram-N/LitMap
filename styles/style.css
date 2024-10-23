@@ -663,7 +663,8 @@ input:checked+.slider:before {
  */
 .bookCard.highlight {
     display: flex;
-    background-color: #FFFFFF;
+    background-color: #FFFFFF !important;
+    /* Added !important to override inline style */
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -693,6 +694,25 @@ input:checked+.slider:before {
     border-top: 9px solid #FFFFFF;
 }
 
+.bookCard.highlight .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: blue;
+}
+
+.bookCard.highlight .close-button:hover {
+    color: white;
+    /* background-color: #ff4444; */
+    background-color: #dc3545;
+    /* or any shade of red you prefer */
+    border-radius: 4px;
+    /* optional: rounds the corners */
+    transition: all 0.2s ease;
+    /* optional: smooth transition effect */
+}
+
 .bookCard.highlight .book-info {
     display: flex;
     flex-direction: row;
@@ -700,9 +720,22 @@ input:checked+.slider:before {
     color: #09090F;
     font-size: 8 px;
     flex: 1;
+    gap: 1rem;
 
 }
 
+.bookCard.highlight .left-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bookCard.highlight .location-label {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
 
 .bookCard.highlight .image {
     width: 50px;
