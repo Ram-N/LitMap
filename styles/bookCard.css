@@ -1,0 +1,189 @@
+/* bookCard.css */
+
+/*
+ * Book Marker styles in unhighlighted state.
+ */
+.bookCard {
+    border-radius: 2px;
+    color: #FFFFFF;
+    font-size: 8 px;
+    padding: 3px 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.bookCard::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 0);
+    width: 10;
+    height: 10;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #4285F4;
+}
+
+.bookCard .book-info {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+}
+
+
+
+/*
+ * Book Marker styles in highlighted state.
+ */
+.bookCard.highlight {
+    display: flex;
+    background-color: #FFFFFF !important;
+    /* Added !important to override inline style */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    padding: 10px 8px;
+    max-width: 400px;
+    overflow: hidden;
+    width: 100%;
+}
+
+
+
+.bookCard.highlight::before {
+    content: "📚";
+    /* later on use different icons for books */
+    font-size: 2em;
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background-color: #fff;
+    border-radius: 50%;
+    padding: 3px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.bookCard.highlight::after {
+    border-top: 9px solid #FFFFFF;
+}
+
+.bookCard.highlight .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: blue;
+}
+
+.bookCard.highlight .close-button:hover {
+    color: white;
+    /* background-color: #ff4444; */
+    background-color: #dc3545;
+    /* or any shade of red you prefer */
+    border-radius: 4px;
+    /* optional: rounds the corners */
+    transition: all 0.2s ease;
+    /* optional: smooth transition effect */
+}
+
+.bookCard.highlight .book-info {
+    display: flex;
+    flex-direction: row;
+    align-items: left;
+    color: #09090F;
+    font-size: 8 px;
+    flex: 1;
+    gap: 1rem;
+
+}
+
+.bookCard.highlight .left-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bookCard.highlight .location-label {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.bookCard.highlight .image {
+    width: 50px;
+    height: 75px;
+    background-color: #f0f0f0;
+    /* Placeholder for actual image */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #888;
+}
+
+
+.bookCard.highlight .content {
+    display: flex;
+    color: #09090F;
+    font-size: 8 px;
+    flex-direction: column;
+    flex: 1;
+    /* padding: 5%; */
+
+}
+
+.bookCard.highlight .top-content .content.title {
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 10%;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.bookCard.highlight .author {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.bookCard.highlight .description {
+    display: flex;
+    color: #09090F;
+    font-size: 8 px;
+    flex-direction: row;
+    flex: 1;
+    /* padding: 5%; */
+
+}
+
+
+.bookCard.highlight .genre {
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    display: inline-block;
+}
+
+
+.bookCard.highlight .description .bkdesc {
+    font-size: 0.85em;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* Limits text to 3 lines */
+    -webkit-box-orient: vertical;
+
+}
+
+.bookCard.highlight .location {
+    display: flex;
+    color: #0909FF;
+    font-size: 8 px;
+
+}

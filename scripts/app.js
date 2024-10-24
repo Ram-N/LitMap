@@ -27,31 +27,11 @@ function generateBookColor(book) {
 document.addEventListener("DOMContentLoaded", () => {
     const mapTab = document.getElementById("mapTab");
     const bookListTab = document.getElementById("bookListTab");
-    const adminTab = document.getElementById("adminTab");
+    const suggestTab = document.getElementById("suggestTab");
 
     const mapControls = document.getElementById("mapControls");
     const bookListContent = document.getElementById("bookListContent");
     const adminContent = document.getElementById("adminContent");
-
-    document.getElementById('searchTab').addEventListener('click', function () {
-        // Show book list controls and hide others
-        document.getElementById('searchControls').style.display = 'block';
-        document.getElementById('adminControls').style.display = 'none';
-
-        // Add 'active' class to the clicked tab and remove from others
-        this.classList.add('active');
-        document.getElementById('adminTab').classList.remove('active');
-    });
-
-    document.getElementById('adminTab').addEventListener('click', function () {
-        // Show admin controls and hide others
-        document.getElementById('searchControls').style.display = 'none';
-        document.getElementById('adminControls').style.display = 'block';
-
-        // Add 'active' class to the clicked tab and remove from others
-        this.classList.add('active');
-        document.getElementById('searchTab').classList.remove('active');
-    });
 
 });
 
@@ -83,35 +63,61 @@ document.getElementById('locationForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Toggle advanced search
-function toggleAdvancedSearch() {
-    const advSearch = document.querySelector('.advanced-search');
-    advSearch.style.display = (advSearch.style.display === 'none' || advSearch.style.display === '') ? 'block' : 'none';
-}
-
 
 // Function to show the map and hide the list
 function showMap() {
     document.getElementById('map-container').classList.add('active');
-    document.getElementById('list-map-container').classList.remove('active');
+    document.getElementById('focus-container').classList.remove('active');
+    document.getElementById('suggest-container').classList.remove('active');
+
 
     // Disable the Map button and enable the List button
     document.getElementById('map-btn').classList.add('disabled');
     document.getElementById('map-btn').setAttribute('disabled', true);
     document.getElementById('list-btn').classList.remove('disabled');
     document.getElementById('list-btn').removeAttribute('disabled');
+    document.getElementById('suggest-btn').classList.remove('disabled');
+    document.getElementById('suggest-btn').removeAttribute('disabled');
+
 }
 
 // Function to show the list and hide the world map (Explore)
 function showSearchResults() {
-    document.getElementById('list-map-container').classList.add('active');
+    document.getElementById('focus-container').classList.add('active');
     document.getElementById('map-container').classList.remove('active');
+    document.getElementById('suggest-container').classList.remove('active');
 
     // Disable the List button and enable the Map button
     document.getElementById('list-btn').classList.add('disabled');
     document.getElementById('list-btn').setAttribute('disabled', true);
     document.getElementById('map-btn').classList.remove('disabled');
     document.getElementById('map-btn').removeAttribute('disabled');
+    document.getElementById('suggest-btn').classList.remove('disabled');
+    document.getElementById('suggest-btn').removeAttribute('disabled');
+}
+
+
+function showSuggestForm() {
+    // Hide map and list containers, show suggest container
+    document.getElementById('map-container').classList.remove('active');
+    document.getElementById('focus-container').classList.remove('active');
+    document.getElementById('suggest-container').classList.add('active');
+
+    // Show the suggest controls
+    const suggestControls = document.getElementById('suggestControls');
+    suggestControls.classList.remove('hidden');
+    suggestControls.style.display = ''; // This removes the "display: none" style
+
+    // Enable map and list buttons, disable suggest button
+    document.getElementById('map-btn').classList.remove('disabled');
+    document.getElementById('map-btn').removeAttribute('disabled');
+    document.getElementById('list-btn').classList.remove('disabled');
+    document.getElementById('list-btn').removeAttribute('disabled');
+    document.getElementById('suggest-btn').classList.add('disabled');
+    document.getElementById('suggest-btn').setAttribute('disabled', true);
+
+
+
 }
 
 
@@ -144,22 +150,22 @@ function renderCards(books) {
 
     books.forEach(book => {
         const card = document.createElement('div');
-        card.className = 'book-card';
+        card.className = 'search-card';
 
         // Create header section with title, author, and type
         const header = document.createElement('div');
-        header.className = 'book-card__header';
+        header.className = 'search-card__header';
 
         const title = document.createElement('h3');
-        title.className = 'book-card__title';
+        title.className = 'search-card__title';
         title.textContent = book.title;
 
         const author = document.createElement('p');
-        author.className = 'book-card__author';
+        author.className = 'search-card__author';
         author.textContent = book.author;
 
         const type = document.createElement('p');
-        type.className = 'book-card__type';
+        type.className = 'search-card__type';
         type.textContent = book.type || 'Type not specified';
 
         header.appendChild(title);
@@ -168,7 +174,7 @@ function renderCards(books) {
 
         // Create locations section
         const locations = document.createElement('div');
-        locations.className = 'book-card__locations';
+        locations.className = 'search-card__locations';
 
         let locationNames = [];
         if (book.locations && Array.isArray(book.locations)) {
@@ -180,7 +186,7 @@ function renderCards(books) {
 
         // Create description section
         const description = document.createElement('p');
-        description.className = 'book-card__description';
+        description.className = 'search-card__description';
         if (book.description) {
             description.textContent = book.description.length > 80
                 ? book.description.substring(0, 80) + '...'
@@ -349,29 +355,12 @@ document.addEventListener('booksFetched', function (e) {
         // Create and append the "no results" message
         const container = document.createElement('div');
         container.className = 'cards-container';
-        container.innerHTML = '<div class="book-card">No books found matching your search criteria.</div>';
+        container.innerHTML = '<div class="search-card">No books found matching your search criteria.</div>';
         booksFoundSection.appendChild(container);
     }
-});
-
-
-// DEPRECATED
-// Listen for the 'booksFetched' event and update the table
-// this event happens in firebase.js
-document.addEventListener('OLDbooksFetched', function (e) {
-    const books = e.detail;  // Retrieve the books list from the event
-    removeBookTable();
-    if (books && books.length > 0) {
-        // The array is non-null, is indeed an array, and contains elements
-        initializeBookTable();
-        updateBookTable(books);  // Call your function to update the table
-        renderSearchResultsMap(books);
-    } else {
-        console.log("Nothing Found");
-    }
-
 });
 
 // Attach the function to the window object to make it globally accessible
 window.showSearchResults = showSearchResults;
 window.showMap = showMap;
+window.showSuggestForm = showSuggestForm;

@@ -1,0 +1,63 @@
+/* Search Results */
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+.search-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    /* padding: 1rem; */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    max-width: 800px;
+}
+
+.search-card__header {
+    margin-bottom: 0.75rem;
+    /* Reduced from 1rem */
+}
+
+.search-card__title {
+    font-size: 1.1rem;
+    /* Reduced from 1.25rem */
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 0.25rem 0;
+    /* Reduced from 0.5rem */
+}
+
+.search-card__author {
+    font-size: 0.9rem;
+    /* Reduced from 1rem */
+    color: #34495e;
+    margin: 0 0 0.2rem 0;
+    /* Reduced from 0.25rem */
+}
+
+.search-card__type {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    /* Reduced from 0.9rem */
+    margin: 0;
+}
+
+.search-card__locations {
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    padding: 0.5rem 0;
+    /* Reduced from 0.75rem */
+    margin: 0.75rem 0;
+    /* Reduced from 1rem */
+    color: #16a085;
+}
+
+.search-card__description {
+    font-size: 0.85rem;
+    /* Reduced from 0.9rem */
+    color: #666;
+    line-height: 1.4;
+    /* Reduced from 1.5 */
+}

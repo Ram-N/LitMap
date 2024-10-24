@@ -155,7 +155,7 @@ input[type="text"]:focus {
     flex: 0 0 15%;
     /* Sidebar takes 15% of the width */
     max-width: 20%;
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
     height: 100%;
     border: 1px solid #ccc;
@@ -177,7 +177,6 @@ input[type="text"]:focus {
 .view-toggle-btn {
     flex: 1;
     /* Allow buttons to take equal space */
-    width: 20%;
     background-color: #2196F3;
     color: white;
     border: none;
@@ -442,18 +441,20 @@ input:checked+.slider:before {
 
 
 .map-container,
-.list-map-container {
+.focus-container,
+.suggest-container {
     display: none;
     height: 90vh;
     width: 80%;
 
 }
 
-.map-container.active {
+.map-container.active,
+.suggest-container.active {
     display: block;
 }
 
-.list-map-container.active {
+.focus-container.active {
     display: flex;
     flex-direction: row;
     /* or row, depending on your layout needs */
@@ -490,28 +491,6 @@ input:checked+.slider:before {
     overflow-y: auto;
     /* Vertical scroll if content exceeds the container */
     padding: 10px;
-}
-
-/* Table styling */
-.styled-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.styled-table th,
-.styled-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.styled-table th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-}
-
-.styled-table tbody tr:hover {
-    background-color: #f1f1f1;
 }
 
 /* Scrollbar styling */
@@ -615,7 +594,6 @@ input:checked+.slider:before {
 
 
 #searchControls {
-    padding: 10px;
     display: flex;
     display: block;
     /* Map controls visible by default */
@@ -625,283 +603,9 @@ input:checked+.slider:before {
 }
 
 
-/*
- * Book Marker styles in unhighlighted state.
- */
-.bookCard {
-    border-radius: 2px;
-    color: #FFFFFF;
-    font-size: 8 px;
-    padding: 3px 4px;
-    position: relative;
-    z-index: 1;
-}
 
-.bookCard::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 100%;
-    transform: translate(-50%, 0);
-    width: 10;
-    height: 10;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid #4285F4;
-}
-
-.bookCard .book-info {
-    display: none;
-    flex-direction: column;
-    flex: 1;
-}
-
-
-
-/*
- * Book Marker styles in highlighted state.
- */
-.bookCard.highlight {
-    display: flex;
-    background-color: #FFFFFF !important;
-    /* Added !important to override inline style */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    padding: 10px 8px;
-    max-width: 400px;
-    overflow: hidden;
-    width: 100%;
-}
-
-
-
-.bookCard.highlight::before {
-    content: "📚";
-    /* later on use different icons for books */
-    font-size: 2em;
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    background-color: #fff;
-    border-radius: 50%;
-    padding: 3px;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
-}
-
-.bookCard.highlight::after {
-    border-top: 9px solid #FFFFFF;
-}
-
-.bookCard.highlight .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    color: blue;
-}
-
-.bookCard.highlight .close-button:hover {
-    color: white;
-    /* background-color: #ff4444; */
-    background-color: #dc3545;
-    /* or any shade of red you prefer */
-    border-radius: 4px;
-    /* optional: rounds the corners */
-    transition: all 0.2s ease;
-    /* optional: smooth transition effect */
-}
-
-.bookCard.highlight .book-info {
-    display: flex;
-    flex-direction: row;
-    align-items: left;
-    color: #09090F;
-    font-size: 8 px;
-    flex: 1;
-    gap: 1rem;
-
-}
-
-.bookCard.highlight .left-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.bookCard.highlight .location-label {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.bookCard.highlight .image {
-    width: 50px;
-    height: 75px;
-    background-color: #f0f0f0;
-    /* Placeholder for actual image */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: #888;
-}
-
-
-.bookCard.highlight .content {
-    display: flex;
-    color: #09090F;
-    font-size: 8 px;
-    flex-direction: column;
-    flex: 1;
-    /* padding: 5%; */
-
-}
-
-.bookCard.highlight .top-content .content.title {
-    font-size: 1.4em;
-    font-weight: bold;
-    padding: 10%;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.bookCard.highlight .author {
-    font-style: italic;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.bookCard.highlight .description {
-    display: flex;
-    color: #09090F;
-    font-size: 8 px;
-    flex-direction: row;
-    flex: 1;
-    /* padding: 5%; */
-
-}
-
-
-.bookCard.highlight .genre {
-    background-color: #e0e0e0;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    display: inline-block;
-}
-
-
-.bookCard.highlight .description .bkdesc {
-    font-size: 0.85em;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    /* Limits text to 3 lines */
-    -webkit-box-orient: vertical;
-
-}
-
-.bookCard.highlight .location {
-    display: flex;
-    color: #0909FF;
-    font-size: 8 px;
-
-}
-
-/* Search Results */
-.cards-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.5rem;
-}
-
-.book-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    /* padding: 1rem; */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    max-width: 800px;
-}
-
-.book-card__header {
-    margin-bottom: 0.75rem;
-    /* Reduced from 1rem */
-}
-
-.book-card__title {
-    font-size: 1.1rem;
-    /* Reduced from 1.25rem */
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 0.25rem 0;
-    /* Reduced from 0.5rem */
-}
-
-.book-card__author {
-    font-size: 0.9rem;
-    /* Reduced from 1rem */
-    color: #34495e;
-    margin: 0 0 0.2rem 0;
-    /* Reduced from 0.25rem */
-}
-
-.book-card__type {
-    color: #7f8c8d;
-    font-size: 0.8rem;
-    /* Reduced from 0.9rem */
-    margin: 0;
-}
-
-.book-card__locations {
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    padding: 0.5rem 0;
-    /* Reduced from 0.75rem */
-    margin: 0.75rem 0;
-    /* Reduced from 1rem */
-    color: #16a085;
-}
-
-.book-card__description {
-    font-size: 0.85rem;
-    /* Reduced from 0.9rem */
-    color: #666;
-    line-height: 1.4;
-    /* Reduced from 1.5 */
-}
-
-
-/* EO Search Results displayed as book cards */
 
 form {
-    margin: 20px auto;
-    display: inline-block;
-}
-
-/* Style Table Output */
-.styled-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.styled-table th,
-.styled-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.styled-table thead tr {
-    background-color: #f4f4f4;
-}
-
-.styled-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+    margin: 2px auto;
+    /* display: inline-block; */
 }

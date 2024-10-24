@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LitMap</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/bookCard.css">
+    <link rel="stylesheet" href="styles/search.css">
 </head>
 
 <body>
@@ -33,9 +35,9 @@
                 <form name="searchForm" class="stacked greyBox searchBox searchBox--large" action="/search"
                     accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
                     <div class="greyText" style="padding-bottom: 10px">
-                        <input type="text" name="q" size="55" id="search_query_main"
-                            class="searchBox__input searchBox--large__input"
-                            placeholder="Title, Author, keyword or ISBN">
+                        <input type="text" name="q" id="search_query_main"
+                            class="searchBox__input searchBox--large__input" placeholder="Title, Author, ISBN"
+                            style="width: 100%;">
                         <input type="submit" value="Search" class="searchBox__button">
                     </div>
 
@@ -72,32 +74,6 @@
 
             </div>
 
-            <div id="adminControls" class="tab-content hidden style=" display: none;">
-                <!-- Admin content -->
-                <h3>Admin Panel</h3>
-                <p>Admin functionalities go here.</p>
-                <!-- Form to add a book with a location -->
-                <div id="form-container">
-                    <form id="locationForm">
-                        <input type="text" id="adminlocationInput" placeholder="Enter location (e.g., New Delhi)"
-                            required>
-                        <input type="text" id="bookTitle" placeholder="Book title" required>
-                        <input type="text" id="bookAuthor" placeholder="Author name" required>
-                        <button type="submit">Add Book</button>
-                    </form>
-                    <div id="controls">
-                        <button id="uploadBooksButton">Upload More Books</button>
-                        <!-- You can add other buttons and dropdowns here -->
-                    </div>
-
-
-                </div>
-            </div>
-
-            <div id="navbar">
-                <button id="searchTab" class="nav-button active">Search</button>
-                <button id="adminTab" class="nav-button">Admin</button>
-            </div>
 
             <div class="collection-selector">
                 <div class="collection-options">
@@ -105,6 +81,9 @@
                     <span class="collection-option" data-collection="small_books">midbooks</span>
                     <span class="collection-option" data-collection="books">All-Books</span>
                 </div>
+            </div>
+            <div id="navbar">
+                <button class="view-toggle-btn" id="suggest-btn" onclick="showSuggestForm()">Suggest A Book</button>
             </div>
 
 
@@ -125,8 +104,8 @@
             </script>
         </div>
 
-        <!-- MapList Container -->
-        <div class="list-map-container" id="list-map-container">
+        <!-- Focus Page Container -->
+        <div class="focus-container" id="focus-container">
             <!-- List Container -->
             <div class="list-container" id="list-container">
                 <div id="books-found">
@@ -135,7 +114,28 @@
             <!-- Map Container -->
             <div class="map-container2" id="map-container2">
             </div>
+        </div>
 
+        <!-- Focus Page Container -->
+        <div class="suggest-container" id="suggest-container">
+            <div id="suggestControls">
+                <!-- Admin content -->
+                <h3>Suggest A Book </h3>
+                <p>Admin functionalities go here.</p>
+                <!-- Form to add a book with a location -->
+                <div id="form-container">
+                    <form id="locationForm">
+                        <input type="text" id="adminlocationInput" placeholder="Enter location (e.g., New Delhi)"
+                            required>
+                        <input type="text" id="bookTitle" placeholder="Book title" required>
+                        <input type="text" id="bookAuthor" placeholder="Author name" required>
+                        <button type="submit">Add Book</button>
+                    </form>
+                    <div id="controls">
+                        <button id="uploadBooksButton">Upload More Books</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
