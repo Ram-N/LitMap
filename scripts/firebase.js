@@ -97,8 +97,63 @@ async function getAllBooks() {
 }
 
 
-// Extended fuzzy search function with support for a single field or a fieldList
 function fuzzyBookSearch(books, searchTerm, field = null, fieldList = null) {
+    searchTerm = searchTerm.toLowerCase();  // Normalize the search term to lowercase
+
+    // Filter the books
+    const filteredBooks = books.filter(book => {
+        // Handle location search
+        if (field === 'location') {
+            if (book.locations && Array.isArray(book.locations)) {
+                return book.locations.some(location => {
+                    const city = location.city ? location.city.toLowerCase() : '';
+                    const state = location.state ? location.state.toLowerCase() : '';
+                    const country = location.country ? location.country.toLowerCase() : '';
+                    return city.includes(searchTerm) || state.includes(searchTerm) || country.includes(searchTerm);
+                });
+            }
+            return false;
+        }
+
+        // If a specific field is provided, search only in that field
+        if (field && book[field]) {
+            return book[field].toString().toLowerCase().includes(searchTerm);
+        }
+
+        // If a fieldList is provided, search only in those fields
+        if (fieldList && Array.isArray(fieldList)) {
+            return fieldList.some(field => book[field] && book[field].toString().toLowerCase().includes(searchTerm));
+        }
+
+        // Default: Search in title, author, and description
+        const title = book.title.toLowerCase();
+        const author = book.author.toLowerCase();
+        const description = book.description ? book.description.toLowerCase() : '';
+
+        return title.includes(searchTerm) || author.includes(searchTerm) || description.includes(searchTerm);
+    });
+
+    // Construct the search query string based on user's search intent
+    let searchQuery;
+    if (field) {
+        // Single field search (e.g., "author = 'mountain'")
+        searchQuery = `${field} contains "${searchTerm}"`;
+    } else if (fieldList && fieldList.length > 0) {
+        // Multiple field search (e.g., "title, author = 'mountain'")
+        searchQuery = `"${searchTerm}" in ${fieldList.join(', ')}  `;
+    } else {
+        // Default search (e.g., "any field = 'mountain'")
+        searchQuery = `"${searchTerm}" in any field`;
+    }
+
+    return {
+        results: filteredBooks,
+        searchQuery: searchQuery
+    };
+}
+
+// Extended fuzzy search function with support for a single field or a fieldList
+function oldFuzzyBookSearch(books, searchTerm, field = null, fieldList = null) {
     searchTerm = searchTerm.toLowerCase();  // Normalize the search term to lowercase
 
     return books.filter(book => {
@@ -160,11 +215,17 @@ async function searchBooks(searchTerm, field = null, fieldList = null) {
         await fetchAllBooks();
 
         // Perform fuzzy search on the local cache
-        const results = fuzzyBookSearch(allBooks, searchTerm, field, fieldList);
+        const { results, searchQuery } = fuzzyBookSearch(allBooks, searchTerm, field, fieldList);
         console.log('Search Results:', results);
 
+        // Create an object containing both the results and searchQuery
+        const eventData = {
+            results: results,
+            searchQuery: searchQuery
+        };
+
         // Dispatch a custom event with the books data
-        const event = new CustomEvent('booksFetched', { detail: results });
+        const event = new CustomEvent('booksFetched', { detail: eventData });
         document.dispatchEvent(event);  // Trigger the event, app.js will update the UI
 
     } catch (error) {

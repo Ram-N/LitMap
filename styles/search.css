@@ -61,3 +61,11 @@
     line-height: 1.4;
     /* Reduced from 1.5 */
 }
+
+.query-display {
+    font-style: italic;
+    color: #666;
+    /* slightly muted color */
+    margin-top: -10px;
+    /* brings it closer to the count above it */
+}

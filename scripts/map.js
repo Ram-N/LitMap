@@ -163,7 +163,7 @@ function getTitleInitials(title) {
 }
 
 
-function openHighlight(markerView, book) {
+export function openHighlight(markerView, book) {
   // Add the close button dynamically when highlighting
   const closeButton = document.createElement('div');
   closeButton.className = 'close-button';
@@ -182,7 +182,7 @@ function openHighlight(markerView, book) {
 
 
 
-function closeHighlight(markerView) {
+export function closeHighlight(markerView) {
   // Remove the close button when un-highlighting
   const closeButton = markerView.content.querySelector('.close-button');
   if (closeButton) {
@@ -207,7 +207,7 @@ function toggleHighlight(markerView, book) {
 }
 
 
-function buildContent(book, location) {
+export function buildContent(book, location) {
   const content = document.createElement("div");
   content.classList.add("bookCard");
   content.style.backgroundColor = generateBookColor(book);
@@ -246,6 +246,7 @@ function buildContent(book, location) {
   return content;
 }
 
+//Rendering ALL books on the Explore Map
 function renderBooksOnMap() {
 
   if (window.books && window.books.length > 0) {
@@ -268,7 +269,7 @@ function renderBooksOnMap() {
 
           // Get the latitude and longitude from the current location
           const lat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
-          const lng = location.lng || location.longitude; // Fallback to longitude if lng is not present
+          const lng = location.lng || location.longitude;
 
           // Check if lat and lng are defined
           if (lat && lng) {
@@ -522,6 +523,5 @@ window.addEventListener('booksReady', () => {
   }
 });
 
-
 // window.initMap = initMap; // Expose the function to global scope for the Google Maps API callback
-
+// window.buildContent = buildContent;

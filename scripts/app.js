@@ -2,6 +2,7 @@
 // Add/Delete to the list
 
 import { db } from './firebase.js';  // Importing db from firebase.js
+import { buildContent, openHighlight, closeHighlight } from './map.js';
 
 // utility function
 function generateBookColor(book) {
@@ -122,7 +123,7 @@ function showSuggestForm() {
 
 
 // Function to create and display book cards
-function renderCards(books) {
+function renderCards(books, query) {
 
     // Get the books-found element
     const booksFoundSection = document.querySelector('#books-found');
@@ -137,16 +138,28 @@ function renderCards(books) {
     const countDisplay = document.createElement('h3');
     countDisplay.textContent = `${books.length} ${books.length === 1 ? 'Book' : 'Books'} Found`;
 
+    // Create new element for query display
+    const queryDisplay = document.createElement('p');
+    queryDisplay.textContent = query;  // assuming 'query' is your query string
+    // Optional: add some styling if you want
+    queryDisplay.style.fontStyle = 'italic';  // makes it italic
+    // OR use a class if you prefer
+    // queryDisplay.className = 'query-display';
+
+
+
     // Create container for cards if it doesn't exist
     let container = document.querySelector('.cards-container');
     if (!container) {
         container = document.createElement('div');
         container.className = 'cards-container';
         booksFoundSection.appendChild(container);
+        container.appendChild(countDisplay);
+        container.appendChild(queryDisplay);
     }
 
     // Add the new count display at the start of books-found section
-    booksFoundSection.insertBefore(countDisplay, booksFoundSection.firstChild);
+    // booksFoundSection.insertBefore(countDisplay, booksFoundSection.firstChild);
 
     books.forEach(book => {
         const card = document.createElement('div');
@@ -247,34 +260,40 @@ async function renderSearchResultsMap(books) {
 
     // Add markers for each book location
     books.forEach((book, bookIndex) => {
+        console.log(book.locations, book.title, "BC");
         const bookColor = generateBookColor(book);
         book.locations.forEach((location, locationIndex) => {
+            console.log(location, book.title, "LOC");
             // Get the latitude and longitude from the current location
             const lat = location.lat || location.latitude;  // Fallback to latitude if lat is not present
             const lng = location.lng || location.longitude; // Fallback to longitude if lng is not present
 
-            const pin = new PinElement({
-                background: bookColor,
-                scale: 1.5,
-                glyph: `${bookIndex + 1}.${locationIndex + 1}`,
-            });
-
             const marker = new AdvancedMarkerElement({
                 map: searchResultsMap,
                 position: { lat: lat, lng: lng },
-                title: `${book.title} - Location ${locationIndex + 1}`,
-                content: pin.element,
+                title: `${book.title} by ${book.author}`,  // Title displayed on hover
+                content: buildContent(book, location)
+                // content: pin.element,
             });
 
-            // Add click listener to show info window
             marker.addListener("click", () => {
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<h3>${book.title}</h3>
-                              <p>Author: ${book.author}</p>
-                              <p>Location: ${location.name || `Location ${locationIndex + 1}`}</p>`
-                });
-                infoWindow.open(searchResultsMap, marker);
+                // toggleHighlight(marker, book);
+                if (!marker.content.classList.contains("highlight")) {
+                    openHighlight(marker, book);
+                }
+
             });
+
+
+            // Add click listener to show info window
+            // marker.addListener("click", () => {
+            //     const infoWindow = new google.maps.InfoWindow({
+            //         content: `<h3>${book.title}</h3>
+            //                   <p>Author: ${book.author}</p>
+            //                   <p>Location: ${location.name || `Location ${locationIndex + 1}`}</p>`
+            //     });
+            //     infoWindow.open(searchResultsMap, marker);
+            // });
         });
     });
 
@@ -327,12 +346,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Modified event listener
 document.addEventListener('booksFetched', function (e) {
-    const books = e.detail;
+
+    const books = e.detail.results;     // Access the results
+    const query = e.detail.searchQuery; // Access the searchQuery
 
     removeCards(); // Clear existing cards
 
+    console.log(query, 'bFetched')
     if (books && books.length > 0) {
-        renderCards(books);
+        renderCards(books, query);
         renderSearchResultsMap(books); // Keeping the map rendering
     } else {
         console.log("No books Found");
