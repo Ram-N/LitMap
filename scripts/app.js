@@ -201,8 +201,8 @@ function renderCards(books, query) {
         const description = document.createElement('p');
         description.className = 'search-card__description';
         if (book.description) {
-            description.textContent = book.description.length > 80
-                ? book.description.substring(0, 80) + '...'
+            description.textContent = book.description.length > 120
+                ? book.description.substring(0, 120) + '...'
                 : book.description;
         } else {
             description.textContent = 'No description available';

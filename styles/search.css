@@ -55,11 +55,10 @@
 }
 
 .search-card__description {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     /* Reduced from 0.9rem */
     color: #666;
-    line-height: 1.4;
-    /* Reduced from 1.5 */
+    line-height: 1.2;
 }
 
 .query-display {
