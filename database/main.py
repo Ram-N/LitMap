@@ -1,3 +1,4 @@
+# remember to activate the correct env
 
 import streamlit as st
 from pprint import pprint
@@ -6,6 +7,8 @@ from firebase_admin import credentials, firestore
 import json, re
 from collections import defaultdict
 from datetime import datetime
+import pandas as pd
+
 
 class FirebaseClient:
     def __init__(self, service_account_key: str):
@@ -346,27 +349,67 @@ firebase_client = FirebaseClient(service_account_key)
 # Streamlit App UI
 st.title("LitMap Firestore Manager")
 
-top_options =     ["Select",
-    "Document Count", 
-    "Print All Titles", 
-    "Print All Authors",
-    "List All Locations",
-    "Find Duplicates",
-    "Compare 2 Books",
-    "----",
-    "BACKUP Collection to file",    
-    "Write Book to JSON",
-    "Delete Doc by ID",
-    "PURGE - write file and DELete doc"
-    ]
+top_options = {
+    0: "Select",
+    1: "Document Count",
+    2: "Print All Titles",
+    3: "Print All Authors",
+    4: "List All Locations",
+    5: "Find Duplicates",
+    6: "Compare 2 Books",
+    7: "----",
+    8: "BACKUP Collection to file",
+    9: "Write Book to JSON",
+    10: "Delete Doc by ID",
+    11: "PURGE - write file and DELete doc"
+}
 
-# Add a dropdown to the sidebar
+# Create a dictionary of tooltips/explanations
+tooltips = {
+    "Select": "Choose an action from the dropdown",
+    "Document Count": "Shows the total number of documents in the collection",
+    "Print All Titles": "Displays a sorted list of all book titles",
+    "Print All Authors": "Shows a list of all authors in the collection",
+    "List All Locations": "Displays all unique locations mentioned in books",
+    "Find Duplicates": "Identifies potential duplicate books in the collection",
+    "Compare 2 Books": "Shows a side-by-side comparison of two selected books",
+    "----": "Separator",
+    "BACKUP Collection to file": "Creates a backup of the entire collection",
+    "Write Book to JSON": "Exports a selected book to JSON format",
+    "Delete Doc by ID": "Removes a document using its unique identifier",
+    "PURGE - write file and DELete doc": "Backs up and then deletes a document"
+}
+
+# Create the HTML for the dropdown label with tooltip
+tooltip_html = """
+    <div style="display: inline-block; position: relative;">
+        Action
+        <span style="margin-left: 5px;">
+            <div style="visibility: hidden; width: 250px; background-color: #555; color: #fff; 
+                        text-align: center; border-radius: 6px; padding: 5px; position: absolute; 
+                        z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; 
+                        transition: opacity 0.3s;">
+                Hover over each option in the dropdown for more information
+            </div>
+        </span>
+    </div>
+"""
+
+# Display the label with tooltip
+st.sidebar.markdown(tooltip_html, unsafe_allow_html=True)
+
+# Create the selectbox with tooltips for each option
 top_action = st.sidebar.selectbox(
-    "Action",
-    top_options,
+    label=" ",  # Empty label since we're using custom HTML above
+    options=top_options.values(),
     index=0,
-    #    label_visibility="hidden"
-    )
+    help="Hover over options for descriptions",
+    format_func=lambda x: f"{x} ℹ️" if x in tooltips else x
+)
+
+# Display the tooltip for the selected option
+if top_action in tooltips:
+    st.sidebar.info(tooltips[top_action])
 
 st.sidebar.markdown("----")
 st.write(f"{top_action}")
@@ -384,26 +427,25 @@ if top_action == top_options[1]:
     doc_count = firebase_client.get_document_count(collection_name)
     st.write(f"Number of documents in '{collection_name}': {doc_count}")
 
-#ALL TITLES
+# ALL TITLES
+
 if top_action == top_options[2]:
-    # Extract and sort all titles
     all_titles = sorted([book['title'] for book in all_books if 'title' in book])
     print(len(all_titles))
-    # Display the sorted titles
     st.write("### All Titles (Sorted Alphabetically):")
-    for title in all_titles:
-        st.write(title)
+    # Join all titles with line breaks and apply custom CSS
+    titles_html = "<div style='line-height: 1; font-size: 14px;'>" + "<br>".join(all_titles) + "</div>"
+    st.markdown(titles_html, unsafe_allow_html=True)
 
-#UNQIUE Authors
+# UNQIUE Authors
 if top_action == top_options[3]:
     # Extract and sort unique authors
     all_authors = sorted(set(book['author'] for book in all_books if 'author' in book))
     # Display the sorted authors
     st.write("### All Unique Authors (Sorted Alphabetically):")
-    for author in all_authors:
-        st.write(author)
+    st.text("\n".join(all_authors))
 
-#unique Locations
+# UNIQUE LOCATIONS
 if top_action == top_options[4]:
     # Extract all unique cities from the 'locations' field of each book
     unique_places = set()
@@ -416,13 +458,26 @@ if top_action == top_options[4]:
                 if 'place' in location:
                     unique_places.add(location['place'])
 
-    # Display the unique cities using st.write()
-    st.write("### Unique Cities Mentioned in Books:")
-    for city in sorted(unique_places):
-        st.write(city)
+    locations_df = pd.DataFrame(sorted(unique_places), columns=['Location'])
+    st.write(f"### Unique Cities Mentioned in Books ({len(unique_places)} total):")
 
-    # print(book['locations'])
+    # Display the DataFrame
+    st.dataframe(
+        locations_df,
+        hide_index=True,
+        column_config={
+            "Location": st.column_config.TextColumn(
+                "Location",
+                width="medium"
+            )
+        },
+        use_container_width=True,
+        height=400,
+        column_order=("Location",)
+    )
 
+
+###########################################################################
 
 # Sidebar: Search options
 search_option = st.sidebar.selectbox("Search by", ("Author", "Book Title", "Genre"))
@@ -463,7 +518,7 @@ if search_button:
 
 
 # Sidebar: File uploader
-uploaded_file = st.sidebar.file_uploader("Choose a JSON file", type="json")
+uploaded_file = st.sidebar.file_uploader("Choose a JSON file to Upload", type="json")
 
 
 # Function to read and parse the uploaded JSON file
@@ -598,10 +653,59 @@ def write_all_books_to_json(collection_name, all_books):
     return filename
 
 
+# Initialize session state for confirmation
+if 'backup_confirmed' not in st.session_state:
+    st.session_state.backup_confirmed = False
+
+def reset_confirmation():
+    st.session_state.backup_confirmed = False
+
 if top_action == "BACKUP Collection to file":
-    try:
-        # Assume `all_books` and `collection_name` are available
-        filename = write_all_books_to_json(collection_name, all_books)
-        st.write(f"Books exported successfully to `{filename}`.")
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+    if not st.session_state.backup_confirmed:
+        # Create a container for the confirmation dialog
+        with st.container():
+            st.warning("⚠️ Backup Confirmation")
+            st.write("You are about to create a backup of the entire collection.")
+            st.write("This will:")
+            st.markdown("""
+                - Create a new JSON file with current timestamp
+                - Save all documents from the collection
+                - Store the file in the 'backup' directory
+            """)
+            
+            # Add some space
+            st.write("")
+            
+            # Create columns for buttons
+            col1, col2, col3 = st.columns([1, 1, 3])
+            
+            with col1:
+                if st.button("✅ Yes, Backup", type="primary"):
+                    st.session_state.backup_confirmed = True
+                    st.rerun()
+            
+            with col2:
+                if st.button("❌ No, Cancel"):
+                    reset_confirmation()
+                    st.write("Backup cancelled.")
+    
+    else:
+        try:
+            # Show progress indicator
+            with st.spinner("Creating backup..."):
+                filename = write_all_books_to_json(collection_name, all_books)
+            
+            # Show success message with file details
+            st.success("Backup Completed Successfully!")
+            st.write(f"📁 File saved as: `{filename}`")
+            
+            # Add option to create another backup
+            if st.button("Create Another Backup"):
+                reset_confirmation()
+                st.rerun()
+            
+        except Exception as e:
+            st.error(f"❌ Backup Failed: {str(e)}")
+            if st.button("Try Again"):
+                reset_confirmation()
+                st.rerun()

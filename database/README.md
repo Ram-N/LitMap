@@ -1,8 +1,11 @@
 
-I use a streamlit app (run locally) to update the fireStore DB that stores all the data for LitMap.
+# Streamlit to Manage Firestore DB
 
+I use a streamlit app (run locally) to update the fireStore DB that stores all the data for LitMap.
+The main purpose of this app is to help me with DB MGMT.
 ```
-streamlit run main.py
+> source activate <relevant env>
+> streamlit run main.py
 ```
 
 # Coding Tasks Remaining
