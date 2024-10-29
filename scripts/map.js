@@ -5,7 +5,6 @@ let markerClusterer = null;
 
 
 import { MarkerClusterer } from "https://cdn.skypack.dev/@googlemaps/markerclusterer@2.3.1";
-import { mapStyle } from './mapStyles.js';
 
 // Predefined locations (latitude, longitude)
 const presetLocations = {
