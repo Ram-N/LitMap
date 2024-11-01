@@ -138,17 +138,16 @@ class FirebaseClient:
         print(f"Document with ID {doc_id} deleted successfully.")
 
 
-    def book_exists(self, collection_name: str, book: dict) -> bool:
+    def book_exists(self, book: dict) -> bool:
         """
         Check if a book already exists in the Firestore collection by its title.
         Args:
-            collection_name (str): The Firestore collection name.
             book (dict): The book data, containing at least the 'title' key.
         
         Returns:
             bool: True if the book exists, False otherwise.
         """
-        db_book = self.get_book_by_title(collection_name, book['title'])
+        db_book = self.get_book_by_title(all_books, book['title'])
         if len(db_book) > 0:
             return True
         return False
@@ -164,11 +163,11 @@ class FirebaseClient:
         st.write(f"Collection: {collection_name}")
         
         for book in to_be_added:
-            if not self.book_exists(collection_name, book):
+            if not self.book_exists(book):
                 st.success(f"Adding {book['title']}")
                 self.add_new_document(collection_name, book, verbose=True)
             else:
-                st.warning(f"{book['title']} already exists in db")
+                st.warning(f"{book['title']} already exists in {collection_name}")
 
 
     def compare_books(self, books, book_id1, book_id2):
@@ -345,9 +344,40 @@ def write_book_json(title=None, book_id=None, verbose=False):
 service_account_key = "litmap-88358-firebase-adminsdk-9w1l9-73ca515ce7.json"
 firebase_client = FirebaseClient(service_account_key)
 
+#firebase_client.book_exists("Absurdistan", collection_name='midbooks')
+
+######## S T R E A M L I T ##########################
+
+# Page configuration
+st.set_page_config(layout="wide")
 
 # Streamlit App UI
 st.title("LitMap Firestore Manager")
+
+# Define tabs
+
+# Create tabs
+view_tab, db_tab, h_tab = st.tabs(["Data Viewer", "DB-Manage", "Help"])
+
+view_options = {
+    0: "Select",
+    1: "Document Count",
+    2: "Print All Titles",
+    3: "Print All Authors",
+    4: "List All Locations",
+    5: "Find Duplicates",
+    6: "Compare 2 Books",
+}
+
+db_options = {
+    0: "Select DB Action",
+    8: "BACKUP Collection to file",
+    9: "BULK UPLOAD of docs",
+    12: "Persist Book to JSON",
+    10: "Delete Doc by ID",
+    11: "PURGE - write file and DELete doc"
+}
+
 
 top_options = {
     0: "Select",
@@ -363,6 +393,7 @@ top_options = {
     10: "Delete Doc by ID",
     11: "PURGE - write file and DELete doc"
 }
+
 
 # Create a dictionary of tooltips/explanations
 tooltips = {
@@ -383,7 +414,6 @@ tooltips = {
 # Create the HTML for the dropdown label with tooltip
 tooltip_html = """
     <div style="display: inline-block; position: relative;">
-        Action
         <span style="margin-left: 5px;">
             <div style="visibility: hidden; width: 250px; background-color: #555; color: #fff; 
                         text-align: center; border-radius: 6px; padding: 5px; position: absolute; 
@@ -395,130 +425,128 @@ tooltip_html = """
     </div>
 """
 
-# Display the label with tooltip
-st.sidebar.markdown(tooltip_html, unsafe_allow_html=True)
 
-# Create the selectbox with tooltips for each option
-top_action = st.sidebar.selectbox(
-    label=" ",  # Empty label since we're using custom HTML above
-    options=top_options.values(),
-    index=0,
-    help="Hover over options for descriptions",
-    format_func=lambda x: f"{x} ℹ️" if x in tooltips else x
-)
 
-# Display the tooltip for the selected option
-if top_action in tooltips:
-    st.sidebar.info(tooltips[top_action])
-
-st.sidebar.markdown("----")
-st.write(f"{top_action}")
-
-# Sidebar: Collection selection
+# Every Sidebar: Collection selection
 collection_name = st.sidebar.selectbox(
     "Collection",
     ("books", "midbooks", "newbooks"),
     index=1 #default
 )
+
 all_books = firebase_client.get_all_documents(collection_name)
 
-# NUM DOCS
-if top_action == top_options[1]:
-    doc_count = firebase_client.get_document_count(collection_name)
-    st.write(f"Number of documents in '{collection_name}': {doc_count}")
+# Initialize session state
+if "current_tab" not in st.session_state:
+    st.session_state.current_tab = "Viewer"
 
-# ALL TITLES
 
-if top_action == top_options[2]:
-    all_titles = sorted([book['title'] for book in all_books if 'title' in book])
-    print(len(all_titles))
-    st.write("### All Titles (Sorted Alphabetically):")
-    # Join all titles with line breaks and apply custom CSS
-    titles_html = "<div style='line-height: 1; font-size: 14px;'>" + "<br>".join(all_titles) + "</div>"
-    st.markdown(titles_html, unsafe_allow_html=True)
-
-# UNQIUE Authors
-if top_action == top_options[3]:
-    # Extract and sort unique authors
-    all_authors = sorted(set(book['author'] for book in all_books if 'author' in book))
-    # Display the sorted authors
-    st.write("### All Unique Authors (Sorted Alphabetically):")
-    st.text("\n".join(all_authors))
-
-# UNIQUE LOCATIONS
-if top_action == top_options[4]:
-    # Extract all unique cities from the 'locations' field of each book
-    unique_places = set()
-
-    for book in all_books:
-        if 'locations' in book:
-            for location in book['locations']:
-                if 'city' in location:
-                    unique_places.add(location['city'])
-                if 'place' in location:
-                    unique_places.add(location['place'])
-
-    locations_df = pd.DataFrame(sorted(unique_places), columns=['Location'])
-    st.write(f"### Unique Cities Mentioned in Books ({len(unique_places)} total):")
-
-    # Display the DataFrame
-    st.dataframe(
-        locations_df,
-        hide_index=True,
-        column_config={
-            "Location": st.column_config.TextColumn(
-                "Location",
-                width="medium"
-            )
-        },
-        use_container_width=True,
-        height=400,
-        column_order=("Location",)
+# Info Tab
+with view_tab:
+    st.session_state.current_tab = "Viewer"
+    # Create the selectbox with tooltips for each option
+    view_action = st.selectbox(
+        label=" ",  # Empty label
+        options=view_options.values(),
+        index=0,
     )
+    # Display the tooltip for the selected option
+    if view_action in tooltips:
+        st.sidebar.info(tooltips[view_action])
+    st.sidebar.markdown("----")
+    st.write(f"{view_action}")
 
+    placeholder_viewer = st.empty()
 
-###########################################################################
+    with placeholder_viewer.container():
 
-# Sidebar: Search options
-search_option = st.sidebar.selectbox("Search by", ("Author", "Book Title", "Genre"))
+        # NUM DOCS
+        if view_action == top_options[1]: #DOC COUNT
+            doc_count = firebase_client.get_document_count(collection_name)
+            print(doc_count)
+            st.write(f"Number of documents in '{collection_name}': {doc_count}")
 
-# Text input for the selected search option
-search_input = st.sidebar.text_input(f"Enter {search_option}")
+        # ALL TITLES
+        if view_action == top_options[2]: # ALL TITLES
+            all_titles = sorted([book['title'] for book in all_books if 'title' in book])
+            print(len(all_titles))
+            st.write("### All Titles (Sorted Alphabetically):")
+            # Join all titles with line breaks and apply custom CSS
+            titles_html = "<div style='line-height: 1; font-size: 14px;'>" + "<br>".join(all_titles) + "</div>"
+            st.markdown(titles_html, unsafe_allow_html=True)
 
-# Button to trigger search
-search_button = st.sidebar.button("Search")
+        # UNQIUE Authors
+        if view_action == top_options[3]: #AUTHORS
+            # Extract and sort unique authors
+            all_authors = sorted(set(book['author'] for book in all_books if 'author' in book))
+            # Display the sorted authors
+            st.write("### All Unique Authors (Sorted Alphabetically):")
+            st.text("\n".join(all_authors))
 
-# Search logic and display results
-if search_button:
-    st.write(f"{search_option} {search_input}")
-    if search_option == "Author":
-        books = firebase_client.get_books_by_author(all_books, search_input)
-    elif search_option == "Book Title":
-        books = firebase_client.get_book_by_title(all_books, search_input)
-    elif search_option == "Genre":
-        books = firebase_client.fuzzy_match(all_books, 'genre', search_input)
+        # UNIQUE LOCATIONS
+        if view_action == top_options[4]: #LOCATIONS
+            # Extract all unique cities from the 'locations' field of each book
+            unique_places = set()
 
-    # Display results in a nice layout
-    if books:
-        st.write(f"Found {len(books)} books:")
-        for book in books:
-            st.markdown(
-                f"""
-                <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius: 5px;">
-                    <strong>Title:</strong> {book.get('title', 'N/A')}<br>
-                    <strong>Author:</strong> {book.get('author', 'N/A')}<br>
-                    <strong>Genre:</strong> {book.get('genre', 'N/A')}<br>
-                    <strong>Year:</strong> {book.get('year', 'N/A')}<br>
-                    <strong>Publisher:</strong> {book.get('publisher', 'N/A')}<br>
-                </div>
-                """, unsafe_allow_html=True
+            for book in all_books:
+                if 'locations' in book:
+                    for location in book['locations']:
+                        if 'city' in location:
+                            unique_places.add(location['city'])
+                        if 'place' in location:
+                            unique_places.add(location['place'])
+
+            locations_df = pd.DataFrame(sorted(unique_places), columns=['Location'])
+            st.write(f"### Unique Cities Mentioned in Books ({len(unique_places)} total):")
+
+            # Display the DataFrame
+            st.dataframe(
+                locations_df,
+                hide_index=True,
+                column_config={
+                    "Location": st.column_config.TextColumn(
+                        "Location",
+                        width="medium"
+                    )
+                },
+                use_container_width=True,
+                height=400,
+                column_order=("Location",)
             )
-    else:
-        st.write(f"No books found for {search_option} {search_input}")
 
+        if view_action == "Find Duplicates":
+            dupe_ids = []
+            # Dictionary to track books by title
+            books_by_title = defaultdict(list)
 
-# Sidebar: File uploader
-uploaded_file = st.sidebar.file_uploader("Choose a JSON file to Upload", type="json")
+            # Group books by their title
+            for book in all_books:
+                title = book.get('title', '').strip().lower()  # Normalize the title
+                books_by_title[title].append(book)
+
+            # Find and display duplicates
+            st.write("### Duplicate Books (Same Title)")
+
+            found_duplicates = False
+            for title, books in books_by_title.items():
+                if len(books) > 1:  # If more than one book shares the same title
+                    found_duplicates = True
+                    st.write(f"**Title:** {title.capitalize()}")
+                    for book in books:
+                        st.write(f"- Book ID: {book.get('id', 'N/A')}")
+                        dupe_ids.append(book['id'])
+                        print(book)
+
+            if not found_duplicates:
+                st.write("No duplicate books found.")
+
+            if len(dupe_ids) > 1:
+                for i in range(0, len(dupe_ids) - 1, 2):
+                    book1_id = dupe_ids[i]
+                    book2_id = dupe_ids[i+1]
+                    firebase_client.compare_books(all_books, book1_id, book2_id)
+                    st.markdown("----")
+
 
 
 # Function to read and parse the uploaded JSON file
@@ -529,20 +557,6 @@ def read_json_file(file):
     except Exception as e:
         st.sidebar.error(f"Error reading the file: {file} {e}")
         return None
-
-# Button to upload and add books
-if uploaded_file is not None:
-    if st.sidebar.button("Upload and Add Books"):
-        book_data = read_json_file(uploaded_file)  # Read the JSON file
-        
-        if book_data:
-            if isinstance(book_data, list):  # Check if the JSON is a list of books
-                firebase_client.add_books_to_db(collection_name, book_data)  # Add books to Firestore
-                st.sidebar.success("Books added to the database successfully!")
-            else:
-                st.sidebar.error("Invalid format: The JSON file must contain a list of books.")
-
-
 
 
 # Add custom CSS to align the label to the left of the selectbox
@@ -566,78 +580,6 @@ st.markdown(
 )
 
 
-if top_action == "Write Book to JSON":
-    # Radio button to choose between "Title" and "ID"
-    search_type = st.sidebar.radio("Search by:", ("Title", "ID"))
-
-    # Display a text input field based on the selected search type
-    if search_type == "Title":
-        user_input = st.sidebar.text_input("Enter Book Title", "")
-    else:
-        user_input = st.sidebar.text_input("Enter Book ID", "")
-
-    # Optional: Display the input value and call your function when the user provides input
-    if user_input:
-        st.write(f"You entered: {user_input}")
-
-        # Call the write_book_json function based on the search type
-        if search_type == "Title":
-            write_book_json(title=user_input, book_id=None, verbose=False)
-            st.write(f"Saving book with Title: {user_input}")
-        else:
-            write_book_json(title=None, book_id=user_input, verbose=False)
-            st.write(f"Saving book with ID: {user_input}")
-
-
-
-dupe_ids = []
-
-if top_action == "Find Duplicates":
-
-    # Dictionary to track books by title
-    books_by_title = defaultdict(list)
-
-    # Group books by their title
-    for book in all_books:
-        title = book.get('title', '').strip().lower()  # Normalize the title
-        books_by_title[title].append(book)
-
-    # Find and display duplicates
-    st.write("### Duplicate Books (Same Title)")
-
-    found_duplicates = False
-    for title, books in books_by_title.items():
-        if len(books) > 1:  # If more than one book shares the same title
-            found_duplicates = True
-            st.write(f"**Title:** {title.capitalize()}")
-            for book in books:
-                st.write(f"- Book ID: {book.get('id', 'N/A')}")
-                dupe_ids.append(book['id'])
-                print(book)
-
-    if not found_duplicates:
-        st.write("No duplicate books found.")
-
-if len(dupe_ids) > 1:
-    for i in range(0, len(dupe_ids) - 1, 2):
-        book1_id = dupe_ids[i]
-        book2_id = dupe_ids[i+1]
-        firebase_client.compare_books(all_books, book1_id, book2_id)
-        st.markdown("----")
-
-
-# Logic for "Delete Doc by ID"
-if top_action == "Delete Doc by ID":
-    doc_id = st.sidebar.text_input("Enter Document ID", "")
-
-    if doc_id:
-        if st.sidebar.button("Delete Document"):
-            try:
-                firebase_client.delete_document_by_id(collection_name, doc_id)
-                st.write(f"Document with ID '{doc_id}' deleted successfully.")
-            except Exception as e:
-                st.error(f"Failed to delete document: {e}")
-
 
 def write_all_books_to_json(collection_name, all_books):
     """Writes all books from the specified collection to a JSON file."""
@@ -653,59 +595,192 @@ def write_all_books_to_json(collection_name, all_books):
     return filename
 
 
-# Initialize session state for confirmation
-if 'backup_confirmed' not in st.session_state:
-    st.session_state.backup_confirmed = False
 
 def reset_confirmation():
     st.session_state.backup_confirmed = False
 
-if top_action == "BACKUP Collection to file":
-    if not st.session_state.backup_confirmed:
-        # Create a container for the confirmation dialog
-        with st.container():
-            st.warning("⚠️ Backup Confirmation")
-            st.write("You are about to create a backup of the entire collection.")
-            st.write("This will:")
-            st.markdown("""
-                - Create a new JSON file with current timestamp
-                - Save all documents from the collection
-                - Store the file in the 'backup' directory
-            """)
+
+
+# DB-Manage Tab
+with db_tab:
+    st.session_state.current_tab = "DB"
+    db_action = st.selectbox(
+        label="Choose action for DB-Manage",
+        options=db_options.values(),
+    )
+
+    st.write("---")  # Horizontal line for visual separation
+    search_option = st.selectbox("Search by", ("Author", "Book Title", "Genre"))
+    search_input = st.text_input(f"Enter {search_option}")
+    search_button = st.button("Search")
+    st.write("---")  # Horizontal line for visual separation
+
+    # Search logic and display results
+    if search_button:
+        st.write(f"{search_option} {search_input}")
+        if search_option == "Author":
+            books = firebase_client.get_books_by_author(all_books, search_input)
+        elif search_option == "Book Title":
+            books = firebase_client.get_book_by_title(all_books, search_input)
+        elif search_option == "Genre":
+            books = firebase_client.fuzzy_match(all_books, 'genre', search_input)
+
+        # Display results in a nice layout
+        if books:
+            st.write(f"Found {len(books)} books:")
+            for book in books:
+                st.markdown(
+                    f"""
+                    <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius: 5px;">
+                        <strong>Title:</strong> {book.get('title', 'N/A')}<br>
+                        <strong>Author:</strong> {book.get('author', 'N/A')}<br>
+                        <strong>Genre:</strong> {book.get('genre', 'N/A')}<br>
+                        <strong>Year:</strong> {book.get('year', 'N/A')}<br>
+                        <strong>Publisher:</strong> {book.get('publisher', 'N/A')}<br>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+        else:
+            st.write(f"No books found for {search_option} {search_input}")
+
+    #######################################################
+
+
+
+    placeholder_db = st.empty()
+    with placeholder_db.container():
+
+        if db_action == db_options[9]: #BULK UPLOAD JSON
+
+            st.session_state.backup_confirmed = False
+            print(st.session_state)
+            print('BULK UPLOAD JSON File')            
+            # File uploader
+            uploaded_file = st.file_uploader("Choose a JSON file to Upload", type="json")
+            # Button to upload and add books
+            if uploaded_file is not None:
+                if st.button("Upload and Add Books"):
+                    book_data = read_json_file(uploaded_file)  # Read the JSON file
+                    
+                    if book_data:
+                        if isinstance(book_data, list):  # Check if the JSON is a list of books
+                            firebase_client.add_books_to_db(collection_name, book_data)  # Add books to Firestore
+                            st.success("Books added to the database successfully!")
+                        else:
+                            st.error("Invalid format: The JSON file must contain a list of books.")
+
+        if db_action == "BACKUP Collection to file":
+            print('attempting BACKUP')
+            if not st.session_state.backup_confirmed:
+                # Create a container for the confirmation dialog
+                with st.container():
+                    st.warning("⚠️ Backup Confirmation")
+                    st.write(f"backup {collection_name}?")
+                    st.write("This will:")
+                    st.markdown("""
+                        - Create a new JSON file with current timestamp
+                        - Save all documents from the collection
+                        - Store the file in the 'backup' directory
+                    """)
+                    
+                    # Add some space
+                    st.write("")
+                    
+                    # Create columns for buttons
+                    col1, col2, col3 = st.columns([1, 1, 3])
+                    
+                    with col1:
+                        if st.button("✅ Yes, Backup", type="primary"):
+                            st.session_state.backup_confirmed = True
+                            st.rerun()
+                    
+                    with col2:
+                        if st.button("❌ No, Cancel"):
+                            reset_confirmation()
+                            st.write("Backup cancelled.")
             
-            # Add some space
-            st.write("")
-            
-            # Create columns for buttons
-            col1, col2, col3 = st.columns([1, 1, 3])
-            
-            with col1:
-                if st.button("✅ Yes, Backup", type="primary"):
-                    st.session_state.backup_confirmed = True
-                    st.rerun()
-            
-            with col2:
-                if st.button("❌ No, Cancel"):
-                    reset_confirmation()
-                    st.write("Backup cancelled.")
-    
-    else:
-        try:
-            # Show progress indicator
-            with st.spinner("Creating backup..."):
-                filename = write_all_books_to_json(collection_name, all_books)
-            
-            # Show success message with file details
-            st.success("Backup Completed Successfully!")
-            st.write(f"📁 File saved as: `{filename}`")
-            
-            # Add option to create another backup
-            if st.button("Create Another Backup"):
-                reset_confirmation()
-                st.rerun()
-            
-        except Exception as e:
-            st.error(f"❌ Backup Failed: {str(e)}")
-            if st.button("Try Again"):
-                reset_confirmation()
-                st.rerun()
+            else:
+                try:
+                    # Show progress indicator
+                    with st.spinner("Creating backup..."):
+                        filename = write_all_books_to_json(collection_name, all_books)
+                    
+                    # Show success message with file details
+                    st.success("Backup Completed Successfully!")
+                    st.write(f"📁 File saved as: `{filename}`")
+                    
+                    # Add option to create another backup
+                    if st.button("Create Another Backup"):
+                        reset_confirmation()
+                        st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"❌ Backup Failed: {str(e)}")
+                    if st.button("Try Again"):
+                        reset_confirmation()
+                        st.rerun()
+
+        if db_action == "Write Book to JSON":
+            # Radio button to choose between "Title" and "ID"
+            search_type = st.sidebar.radio("Search by:", ("Title", "ID"))
+
+            # Display a text input field based on the selected search type
+            if search_type == "Title":
+                user_input = st.sidebar.text_input("Enter Book Title", "")
+            else:
+                user_input = st.sidebar.text_input("Enter Book ID", "")
+
+            # Optional: Display the input value and call your function when the user provides input
+            if user_input:
+                st.write(f"You entered: {user_input}")
+
+                # Call the write_book_json function based on the search type
+                if search_type == "Title":
+                    write_book_json(title=user_input, book_id=None, verbose=False)
+                    st.write(f"Saving book with Title: {user_input}")
+                else:
+                    write_book_json(title=None, book_id=user_input, verbose=False)
+                    st.write(f"Saving book with ID: {user_input}")
+
+        # Logic for "Delete Doc by ID"
+        if db_action == "Delete Doc by ID":
+            doc_id = st.sidebar.text_input("Enter Document ID", "")
+
+            if doc_id:
+                if st.sidebar.button("Delete Document"):
+                    try:
+                        firebase_client.delete_document_by_id(collection_name, doc_id)
+                        st.write(f"Document with ID '{doc_id}' deleted successfully.")
+                    except Exception as e:
+                        st.error(f"Failed to delete document: {e}")
+
+
+# Help Tab
+with h_tab:
+    st.session_state.current_tab = "Help"
+
+    # Sidebar content for Help tab
+    st.selectbox(
+        label="Choose action for Help",
+        options=top_options.values(),
+    )
+
+
+    placeholder_h = st.empty()
+    with placeholder_h.container():
+
+        st.header("Help")
+        st.write("Here are the help docs and resources.")
+        st.markdown("""
+        - **Getting Started:** [link]
+        - **FAQ:** [link]
+        - **Support:** [link]
+        """)
+
+
+# Global clear button (outside tabs)
+if st.sidebar.button("Clear All Tabs"):
+    print('clear')
+    placeholder_viewer.empty()
+    placeholder_db.empty()
+    placeholder_h.empty()   

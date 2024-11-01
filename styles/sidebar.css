@@ -1,0 +1,318 @@
+/* public/styles/sidebar.css */
+
+
+
+
+
+
+/* Sidebar container in style.css */
+
+/* Map or List buttons in the Sidebar */
+.view-toggle {
+    display: flex;
+    /* Use flexbox for alignment */
+    justify-content: space-between;
+    /* Space buttons evenly */
+    gap: 0.5rem;
+    /* padding: 1rem; */
+    /* gap: 10px; */
+    /* Add a little gap between the buttons */
+    /* padding: 10px;  */
+}
+
+
+.view-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    background-color: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+}
+
+.view-toggle-btn:hover {
+    background-color: #F9FAFB;
+}
+
+
+.view-toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3B82F6, 0 0 0 4px #fff;
+}
+
+.view-toggle-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+.view-toggle-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
+
+
+/* MarkerCluster Toggle */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    /* Reduced width */
+    height: 20px;
+    /* Reduced height */
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    /* Smaller circle */
+    width: 16px;
+    /* Smaller circle */
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #2196F3;
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+    /* Adjusted for smaller toggle */
+}
+
+.slider.round {
+    border-radius: 20px;
+    /* Rounded corners */
+}
+
+.slider.round:before {
+    border-radius: 50%;
+    /* Circular handle */
+}
+
+.toggle-label {
+    font-size: 0.875rem;
+    /* Slightly smaller text if desired */
+}
+
+
+/************* SEARCH BOX **********/
+.searchBox--large {
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px
+}
+
+.searchBox {
+    box-sizing: border-box;
+    flex: 1;
+    position: relative;
+}
+
+.greyBox {
+    background-color: #bac0bc;
+    padding: 10px;
+    max-width: 625px;
+}
+
+.searchBox--large {
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.searchBox {
+    box-sizing: border-box;
+    flex: 1;
+    position: relative;
+}
+
+
+.searchControls {
+    /* width: 300px; */
+    padding: 20px;
+    background-color: #f4f4f4;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-right: 1px solid #ccc;
+}
+
+.searchControls h2 {
+    text-align: center;
+}
+
+.searchControls label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+}
+
+.searchControls input,
+.searchControls select {
+    width: 100%;
+    padding: 8px;
+    /* margin-top: 5px; */
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.searchControls .search-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.searchControls .search-btn:hover {
+    background-color: #45a049;
+}
+
+
+
+.radio-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+}
+
+.radio-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+.radio-group label {
+    font-size: 0.9rem;
+}
+
+.radio-item.full-width label {
+    font-size: 1rem;
+}
+
+
+.radio-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.radio-container label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.radio-container input[type="radio"] {
+    margin-right: 10px;
+}
+
+
+/* Sidebar --> Collection  */
+.collection-selector {
+    margin-top: 20px;
+    max-width: 100%;
+    /* Ensure it doesn't exceed the width of its container */
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width */
+}
+
+.collection-options {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow options to wrap to the next line if needed */
+    justify-content: space-between;
+    margin-top: 10px;
+    max-width: 100%;
+    /* Ensure it doesn't exceed the width of its container */
+}
+
+.collection-option {
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+    /* Add some space between wrapped items */
+    flex-grow: 1;
+    /* Allow items to grow and fill the space */
+    flex-basis: calc(50% - 5px);
+    /* Set a base width for two items per row, adjusting for margin */
+    max-width: calc(50% - 5px);
+    /* Ensure items don't grow too large */
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width */
+}
+
+.collection-option:hover {
+    background-color: #f0f0f0;
+}
+
+.collection-option.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Style for the controls and form inside the side panel */
+#form-container,
+#controls {
+    margin-bottom: 20px;
+}
+
+
+#form-container input,
+#form-container button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}

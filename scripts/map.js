@@ -29,6 +29,21 @@ const presetLocations = {
 
 };
 
+// Assuming you have a presetLocations object like this
+const presetRandomLocations = {
+  'New York': { lat: 40.7128, lng: -74.0060 },
+  'London': { lat: 51.5074, lng: -0.1278 },
+  'Tokyo': { lat: 35.6762, lng: 139.6503 },
+  'Sydney': { lat: -33.8688, lng: 151.2093 },
+  'Rio de Janeiro': { lat: -22.9068, lng: -43.1729 },
+  'Cairo': { lat: 30.0444, lng: 31.2357 },
+  'Moscow': { lat: 55.7558, lng: 37.6173 },
+  'Paris': { lat: 48.8566, lng: 2.3522 },
+  'Dubai': { lat: 25.2048, lng: 55.2708 },
+  'Toronto': { lat: 43.6532, lng: -79.3832 }
+};
+
+
 function printAllBooks() {
   window.books.forEach((book, index) => {
     console.log(`Book ${index + 1}:`);
@@ -466,6 +481,7 @@ async function initMap() {
 
   });
 
+  //Manually entering Location
   document.getElementById('locationInput').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
       event.preventDefault(); // Prevent form submission if it's within a form
@@ -500,6 +516,39 @@ async function initMap() {
     console.log('current zoom ', currentZoom);
     updateZoom(currentZoom + 1);
   });
+
+  // Add event listener to the random location button
+  document.getElementById('random-btn').addEventListener('click', function () {
+    // Get an array of location names
+    const locationNames = Object.keys(presetRandomLocations);
+
+    // Select a random location
+    const randomLocationName = locationNames[Math.floor(Math.random() * locationNames.length)];
+    const randomLocation = presetRandomLocations[randomLocationName];
+
+    // Generate a random zoom level (adjust range as needed)
+    const minZ = 5;
+    const maxZ = 9;
+    const randomZoomLevel = Math.floor(Math.random() * (maxZ - minZ + 1)) + minZ; // Random zoom between 5 and 10
+
+    try {
+      // Update zoom display
+      document.getElementById('zoomValue').textContent = randomZoomLevel;
+
+      // Center map on random location
+      map.setCenter(randomLocation);
+
+      // Set random zoom level
+      map.setZoom(randomZoomLevel);
+
+      // Optional: Update any location display if you have one
+      console.log(`Random location: ${randomLocationName}, Zoom level: ${randomZoomLevel}`);
+    } catch (error) {
+      console.error('Error setting random map view:', error);
+    }
+  });
+
+
 
   renderBooksOnMap(); // This function will render books on the map once they're ready
   updateZoom(currentZoom);
