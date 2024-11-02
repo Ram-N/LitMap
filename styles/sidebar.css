@@ -161,6 +161,45 @@ input:checked+.slider:before {
     position: relative;
 }
 
+.searchBox__button,
+.suggest-button {
+    background-color: #007bff;
+    /* Bootstrap's primary blue */
+    color: #fff;
+    /* White text */
+    border: none;
+    /* Remove border */
+    padding: 0.5rem 1rem;
+    /* Padding for a button-like look */
+    font-size: 1rem;
+    /* Font size */
+    border-radius: 4px;
+    /* Rounded corners */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* Smooth hover transition */
+}
+
+.searchBox__button:hover {
+    background-color: #0056b3;
+    /* Darker blue on hover */
+}
+
+.searchBox__button:active {
+    background-color: #004085;
+    /* Even darker blue for active state */
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    /* Light gray line */
+    margin: 1rem 0;
+    /* Space above and below the line */
+    width: 100%;
+    /* Full width in the sidebar */
+}
+
 
 .searchControls {
     /* width: 300px; */
@@ -297,7 +336,7 @@ input:checked+.slider:before {
 }
 
 .collection-option.active {
-    background-color: #007bff;
+    background-color: #0ca31ea4;
     color: white;
 }
 

@@ -98,6 +98,23 @@ function showSearchResults() {
 }
 
 
+function showRandomLocation() {
+    document.getElementById('map-container').classList.add('active');
+    document.getElementById('focus-container').classList.remove('active');
+    document.getElementById('suggest-container').classList.remove('active');
+
+
+    // Disable the Map button and enable the List button
+    document.getElementById('map-btn').classList.remove('disabled');
+    document.getElementById('map-btn').removeAttribute('disabled');
+    document.getElementById('list-btn').classList.remove('disabled');
+    document.getElementById('list-btn').removeAttribute('disabled');
+    document.getElementById('suggest-btn').classList.remove('disabled');
+    document.getElementById('suggest-btn').removeAttribute('disabled');
+
+}
+
+
 function showSuggestForm() {
     // Hide map and list containers, show suggest container
     document.getElementById('map-container').classList.remove('active');
@@ -160,10 +177,33 @@ function renderCards(books, query) {
 
     // Add the new count display at the start of books-found section
     // booksFoundSection.insertBefore(countDisplay, booksFoundSection.firstChild);
-
     books.forEach(book => {
         const card = document.createElement('div');
         card.className = 'search-card';
+
+        // Create image container
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'search-card__image-container';
+
+        if (book.isbn) {
+            const coverImage = document.createElement('img');
+            coverImage.src = `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`;
+            coverImage.alt = `Cover of ${book.title}`;
+            coverImage.className = 'search-card__cover-image';
+            coverImage.onerror = function () {
+                this.src = ''; // Clear the broken image
+                this.alt = 'No cover available';
+                this.classList.add('search-card__cover-image--placeholder');
+            };
+            imageContainer.appendChild(coverImage);
+        } else {
+            imageContainer.classList.add('search-card__image-container--placeholder');
+            imageContainer.textContent = 'No cover available';
+        }
+
+        // Create content container for everything else
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'search-card__content';
 
         // Create header section with title, author, and type
         const header = document.createElement('div');
@@ -208,10 +248,14 @@ function renderCards(books, query) {
             description.textContent = 'No description available';
         }
 
+        // Assemble the content container
+        contentContainer.appendChild(header);
+        contentContainer.appendChild(description);
+        contentContainer.appendChild(locations);
+
         // Assemble the card
-        card.appendChild(header);
-        card.appendChild(description);
-        card.appendChild(locations);
+        card.appendChild(imageContainer);
+        card.appendChild(contentContainer);
 
         // Add the card to the container
         container.appendChild(card);
@@ -319,26 +363,6 @@ async function renderSearchResultsMap(books) {
     }
 }
 
-// Example usage:
-// const searchResults = [
-//     { 
-//         title: "Book 1", 
-//         author: "Author 1",
-//         locations: [
-//             { name: "Store A", lat: 40.7128, lng: -74.0060 },
-//             { name: "Library B", lat: 40.7580, lng: -73.9855 }
-//         ]
-//     },
-//     { 
-//         title: "Book 2", 
-//         author: "Author 2",
-//         locations: [
-//             { name: "Bookshop C", lat: 40.7308, lng: -73.9973 }
-//         ]
-//     },
-// ];
-// renderSearchResultsMap(searchResults);
-
 document.addEventListener('DOMContentLoaded', function () {
     showMap();
 });
@@ -384,5 +408,8 @@ document.addEventListener('booksFetched', function (e) {
 
 // Attach the function to the window object to make it globally accessible
 window.showSearchResults = showSearchResults;
+window.showRandomLocation = showRandomLocation;
 window.showMap = showMap;
 window.showSuggestForm = showSuggestForm;
+// Initialize Lucide icons
+lucide.createIcons();

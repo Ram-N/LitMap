@@ -229,12 +229,19 @@ export function buildContent(book, location) {
 
   // If a location has a desc, use it. If not, use book's
   const descriptionToShow = location.description || book.description;
+  // Generate the cover image HTML
+  const coverHTML = book.isbn
+    ? `<img src="https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg" 
+      alt="Cover of ${book.title}"
+      class="image"
+      onerror="this.innerHTML='Book Cover'; this.className='image';">`
+    : `<div class="image">Book Cover</div>`;
 
   content.innerHTML = `
   ${getTitleInitials(book.title)}
   <div class='book-info'>
       <div class="left-column">
-        <div class="image">Book Cover</div>
+        ${coverHTML}
         <div class="location-label">${location.city}</div>
       </div>
       <div class="content">

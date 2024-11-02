@@ -13,6 +13,8 @@
 </head>
 
 <body>
+    <!-- This div is where React will mount -->
+    <div id="root"></div>
     <div class="main-container">
         <div class="sidebar-container">
             <h1>LitMap</h1>
@@ -41,14 +43,14 @@
                 <span class="toggle-label">Enable Clustering</span>
             </div>
 
-            <div id="searchControls" class="tab-content style=" display: block;">
+            <div id="searchControls" class="tab-content" style="display: block;">
                 <form name="searchForm" class="stacked greyBox searchBox searchBox--large" action="/search"
                     accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
                     <div class="greyText" style="padding-bottom: 10px">
                         <input type="text" name="q" id="search_query_main"
                             class="searchBox__input searchBox--large__input" placeholder="Title, Author, ISBN"
                             style="width: 100%;">
-                        <input type="submit" value="Search" class="searchBox__button">
+                        <input type="submit" value="Search" class="searchBox__button btn btn-primary">
                     </div>
 
 
@@ -92,8 +94,9 @@
                     <span class="collection-option" data-collection="books">All-Books</span>
                 </div>
             </div>
+            <hr class="sidebar-divider">
             <div id="navbar">
-                <button class="view-toggle-btn" id="suggest-btn" onclick="showSuggestForm()">Suggest A Book</button>
+                <button class="suggest-button" id="suggest-btn" onclick="showSuggestForm()">Suggest A Book</button>
             </div>
 
 

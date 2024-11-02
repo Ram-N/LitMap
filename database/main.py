@@ -204,55 +204,6 @@ class FirebaseClient:
                 st.write(f"### **{key.capitalize()}** exists only in Book 2: {book2[key]}")
 
 
-    # deprecated. No need to access the db more than once
-    def get_documents_with_case_variants(self, collection_name: str, field: str, value: str) -> list:
-        """
-        Get documents from Firestore where a field matches different case variants of a given value.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-            field (str): The field to match.
-            value (str): The value to search for in different case variants.
-        
-        Returns:
-            list: A list of dictionaries containing the matching documents' data.
-        """
-        # Convert the value into different case formats
-        original_value = value            # Original case
-        lower_value = value.lower()       # Lowercase version of the value
-        upper_value = value.upper()       # Uppercase version of the value
-        title_value = value.title()       # Title case version (each word capitalized)
-
-        # Query for each case variant
-        original_query = self.db.collection(collection_name).where(field, '==', original_value).stream()
-        lower_query = self.db.collection(collection_name).where(field, '==', lower_value).stream()
-        upper_query = self.db.collection(collection_name).where(field, '==', upper_value).stream()
-        title_query = self.db.collection(collection_name).where(field, '==', title_value).stream()
-
-        # List to store document data along with their IDs
-        matching_docs = []
-
-        # Set to store document IDs we've already seen
-        seen_ids = set()
-                # Function to append documents if they are new
-        def append_if_new(query):
-            for doc in query:
-                if doc.id not in seen_ids:  # Check if the document ID is already in the set
-                    seen_ids.add(doc.id)    # Add the document ID to the set
-                    matching_docs.append({'id': doc.id, **doc.to_dict()})
-        # Append documents from each query if they are new
-        append_if_new(original_query)
-        append_if_new(lower_query)
-        append_if_new(upper_query)
-        append_if_new(title_query)
-        # Print results
-        if matching_docs:
-            for doc in matching_docs:
-                print(f"Document ID: {doc['id']} {doc[field]}")
-            if len(matching_docs) > 1:
-                print(f"Found {len(matching_docs)} unique documents")
-
-        return matching_docs
-
     def fuzzy_match(self, books, attribute, search_string):
         """
         Perform a fuzzy search on a list of books for a given attribute.
