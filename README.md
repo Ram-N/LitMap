@@ -1,81 +1,110 @@
 
 
-A Literary map of the world.
-Go to any marker (location) in the world and see which books are written about the place.
+# LitMap 🌍📚
 
-```
-LitMap/
-│
-├── public/
-│   ├── index.html
-│   ├── styles/
-│   │   └── style.css
-│   ├── scripts/
-│   │   ├── app.js
-│   │   ├── firebase.js
-│   │   └── map.js
-│   └── assets/
-│
-├── firebase.json
-└── README.md
-```
-
-## File Descriptions
+**Live App** [https://ram-n.github.io/LitMap/](https://ram-n.github.io/LitMap/)
 
 
-### 1. public/ Folder:
-index.html: Your main HTML file that will load the map and interface for adding books. This is the root file that users will access.
+**LitMap** is an interactive, crowd-sourced map where readers can explore and find books about real locations.
+Whether you're a book lover or an adventurous traveler, LitMap is intended to show you a few books about the places you love and want to visit.
 
-- styles/:
-    CSS Files
+---
 
-- scripts/:
-    - app.js: Central JavaScript file for app logic. This will include UI interactions (handling form submissions, connecting Google Maps and Firebase).
-    - firebase.js: Contains the Firebase configuration and initialization code. This is where you'll paste your Firebase config (from earlier).
-    - map.js: Handles Google Maps logic, such as loading the map, adding markers, and interacting with map elements.
+## 📖 What is LitMap?
 
-- assets/:
-Place any images or icons your app might need here (like a logo, custom markers, etc.).
+LitMap is designed to bridge the gap between literature and real-life settings, giving readers and travelers another way to connect with books. Users can explore the world map to find the cities, towns, and landmarks that serve as settings in well-known (and lesser-known) books. Each location includes information about the book, author, and the setting's significance.
 
-### 2. src/ Folder (optional):
-    Use this folder if you plan to use a build tool like Webpack or Parcel.
-components/: If you start building more advanced UI features (like modals, book lists, etc.), you can organize reusable components here.
+### Key Features
 
--     utils/: Helper functions, like those for formatting data or handling Firebase queries, can go here.
+- **Global Map Exploration**: Discover settings from books worldwide on an interactive map.
+- **Search & Filter**: Easily search for books by title, author, genre, and tags.
+- **Contribute to the Map**: Add new books and their associated locations, making LitMap a growing repository of literary landmarks.
+- **Responsive & User-Friendly**: An intuitive interface with map controls for zoom, map type selection, and quick navigation.
 
-### 3. Project Files:
-- firebase.json & .firebaserc: 
-    Auto-generated files to initialize Firebase in your project. Also contain hosting configurations.
+---
 
-- package.json: 
-    This file tracks project dependencies (like Firebase SDK, if you're using npm).
+## 🛠 Tech Stack
 
-## Data Structure
+- **Frontend**: JavaScript, Google Maps API
+- **Backend**: Firebase (Firestore for data storage, Firebase Hosting)
+- **Deployment**: GitHub Pages (for easy public access)
 
-```{json}
-{
-  "location": {
-    "lat": 28.6139,
-    "lng": 77.2090,
-    "name": "New Delhi"
-  },
-  "books": [
-    {
-      "title": "Midnight's Children",
-      "author": "Salman Rushdie"
-    },
-    {
-      "title": "The White Tiger",
-      "author": "Aravind Adiga"
-    }
-  ]
-}
-```
+---
 
-### Working with This Schema
 
-- Adding Books: Whenever a user adds a new book for a location, the book is appended to the books array for that location.
-- Displaying Books: When a user clicks on a marker, you can display a list of books in an info window, looping through the books array for that location.
-- Fetching Locations: When querying your database, you'll get back locations with all associated books, making it easy to manage multiple books per location.
+## 📚 Usage Guide
 
+- **Explore the Map**: Use the map to browse locations based on books.
+- **Search**: Type an author or book title into the search bar to find specific books or locations.
+- **Navigation**: Switch between ‘Map,’ ‘Book List,’ and ‘Admin’ tabs for different sections of the app.
+
+---
+
+## 📸 Screenshots
+
+Here's a glimpse of LitMap in action
+
+
+### Map View
+1. **Map View**: Explore locations around the world.
+
+Explore global literary locations on an interactive map.
+![Map View](images/view1.png)
+
+### Search and Book Details
+
+2. **Search Functionality**: Find books by title, author, or genre.
+
+
+Search for books by title or author, and see location details.
+![Search and Book Details](images/view2.png)
+
+
+---
+
+
+## 🤝 Contributing
+
+Contributions are welcome! 
+1. Suggest books that you'd like to see. These would typically be travel (or travel-related) books, travel memoirs. Any book that you feel should be included, please suggest using the "Suggest A Book" feature.
+
+2. Please suggest feature ideas. If you wish to see something implemented, or have an idea for how something should work, please open an issue. (Or write to me!)
+
+If you are a developer who wants to contribute:
+
+  1. Fork the repo.
+  2. Create a new branch (`git checkout -b feature/new-feature`).
+  3. Make your changes and commit (`git commit -m 'Add new feature'`).
+  4. Push to the branch (`git push origin feature/new-feature`).
+  5. Open a Pull Request.
+
+Please check out the issues tab if you're looking for ideas on where to start.
+
+Also be sure to check out the [LitMap Tech Stack](tech-stack.md) page.
+---
+
+## 📋 ChangeLog
+
+For a detailed list of changes and new features in each release, check out the [ChangeLog](./CHANGELOG.md).
+
+--
+
+## 🌱 Future Improvements / Roadmap
+
+- **Enhanced Filter Options**: Add more specific filters for book types, historical eras, or themes.
+- **User Profiles**: Allow users to create profiles to save favorite locations and add personalized content.
+- **Book Recommendations**: Show book recommendations based on locations or user interests.
+
+---
+
+
+## 📜 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## 💬 Credits / Acknowledgments
+
+Thanks to all contributors and the developers of Google Maps API and Firebase for providing the tools that made LitMap possible.
 
