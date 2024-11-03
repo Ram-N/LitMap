@@ -48,13 +48,14 @@
     max-width: 400px;
     overflow: hidden;
     width: 100%;
+    cursor: default;
+    /* explicitly set default cursor */
 }
 
 
 
 .bookCard.highlight::before {
     content: "📚";
-    /* later on use different icons for books */
     font-size: 2em;
     position: absolute;
     top: -10px;
@@ -75,6 +76,7 @@
     right: 10px;
     cursor: pointer;
     color: blue;
+    padding: 0.3rem;
 }
 
 .bookCard.highlight .close-button:hover {
@@ -122,6 +124,8 @@
     justify-content: center;
     font-weight: bold;
     color: #888;
+    cursor: pointer;
+
 }
 
 

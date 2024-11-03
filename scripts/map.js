@@ -40,7 +40,27 @@ const presetRandomLocations = {
   'Moscow': { lat: 55.7558, lng: 37.6173 },
   'Paris': { lat: 48.8566, lng: 2.3522 },
   'Dubai': { lat: 25.2048, lng: 55.2708 },
-  'Toronto': { lat: 43.6532, lng: -79.3832 }
+  'Toronto': { lat: 43.6532, lng: -79.3832 },
+  'Mexico City': { lat: 19.4326, lng: -99.1332 },
+  'Beijing': { lat: 39.9042, lng: 116.4074 },
+  'Mumbai': { lat: 19.0760, lng: 72.8777 },
+  'Johannesburg': { lat: -26.2041, lng: 28.0473 },
+  'Berlin': { lat: 52.5200, lng: 13.4050 },
+  'Rome': { lat: 41.9028, lng: 12.4964 },
+  'Bangkok': { lat: 13.7563, lng: 100.5018 },
+  'Buenos Aires': { lat: -34.6037, lng: -58.3816 },
+  'Los Angeles': { lat: 34.0522, lng: -118.2437 },
+  'Seoul': { lat: 37.5665, lng: 126.9780 },
+  'Istanbul': { lat: 41.0082, lng: 28.9784 },
+  'Singapore': { lat: 1.3521, lng: 103.8198 },
+  'Madrid': { lat: 40.4168, lng: -3.7038 },
+  'Lagos': { lat: 6.5244, lng: 3.3792 },
+  'Chicago': { lat: 41.8781, lng: -87.6298 },
+  'Lima': { lat: -12.0464, lng: -77.0428 },
+  'Jakarta': { lat: -6.2088, lng: 106.8456 },
+  'Nairobi': { lat: -1.2921, lng: 36.8219 },
+  'Hong Kong': { lat: 22.3193, lng: 114.1694 },
+  'Athens': { lat: 37.9838, lng: 23.7275 }
 };
 
 
@@ -177,27 +197,61 @@ function getTitleInitials(title) {
   return initials;
 }
 
+// Keep track of the currently highlighted marker
+let currentlyHighlightedMarker = null;
 
 export function openHighlight(markerView, book) {
+  // First, remove any existing event listeners to prevent duplicates
+  const existingHandler = markerView.content._clickHandler;
+  if (existingHandler) {
+    markerView.content.removeEventListener('click', existingHandler);
+  }
+
+  // Create the click handler function
+  const clickHandler = (e) => {
+    if (markerView.content.classList.contains('highlight') &&
+      !e.target.classList.contains('close-button') &&
+      (e.target.classList.contains('image') || e.target.tagName.toLowerCase() === 'img')) {
+      const goodreadsUrl = `https://www.goodreads.com/book/isbn/${book.isbn}`;
+      window.open(goodreadsUrl, '_blank');
+      console.log('opening', book.title);
+    }
+  };
+
+  // Store the handler reference so we can remove it later
+  markerView.content._clickHandler = clickHandler;
+
   // Add the close button dynamically when highlighting
   const closeButton = document.createElement('div');
   closeButton.className = 'close-button';
-  closeButton.textContent = 'Close';  // or '×' if you prefer
+  closeButton.textContent = 'Close';
   markerView.content.insertBefore(closeButton, markerView.content.firstChild);
 
   markerView.content.classList.add("highlight");
   markerView.zIndex = 1;
 
+  // Update the currently highlighted marker
+  currentlyHighlightedMarker = markerView;
+
   // Add click handler for close button
   closeButton.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent event from bubbling up
+    e.stopPropagation();
     closeHighlight(markerView);
   });
+
+  // Add the new click handler
+  markerView.content.addEventListener('click', clickHandler);
 }
 
-
-
+// Also modify closeHighlight to clean up the event listener
 export function closeHighlight(markerView) {
+  // Remove the click handler if it exists
+  const existingHandler = markerView.content._clickHandler;
+  if (existingHandler) {
+    markerView.content.removeEventListener('click', existingHandler);
+    markerView.content._clickHandler = null;
+  }
+
   // Remove the close button when un-highlighting
   const closeButton = markerView.content.querySelector('.close-button');
   if (closeButton) {
@@ -206,21 +260,12 @@ export function closeHighlight(markerView) {
 
   markerView.content.classList.remove("highlight");
   markerView.zIndex = null;
-}
 
-
-
-//DEPRECATED by Open and CLoseToggle functions
-function toggleHighlight(markerView, book) {
-  if (markerView.content.classList.contains("highlight")) {
-    markerView.content.classList.remove("highlight");
-    markerView.zIndex = null;
-  } else {
-    markerView.content.classList.add("highlight");
-    markerView.zIndex = 1;
+  // Clear the reference if this was the currently highlighted marker
+  if (currentlyHighlightedMarker === markerView) {
+    currentlyHighlightedMarker = null;
   }
 }
-
 
 export function buildContent(book, location) {
   const content = document.createElement("div");
@@ -336,12 +381,18 @@ function renderBooksOnMap() {
               infoWindow.close();
             });
 
+            // In your map setup where you create markers:
             marker.addListener("click", () => {
-              // toggleHighlight(marker, book);
+              // If this marker isn't already highlighted
               if (!marker.content.classList.contains("highlight")) {
+                // If there's a currently highlighted marker, close it
+                if (currentlyHighlightedMarker) {
+                  closeHighlight(currentlyHighlightedMarker);
+                }
+                // Open this marker and update the currently highlighted marker
                 openHighlight(marker, book);
+                currentlyHighlightedMarker = marker;
               }
-
             });
 
             // Add the marker to the markers array
