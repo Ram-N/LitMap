@@ -4,7 +4,7 @@
 I use a streamlit app (run locally) to update the fireStore DB that stores all the data for LitMap.
 The main purpose of this app is to help me with DB MGMT.
 ```
-> source activate <relevant env>
+> source activate <relevant env> litmap
 > streamlit run main.py
 ```
 

@@ -313,53 +313,56 @@ view_tab, db_tab, h_tab = st.tabs(["Data Viewer", "DB-Manage", "Help"])
 view_options = {
     0: "Select",
     1: "Document Count",
-    2: "Print All Titles",
-    3: "Print All Authors",
-    4: "List All Locations",
+    2: "List All Book Titles",
+    3: "List All Authors",
+    4: "Show All Locations",
     5: "Find Duplicates",
     6: "Compare 2 Books",
 }
 
 db_options = {
     0: "Select DB Action",
-    8: "BACKUP Collection to file",
-    9: "BULK UPLOAD of docs",
-    12: "Persist Book to JSON",
-    10: "Delete Doc by ID",
-    11: "PURGE - write file and DELete doc"
+    8: "Export Collection to JSON",
+    9: "Upload Books to Firebase",
+    10: "Edit Book Field",
+    12: "Export Single Book to JSON",
+    13: "Delete Book by ID",
+    11: "Backup & Delete Book"
 }
 
 
 top_options = {
     0: "Select",
     1: "Document Count",
-    2: "Print All Titles",
-    3: "Print All Authors",
-    4: "List All Locations",
+    2: "List All Book Titles",
+    3: "List All Authors",
+    4: "Show All Locations",
     5: "Find Duplicates",
     6: "Compare 2 Books",
     7: "----",
-    8: "BACKUP Collection to file",
-    9: "Write Book to JSON",
-    10: "Delete Doc by ID",
-    11: "PURGE - write file and DELete doc"
+    8: "Export Collection to JSON",
+    9: "Export Single Book to JSON",
+    10: "Delete Book by ID",
+    11: "Backup & Delete Book"
 }
 
 
 # Create a dictionary of tooltips/explanations
 tooltips = {
     "Select": "Choose an action from the dropdown",
-    "Document Count": "Shows the total number of documents in the collection",
-    "Print All Titles": "Displays a sorted list of all book titles",
-    "Print All Authors": "Shows a list of all authors in the collection",
-    "List All Locations": "Displays all unique locations mentioned in books",
+    "Document Count": "Shows the total number of books in the collection",
+    "List All Book Titles": "Displays a sorted list of all book titles",
+    "List All Authors": "Shows a list of all authors in the collection",
+    "Show All Locations": "Displays all unique locations mentioned in books",
     "Find Duplicates": "Identifies potential duplicate books in the collection",
     "Compare 2 Books": "Shows a side-by-side comparison of two selected books",
     "----": "Separator",
-    "BACKUP Collection to file": "Creates a backup of the entire collection",
-    "Write Book to JSON": "Exports a selected book to JSON format",
-    "Delete Doc by ID": "Removes a document using its unique identifier",
-    "PURGE - write file and DELete doc": "Backs up and then deletes a document"
+    "Export Collection to JSON": "Downloads entire collection as a backup JSON file",
+    "Upload Books to Firebase": "Import books from JSON files into Firebase database",
+    "Edit Book Field": "Modify specific fields (like ISBN) in existing books",
+    "Export Single Book to JSON": "Downloads a selected book as a JSON file",
+    "Delete Book by ID": "Permanently removes a book using its unique identifier",
+    "Backup & Delete Book": "Creates a backup copy then deletes the book from Firebase"
 }
 
 # Create the HTML for the dropdown label with tooltip
@@ -417,8 +420,8 @@ with view_tab:
             print(doc_count)
             st.write(f"Number of documents in '{collection_name}': {doc_count}")
 
-        # ALL TITLES
-        if view_action == top_options[2]: # ALL TITLES
+        # LIST ALL BOOK TITLES
+        if view_action == top_options[2]: # List All Book Titles
             all_titles = sorted([book['title'] for book in all_books if 'title' in book])
             print(len(all_titles))
             st.write("### All Titles (Sorted Alphabetically):")
@@ -585,6 +588,7 @@ with db_tab:
                     <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius: 5px;">
                         <strong>Title:</strong> {book.get('title', 'N/A')}<br>
                         <strong>Author:</strong> {book.get('author', 'N/A')}<br>
+                        <strong>ID:</strong> {book.get('id', 'N/A')}<br>
                         <strong>Genre:</strong> {book.get('genre', 'N/A')}<br>
                         <strong>Year:</strong> {book.get('year', 'N/A')}<br>
                         <strong>Publisher:</strong> {book.get('publisher', 'N/A')}<br>
@@ -601,11 +605,11 @@ with db_tab:
     placeholder_db = st.empty()
     with placeholder_db.container():
 
-        if db_action == db_options[9]: #BULK UPLOAD JSON
+        if db_action == db_options[9]: #Upload Books to Firebase
 
             st.session_state.backup_confirmed = False
             print(st.session_state)
-            print('BULK UPLOAD JSON File')            
+            print('Upload Books to Firebase')            
             # File uploader
             uploaded_file = st.file_uploader("Choose a JSON file to Upload", type="json")
             # Button to upload and add books
@@ -620,13 +624,13 @@ with db_tab:
                         else:
                             st.error("Invalid format: The JSON file must contain a list of books.")
 
-        if db_action == "BACKUP Collection to file":
-            print('attempting BACKUP')
+        if db_action == "Export Collection to JSON":
+            print('attempting Export Collection to JSON')
             if not st.session_state.backup_confirmed:
                 # Create a container for the confirmation dialog
                 with st.container():
-                    st.warning("⚠️ Backup Confirmation")
-                    st.write(f"backup {collection_name}?")
+                    st.warning("⚠️ Export Confirmation")
+                    st.write(f"Export {collection_name} collection to JSON?")
                     st.write("This will:")
                     st.markdown("""
                         - Create a new JSON file with current timestamp
@@ -641,7 +645,7 @@ with db_tab:
                     col1, col2, col3 = st.columns([1, 1, 3])
                     
                     with col1:
-                        if st.button("✅ Yes, Backup", type="primary"):
+                        if st.button("✅ Yes, Export", type="primary"):
                             st.session_state.backup_confirmed = True
                             st.rerun()
                     
@@ -671,6 +675,9 @@ with db_tab:
                         reset_confirmation()
                         st.rerun()
 
+        if db_action == db_options[10]: #"Edit Book Field":
+            pass
+
         if db_action == "Write Book to JSON":
             # Radio button to choose between "Title" and "ID"
             search_type = st.sidebar.radio("Search by:", ("Title", "ID"))
@@ -693,8 +700,8 @@ with db_tab:
                     write_book_json(title=None, book_id=user_input, verbose=False)
                     st.write(f"Saving book with ID: {user_input}")
 
-        # Logic for "Delete Doc by ID"
-        if db_action == "Delete Doc by ID":
+        # Logic for "Delete Book by ID"
+        if db_action == "Delete Book by ID":
             doc_id = st.sidebar.text_input("Enter Document ID", "")
 
             if doc_id:
