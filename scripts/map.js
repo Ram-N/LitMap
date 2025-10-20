@@ -188,11 +188,10 @@ function getTitleInitials(title) {
       if (word === 'on' || word === 'of') {
         return word.toLowerCase();
       }
-      // For other words, return the first character
-      return word[0];
+      // For other words, return the first character uppercase
+      return word[0].toUpperCase();
     })
-    .join('')
-    .toUpperCase();
+    .join('');
 
   return initials;
 }
