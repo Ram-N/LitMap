@@ -459,12 +459,16 @@ view_options = {
 
 db_options = {
     0: "Select DB Action",
-    8: "Export Collection to JSON",
-    9: "Upload Books to Firebase",
-    10: "Edit Book Field",
-    12: "Export Single Book to JSON",
-    13: "Delete Book by ID",
-    11: "Backup & Delete Book"
+    # Import/Upload Operations
+    1: "📤 Upload Books from JSON",
+    # Edit Operations
+    2: "✏️ Edit Book",
+    # Export/Backup Operations
+    3: "💾 Export Collection (Full Backup)",
+    4: "📄 Export Single Book",
+    # Delete Operations
+    5: "🗑️ Delete Book by ID",
+    6: "⚠️ Backup & Delete Book"
 }
 
 
@@ -487,6 +491,7 @@ top_options = {
 # Create a dictionary of tooltips/explanations
 tooltips = {
     "Select": "Choose an action from the dropdown",
+    "Select DB Action": "Choose a database operation to perform",
     "Document Count": "Shows the total number of books in the collection",
     "List All Book Titles": "Displays a sorted list of all book titles",
     "List All Authors": "Shows a list of all authors in the collection",
@@ -494,12 +499,13 @@ tooltips = {
     "Find Duplicates": "Identifies potential duplicate books in the collection",
     "Compare 2 Books": "Shows a side-by-side comparison of two selected books",
     "----": "Separator",
-    "Export Collection to JSON": "Downloads entire collection as a backup JSON file",
-    "Upload Books to Firebase": "Import books from JSON files into Firebase database",
-    "Edit Book Field": "Modify specific fields (like ISBN) in existing books",
-    "Export Single Book to JSON": "Downloads a selected book as a JSON file",
-    "Delete Book by ID": "Permanently removes a book using its unique identifier",
-    "Backup & Delete Book": "Creates a backup copy then deletes the book from Firebase"
+    # New DB tooltips
+    "📤 Upload Books from JSON": "Import books from JSON files into Firebase with validation and duplicate checking",
+    "✏️ Edit Book": "Modify book details including title, author, locations, and metadata",
+    "💾 Export Collection (Full Backup)": "Download entire collection as a timestamped backup JSON file",
+    "📄 Export Single Book": "Export a single book to JSON file by title or ID",
+    "🗑️ Delete Book by ID": "Permanently remove a book using its unique identifier",
+    "⚠️ Backup & Delete Book": "Create a backup copy then delete the book from Firebase"
 }
 
 # Create the HTML for the dropdown label with tooltip
@@ -1079,10 +1085,10 @@ with db_tab:
     st.session_state.current_tab = "DB"
 
     # Determine the default index for db_action selectbox
-    # If edit_selected_book exists, default to "Edit Book Field"
+    # If edit_selected_book exists, default to "Edit Book"
     if 'edit_selected_book' in st.session_state and st.session_state.edit_selected_book is not None:
-        # Find index of "Edit Book Field" in db_options
-        edit_field_key = 10  # "Edit Book Field" is at key 10
+        # Find index of "Edit Book" in db_options
+        edit_field_key = 2  # "Edit Book" is at key 2
         default_index = list(db_options.keys()).index(edit_field_key)
     else:
         default_index = 0
@@ -1155,7 +1161,7 @@ with db_tab:
     placeholder_db = st.empty()
     with placeholder_db.container():
 
-        if db_action == db_options[9]: #Upload Books to Firebase
+        if db_action == db_options[1]: # Upload Books from JSON
 
             st.session_state.backup_confirmed = False
 
@@ -1307,7 +1313,7 @@ with db_tab:
                         st.session_state.upload_confirmed = False
                         st.rerun()
 
-        if db_action == "Export Collection to JSON":
+        if db_action == db_options[3]: # Export Collection (Full Backup)
             print('attempting Export Collection to JSON')
             if not st.session_state.backup_confirmed:
                 # Create a container for the confirmation dialog
@@ -1358,7 +1364,7 @@ with db_tab:
                         reset_confirmation()
                         st.rerun()
 
-        if db_action == db_options[10]: #"Edit Book Field":
+        if db_action == db_options[2]: # Edit Book
             st.write("### 📝 Edit Book")
 
             # Initialize session state for editor
@@ -1792,7 +1798,7 @@ with db_tab:
                                 st.session_state.edit_changes = {}
                                 st.rerun()
 
-        if db_action == "Write Book to JSON":
+        if db_action == db_options[4]: # Export Single Book
             # Radio button to choose between "Title" and "ID"
             search_type = st.sidebar.radio("Search by:", ("Title", "ID"))
 
@@ -1814,8 +1820,8 @@ with db_tab:
                     write_book_json(title=None, book_id=user_input, verbose=False)
                     st.write(f"Saving book with ID: {user_input}")
 
-        # Logic for "Delete Book by ID"
-        if db_action == "Delete Book by ID":
+        # Logic for Delete Book by ID
+        if db_action == db_options[5]: # Delete Book by ID
             doc_id = st.sidebar.text_input("Enter Document ID", "")
 
             if doc_id:
