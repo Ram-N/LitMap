@@ -10,6 +10,50 @@ from datetime import datetime
 import pandas as pd
 from geopy.geocoders import Nominatim
 import time
+import os
+
+
+# Configuration file for user preferences
+CONFIG_FILE = "user_preferences.json"
+
+def load_user_preferences():
+    """Load user preferences from JSON file."""
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading preferences: {e}")
+            return {}
+    return {}
+
+def save_user_preferences(preferences):
+    """Save user preferences to JSON file."""
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(preferences, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving preferences: {e}")
+        return False
+
+def get_default_collection():
+    """Get the default collection from preferences."""
+    prefs = load_user_preferences()
+    return prefs.get('default_collection', None)
+
+def set_default_collection(collection_name):
+    """Set the default collection in preferences."""
+    prefs = load_user_preferences()
+    prefs['default_collection'] = collection_name
+    return save_user_preferences(prefs)
+
+def clear_default_collection():
+    """Clear the default collection preference."""
+    prefs = load_user_preferences()
+    if 'default_collection' in prefs:
+        del prefs['default_collection']
+    return save_user_preferences(prefs)
 
 
 # Helper function to normalize location data for comparison
@@ -475,11 +519,50 @@ tooltip_html = """
 
 
 # Every Sidebar: Collection selection
+available_collections = ("books", "midbooks", "newbooks")
+
+# Load default collection preference
+default_collection = get_default_collection()
+
+# Determine initial index
+if default_collection and default_collection in available_collections:
+    initial_index = available_collections.index(default_collection)
+else:
+    initial_index = 1  # Default to 'midbooks' if no preference set
+
 collection_name = st.sidebar.selectbox(
     "Collection",
-    ("books", "midbooks", "newbooks"),
-    index=1 #default
+    available_collections,
+    index=initial_index
 )
+
+# Add checkbox to set as default collection
+st.sidebar.markdown("---")
+current_default = get_default_collection()
+is_current_default = (current_default == collection_name)
+
+set_as_default = st.sidebar.checkbox(
+    f"Set '{collection_name}' as default",
+    value=is_current_default,
+    key="set_default_checkbox",
+    help="This collection will be selected by default when you open the app"
+)
+
+# Handle checkbox changes
+if set_as_default and not is_current_default:
+    # User just checked the box - set this as default
+    if set_default_collection(collection_name):
+        st.sidebar.success(f"✅ '{collection_name}' set as default!")
+    else:
+        st.sidebar.error("❌ Failed to save preference")
+elif not set_as_default and is_current_default:
+    # User just unchecked the box - clear default
+    if clear_default_collection():
+        st.sidebar.info("ℹ️ Default collection cleared")
+    else:
+        st.sidebar.error("❌ Failed to clear preference")
+
+st.sidebar.markdown("---")
 
 all_books = firebase_client.get_all_documents(collection_name)
 
@@ -870,6 +953,85 @@ def read_json_file(file):
         return None
 
 
+def validate_book_json(books_data, all_books):
+    """
+    Validate a list of books from JSON upload.
+
+    Returns:
+        dict: {
+            'valid_books': list of books that pass all checks,
+            'duplicates': list of (book, existing_matches) tuples,
+            'invalid_books': list of (book, error_messages) tuples,
+            'warnings': list of (book, warning_messages) tuples
+        }
+    """
+    results = {
+        'valid_books': [],
+        'duplicates': [],
+        'invalid_books': [],
+        'warnings': []
+    }
+
+    for book in books_data:
+        errors = []
+        warnings = []
+
+        # Check required fields
+        if not book.get('title'):
+            errors.append("Missing 'title' field")
+        if not book.get('author'):
+            errors.append("Missing 'author' field")
+
+        # Check locations
+        locations = book.get('locations', [])
+        if not locations:
+            errors.append("Missing 'locations' array")
+        else:
+            # Check that at least one location has valid lat/lng
+            valid_location_found = False
+            for loc in locations:
+                if 'latitude' in loc and 'longitude' in loc:
+                    try:
+                        lat = float(loc['latitude'])
+                        lng = float(loc['longitude'])
+                        if -90 <= lat <= 90 and -180 <= lng <= 180:
+                            valid_location_found = True
+                            break
+                    except (ValueError, TypeError):
+                        pass
+
+            if not valid_location_found:
+                errors.append("No valid location with latitude/longitude found")
+
+        # Check for optional but recommended fields
+        if not book.get('description'):
+            warnings.append("Missing 'description' field")
+        if not book.get('genre'):
+            warnings.append("Missing 'genre' field")
+        if not book.get('booktype'):
+            warnings.append("Missing 'booktype' field")
+
+        # If there are critical errors, mark as invalid
+        if errors:
+            results['invalid_books'].append((book, errors))
+            continue
+
+        # Check for duplicates by title
+        title = book.get('title', '')
+        existing_matches = firebase_client.get_book_by_title(all_books, title)
+
+        if existing_matches:
+            results['duplicates'].append((book, existing_matches))
+        else:
+            results['valid_books'].append(book)
+
+        # Store warnings separately
+        if warnings:
+            results['warnings'].append((book, warnings))
+
+    return results
+
+
 # Add custom CSS to align the label to the left of the selectbox
 st.markdown(
     """
@@ -996,21 +1158,154 @@ with db_tab:
         if db_action == db_options[9]: #Upload Books to Firebase
 
             st.session_state.backup_confirmed = False
+
+            # Initialize session state for upload workflow
+            if 'upload_validated' not in st.session_state:
+                st.session_state.upload_validated = False
+            if 'upload_validation_results' not in st.session_state:
+                st.session_state.upload_validation_results = None
+            if 'upload_file_data' not in st.session_state:
+                st.session_state.upload_file_data = None
+            if 'upload_confirmed' not in st.session_state:
+                st.session_state.upload_confirmed = False
+
             print(st.session_state)
-            print('Upload Books to Firebase')            
+            print('Upload Books to Firebase')
+
+            st.write("### 📤 Upload Books from JSON")
+            st.write("**Two-step process:** Validate → Confirm → Upload")
+
+            # Display target collection prominently
+            st.info(f"🎯 **Target Collection:** `{collection_name}`")
+
             # File uploader
-            uploaded_file = st.file_uploader("Choose a JSON file to Upload", type="json")
-            # Button to upload and add books
-            if uploaded_file is not None:
-                if st.button("Upload and Add Books"):
-                    book_data = read_json_file(uploaded_file)  # Read the JSON file
-                    
+            uploaded_file = st.file_uploader("Choose a JSON file to Upload", type="json", key="json_uploader")
+
+            # STEP 1: Validation Phase
+            if uploaded_file is not None and not st.session_state.upload_validated:
+                st.markdown("---")
+                st.markdown("#### Step 1: Validate JSON File")
+
+                if st.button("🔍 Validate JSON", type="primary", key="validate_json_btn"):
+                    book_data = read_json_file(uploaded_file)
+
                     if book_data:
-                        if isinstance(book_data, list):  # Check if the JSON is a list of books
-                            firebase_client.add_books_to_db(collection_name, book_data)  # Add books to Firestore
-                            st.success("Books added to the database successfully!")
+                        if isinstance(book_data, list):
+                            # Run validation
+                            with st.spinner("Validating books..."):
+                                validation_results = validate_book_json(book_data, all_books)
+
+                            # Store in session state
+                            st.session_state.upload_file_data = book_data
+                            st.session_state.upload_validation_results = validation_results
+                            st.session_state.upload_validated = True
+                            st.rerun()
                         else:
-                            st.error("Invalid format: The JSON file must contain a list of books.")
+                            st.error("❌ Invalid format: The JSON file must contain a list of books.")
+                    else:
+                        st.error("❌ Failed to read JSON file. Please check the file format.")
+
+            # STEP 2: Display Validation Results and Confirmation
+            if st.session_state.upload_validated and st.session_state.upload_validation_results:
+                results = st.session_state.upload_validation_results
+
+                st.markdown("---")
+                st.markdown("#### Step 2: Validation Results")
+
+                # Summary metrics
+                col1, col2, col3, col4 = st.columns(4)
+
+                with col1:
+                    st.metric("✅ Valid Books", len(results['valid_books']))
+                with col2:
+                    st.metric("⚠️ Duplicates", len(results['duplicates']))
+                with col3:
+                    st.metric("❌ Invalid", len(results['invalid_books']))
+                with col4:
+                    total_books = len(results['valid_books']) + len(results['duplicates']) + len(results['invalid_books'])
+                    st.metric("📚 Total in File", total_books)
+
+                # Display invalid books (blocking errors)
+                if results['invalid_books']:
+                    st.error(f"❌ **{len(results['invalid_books'])} Invalid Book(s) Found** - These will NOT be uploaded:")
+
+                    for book, errors in results['invalid_books']:
+                        with st.expander(f"❌ {book.get('title', 'Unknown Title')} by {book.get('author', 'Unknown Author')}"):
+                            st.write("**Errors:**")
+                            for error in errors:
+                                st.write(f"- {error}")
+                            st.json(book)
+
+                # Display duplicates (warnings)
+                if results['duplicates']:
+                    st.warning(f"⚠️ **{len(results['duplicates'])} Duplicate(s) Found** - These will be SKIPPED:")
+
+                    for book, existing_matches in results['duplicates']:
+                        with st.expander(f"⚠️ {book.get('title', 'Unknown Title')} - Already exists"):
+                            st.write(f"**Found {len(existing_matches)} existing book(s) with this title:**")
+                            for match in existing_matches:
+                                st.write(f"- ID: `{match.get('id')}` | Author: {match.get('author')} | Year: {match.get('year')}")
+
+                # Display valid books (ready to upload)
+                if results['valid_books']:
+                    st.success(f"✅ **{len(results['valid_books'])} Valid Book(s)** - Ready to upload:")
+
+                    for book in results['valid_books']:
+                        with st.expander(f"✅ {book.get('title')} by {book.get('author')}"):
+                            st.write(f"**Genre:** {book.get('genre', 'N/A')} | **Type:** {book.get('booktype', 'N/A')}")
+                            st.write(f"**Locations:** {len(book.get('locations', []))} location(s)")
+
+                            # Show warnings if any
+                            warnings = [w for b, w in results['warnings'] if b.get('title') == book.get('title')]
+                            if warnings:
+                                st.caption("⚠️ Warnings (non-blocking):")
+                                for warning_list in warnings:
+                                    for warning in warning_list:
+                                        st.caption(f"  - {warning}")
+
+                # STEP 3: Confirmation
+                st.markdown("---")
+
+                if results['valid_books']:
+                    st.markdown("#### Step 3: Confirm Upload")
+                    st.info(f"📊 **Summary:** Ready to add **{len(results['valid_books'])}** new book(s) to `{collection_name}` collection")
+
+                    col_confirm, col_cancel = st.columns([1, 1])
+
+                    with col_confirm:
+                        if st.button("✅ Confirm and Upload Books", type="primary", key="confirm_upload_btn"):
+                            # Perform the upload
+                            with st.spinner(f"Uploading {len(results['valid_books'])} books..."):
+                                firebase_client.add_books_to_db(collection_name, results['valid_books'])
+
+                            st.success(f"🎉 Successfully added {len(results['valid_books'])} book(s) to {collection_name}!")
+                            st.balloons()
+
+                            # Reset session state
+                            st.session_state.upload_validated = False
+                            st.session_state.upload_validation_results = None
+                            st.session_state.upload_file_data = None
+                            st.session_state.upload_confirmed = False
+
+                            st.info("💡 Upload complete! You can upload another file by refreshing or selecting a new file.")
+
+                    with col_cancel:
+                        if st.button("❌ Cancel Upload", key="cancel_upload_btn"):
+                            # Reset session state
+                            st.session_state.upload_validated = False
+                            st.session_state.upload_validation_results = None
+                            st.session_state.upload_file_data = None
+                            st.session_state.upload_confirmed = False
+                            st.rerun()
+                else:
+                    st.error("❌ No valid books to upload. Please fix the errors in your JSON file or remove duplicates.")
+
+                    if st.button("🔄 Start Over", key="reset_upload_btn"):
+                        st.session_state.upload_validated = False
+                        st.session_state.upload_validation_results = None
+                        st.session_state.upload_file_data = None
+                        st.session_state.upload_confirmed = False
+                        st.rerun()
 
         if db_action == "Export Collection to JSON":
             print('attempting Export Collection to JSON')
