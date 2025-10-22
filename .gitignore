@@ -64,6 +64,24 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.*
+!.env.example
+
+# Firebase service account keys (sensitive credentials)
+*firebase-adminsdk*.json
+*serviceAccountKey*.json
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+ENV/
+env/
+*-env/
 
 # dataconnect generated files
 .dataconnect
