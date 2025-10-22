@@ -463,6 +463,7 @@ db_options = {
     1: "📤 Upload Books from JSON",
     # Edit Operations
     2: "✏️ Edit Book",
+    7: "📝 Edit Existing JSON",
     # Export/Backup Operations
     3: "💾 Export Collection (Full Backup)",
     4: "📄 Export Single Book",
@@ -502,6 +503,7 @@ tooltips = {
     # New DB tooltips
     "📤 Upload Books from JSON": "Import books from JSON files into Firebase with validation and duplicate checking",
     "✏️ Edit Book": "Modify book details including title, author, locations, and metadata",
+    "📝 Edit Existing JSON": "Advanced: Edit book data directly as JSON with diff preview before saving",
     "💾 Export Collection (Full Backup)": "Download entire collection as a timestamped backup JSON file",
     "📄 Export Single Book": "Export a single book to JSON file by title or ID",
     "🗑️ Delete Book by ID": "Permanently remove a book using its unique identifier",
@@ -1079,6 +1081,128 @@ def reset_confirmation():
     st.session_state.backup_confirmed = False
 
 
+def compare_json_objects(old_dict, new_dict):
+    """
+    Compare two dictionaries and return a structured diff.
+
+    Returns:
+        dict: {
+            'added': {field: value},
+            'removed': {field: value},
+            'changed': {field: {'old': old_value, 'new': new_value}},
+            'unchanged': {field: value}
+        }
+    """
+    diff = {
+        'added': {},
+        'removed': {},
+        'changed': {},
+        'unchanged': {}
+    }
+
+    all_keys = set(old_dict.keys()) | set(new_dict.keys())
+
+    for key in all_keys:
+        if key not in old_dict:
+            # Field was added
+            diff['added'][key] = new_dict[key]
+        elif key not in new_dict:
+            # Field was removed
+            diff['removed'][key] = old_dict[key]
+        elif old_dict[key] != new_dict[key]:
+            # Field was changed
+            diff['changed'][key] = {
+                'old': old_dict[key],
+                'new': new_dict[key]
+            }
+        else:
+            # Field unchanged
+            diff['unchanged'][key] = old_dict[key]
+
+    return diff
+
+
+def display_json_diff(diff_data, original_book):
+    """
+    Display the JSON differences with color-coded highlighting.
+
+    Args:
+        diff_data: Dictionary from compare_json_objects()
+        original_book: The original book dict for context
+    """
+    st.markdown("### 📊 Changes Summary")
+
+    # Summary metrics
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("➕ Added", len(diff_data['added']))
+    with col2:
+        st.metric("➖ Removed", len(diff_data['removed']))
+    with col3:
+        st.metric("✏️ Changed", len(diff_data['changed']))
+    with col4:
+        st.metric("✓ Unchanged", len(diff_data['unchanged']))
+
+    st.markdown("---")
+
+    # Display added fields
+    if diff_data['added']:
+        st.markdown("### ➕ **Added Fields**")
+        for field, value in diff_data['added'].items():
+            st.markdown(f"**`{field}`**")
+            if isinstance(value, (list, dict)):
+                st.json(value)
+            else:
+                st.success(f"New value: `{value}`")
+        st.markdown("---")
+
+    # Display removed fields
+    if diff_data['removed']:
+        st.markdown("### ➖ **Removed Fields**")
+        for field, value in diff_data['removed'].items():
+            st.markdown(f"**`{field}`**")
+            if isinstance(value, (list, dict)):
+                st.json(value)
+            else:
+                st.error(f"Removed value: `{value}`")
+        st.markdown("---")
+
+    # Display changed fields
+    if diff_data['changed']:
+        st.markdown("### ✏️ **Changed Fields**")
+        for field, changes in diff_data['changed'].items():
+            st.markdown(f"**`{field}`**")
+
+            col_old, col_arrow, col_new = st.columns([2, 1, 2])
+
+            with col_old:
+                st.caption("**Old Value:**")
+                if isinstance(changes['old'], (list, dict)):
+                    st.json(changes['old'])
+                else:
+                    st.code(str(changes['old']))
+
+            with col_arrow:
+                st.markdown("### →")
+
+            with col_new:
+                st.caption("**New Value:**")
+                if isinstance(changes['new'], (list, dict)):
+                    st.json(changes['new'])
+                else:
+                    st.code(str(changes['new']))
+
+            st.markdown("---")
+
+    # Collapsible section for unchanged fields
+    if diff_data['unchanged']:
+        with st.expander(f"✓ View {len(diff_data['unchanged'])} Unchanged Fields"):
+            for field, value in diff_data['unchanged'].items():
+                st.markdown(f"**`{field}`**: `{value}`")
+                st.markdown("")
+
+
 
 # DB-Manage Tab
 with db_tab:
@@ -1099,60 +1223,63 @@ with db_tab:
         index=default_index
     )
 
-    st.write("---")  # Horizontal line for visual separation
-    search_option = st.selectbox("Search by", ("Author", "Book Title", "Genre"))
-    search_input = st.text_input(f"Enter {search_option}")
-    search_button = st.button("Search")
-    st.write("---")  # Horizontal line for visual separation
+    # Only show global search for specific actions that need it
+    # (Currently only "Edit Book" uses it)
+    if db_action == db_options[2]:  # "Edit Book"
+        st.write("---")  # Horizontal line for visual separation
+        search_option = st.selectbox("Search by", ("Author", "Book Title", "Genre"))
+        search_input = st.text_input(f"Enter {search_option}")
+        search_button = st.button("Search")
+        st.write("---")  # Horizontal line for visual separation
 
-    # Initialize session state for search results
-    if 'search_results' not in st.session_state:
-        st.session_state.search_results = []
-    if 'last_search_query' not in st.session_state:
-        st.session_state.last_search_query = ""
-    if 'db_action_index' not in st.session_state:
-        st.session_state.db_action_index = 0
+        # Initialize session state for search results
+        if 'search_results' not in st.session_state:
+            st.session_state.search_results = []
+        if 'last_search_query' not in st.session_state:
+            st.session_state.last_search_query = ""
+        if 'db_action_index' not in st.session_state:
+            st.session_state.db_action_index = 0
 
-    # Search logic and store results in session state
-    if search_button:
-        st.write(f"{search_option} {search_input}")
-        if search_option == "Author":
-            books = firebase_client.get_books_by_author(all_books, search_input)
-        elif search_option == "Book Title":
-            books = firebase_client.get_book_by_title(all_books, search_input)
-        elif search_option == "Genre":
-            books = firebase_client.fuzzy_match(all_books, 'genre', search_input)
+        # Search logic and store results in session state
+        if search_button:
+            st.write(f"{search_option} {search_input}")
+            if search_option == "Author":
+                books = firebase_client.get_books_by_author(all_books, search_input)
+            elif search_option == "Book Title":
+                books = firebase_client.get_book_by_title(all_books, search_input)
+            elif search_option == "Genre":
+                books = firebase_client.fuzzy_match(all_books, 'genre', search_input)
 
-        # Store results in session state so they persist across reruns
-        st.session_state.search_results = books
-        st.session_state.last_search_query = f"{search_option}: {search_input}"
+            # Store results in session state so they persist across reruns
+            st.session_state.search_results = books
+            st.session_state.last_search_query = f"{search_option}: {search_input}"
 
-    # Display search results (from session state, so they persist after Edit button click)
-    if st.session_state.search_results:
-        books = st.session_state.search_results
-        st.write(f"Found {len(books)} books:")
+        # Display search results (from session state, so they persist after Edit button click)
+        if st.session_state.search_results:
+            books = st.session_state.search_results
+            st.write(f"Found {len(books)} books:")
 
-        for book in books:
-            # Create two columns: one for book info, one for action button
-            col_info, col_action = st.columns([4, 1])
+            for book in books:
+                # Create two columns: one for book info, one for action button
+                col_info, col_action = st.columns([4, 1])
 
-            with col_info:
-                # Book information display
-                st.markdown(f"**📖 {book.get('title', 'N/A')}**")
-                st.caption(f"**By:** {book.get('author', 'N/A')} | **Genre:** {book.get('genre', 'N/A')} | **Year:** {book.get('year', 'N/A')}")
-                st.caption(f"**Publisher:** {book.get('publisher', 'N/A')} | **ID:** `{book.get('id', 'N/A')}`")
+                with col_info:
+                    # Book information display
+                    st.markdown(f"**📖 {book.get('title', 'N/A')}**")
+                    st.caption(f"**By:** {book.get('author', 'N/A')} | **Genre:** {book.get('genre', 'N/A')} | **Year:** {book.get('year', 'N/A')}")
+                    st.caption(f"**Publisher:** {book.get('publisher', 'N/A')} | **ID:** `{book.get('id', 'N/A')}`")
 
-            with col_action:
-                # Edit button - clicking it selects the book for editing
-                if st.button("✏️ Edit", key=f"edit_btn_{book.get('id')}", type="primary", width='stretch'):
-                    st.session_state.edit_selected_book = book
-                    st.success(f"✅ Selected: {book.get('title', 'N/A')}")
-                    st.rerun()
+                with col_action:
+                    # Edit button - clicking it selects the book for editing
+                    if st.button("✏️ Edit", key=f"edit_btn_{book.get('id')}", type="primary", width='stretch'):
+                        st.session_state.edit_selected_book = book
+                        st.success(f"✅ Selected: {book.get('title', 'N/A')}")
+                        st.rerun()
 
-            st.markdown("---")  # Separator between books
+                st.markdown("---")  # Separator between books
 
-    elif search_button:
-        st.write(f"No books found for {search_option} {search_input}")
+        elif search_button:
+            st.write(f"No books found for {search_option} {search_input}")
 
     #######################################################
 
@@ -1797,6 +1924,230 @@ with db_tab:
                                 st.session_state.edit_show_preview = False
                                 st.session_state.edit_changes = {}
                                 st.rerun()
+
+        if db_action == db_options[7]: # Edit Existing JSON
+            st.write("### 📝 Edit Existing JSON")
+            st.write("**Advanced editing:** Search for a book, edit its JSON directly, and preview changes before saving.")
+
+            # Initialize session state
+            if 'json_edit_selected_book' not in st.session_state:
+                st.session_state.json_edit_selected_book = None
+            if 'json_edit_original' not in st.session_state:
+                st.session_state.json_edit_original = None
+            if 'json_edit_modified' not in st.session_state:
+                st.session_state.json_edit_modified = None
+            if 'json_edit_show_diff' not in st.session_state:
+                st.session_state.json_edit_show_diff = False
+            if 'json_search_results' not in st.session_state:
+                st.session_state.json_search_results = []
+
+            # Step 1: Search and Select Book (only show if no book selected yet)
+            if not st.session_state.json_edit_selected_book:
+                st.markdown("#### Step 1: Find and Select Book")
+
+                col_search_type, col_search_input = st.columns([1, 3])
+
+                with col_search_type:
+                    json_search_option = st.selectbox(
+                        "Search by",
+                        ("Title", "Author", "ID"),
+                        key="json_search_type"
+                    )
+
+                with col_search_input:
+                    json_search_input = st.text_input(
+                        f"Enter {json_search_option}",
+                        key="json_search_input",
+                        placeholder=f"Search for a book by {json_search_option.lower()}..."
+                    )
+
+                col_btn1, col_btn2 = st.columns([1, 4])
+
+                with col_btn1:
+                    json_search_button = st.button("🔍 Search", key="json_search_btn", type="primary")
+
+                # Perform search and store results in session state
+                if json_search_button and json_search_input:
+                    if json_search_option == "Author":
+                        books = firebase_client.get_books_by_author(all_books, json_search_input)
+                    elif json_search_option == "Title":
+                        books = firebase_client.get_book_by_title(all_books, json_search_input)
+                    elif json_search_option == "ID":
+                        book = firebase_client.get_document_by_id(all_books, json_search_input)
+                        books = [book] if book else []
+
+                    # Store results in session state
+                    st.session_state.json_search_results = books
+
+                # Display search results from session state
+                if st.session_state.json_search_results:
+                    books = st.session_state.json_search_results
+                    st.write(f"**Found {len(books)} book(s):**")
+
+                    # Display as selectable list
+                    for book in books:
+                        col_info, col_select = st.columns([4, 1])
+
+                        with col_info:
+                            st.markdown(f"**📖 {book.get('title', 'N/A')}**")
+                            st.caption(f"**By:** {book.get('author', 'N/A')} | **ID:** `{book.get('id', 'N/A')}`")
+
+                        with col_select:
+                            if st.button("Select", key=f"json_select_{book.get('id')}", type="primary"):
+                                # Remove 'id' from the book dict for clean JSON editing
+                                book_copy = book.copy()
+                                book_id = book_copy.pop('id', None)
+
+                                st.session_state.json_edit_selected_book = book
+                                st.session_state.json_edit_original = json.dumps(book_copy, indent=2)
+                                st.session_state.json_edit_modified = None
+                                st.session_state.json_edit_show_diff = False
+                                st.success(f"✅ Selected: {book.get('title', 'N/A')}")
+                                st.rerun()
+
+                        st.markdown("---")
+                elif json_search_button:
+                    st.warning(f"No books found for {json_search_option}: {json_search_input}")
+
+            # Step 2: JSON Editor
+            if st.session_state.json_edit_selected_book:
+                st.markdown("---")
+                st.markdown("#### Step 2: Edit JSON")
+
+                book = st.session_state.json_edit_selected_book
+                st.info(f"**Editing:** {book.get('title', 'N/A')} (ID: `{book.get('id', 'N/A')}`)")
+
+                # Option to select a different book
+                if st.button("🔄 Select Different Book", key="json_clear_selection"):
+                    st.session_state.json_edit_selected_book = None
+                    st.session_state.json_edit_original = None
+                    st.session_state.json_edit_modified = None
+                    st.session_state.json_edit_show_diff = False
+                    st.session_state.json_search_results = []
+                    st.rerun()
+
+                # Display original JSON in expander
+                with st.expander("📖 View Original JSON"):
+                    st.json(json.loads(st.session_state.json_edit_original))
+
+                # Editable JSON text area
+                st.markdown("##### ✏️ Edit JSON Below")
+                st.caption("⚠️ Be careful when editing. Invalid JSON will be rejected.")
+
+                edited_json_str = st.text_area(
+                    "Book JSON",
+                    value=st.session_state.json_edit_original,
+                    height=400,
+                    key="json_text_editor",
+                    help="Edit the JSON structure. The 'id' field is managed automatically."
+                )
+
+                # Validate and Preview button
+                col_validate, col_reset = st.columns([1, 1])
+
+                with col_validate:
+                    if st.button("✅ Validate & Preview Changes", type="primary", key="json_validate_btn"):
+                        # Validate JSON syntax
+                        try:
+                            edited_dict = json.loads(edited_json_str)
+
+                            # Store the modified JSON
+                            st.session_state.json_edit_modified = edited_json_str
+                            st.session_state.json_edit_show_diff = True
+                            st.success("✅ JSON is valid! Scroll down to review changes.")
+                            st.rerun()
+
+                        except json.JSONDecodeError as e:
+                            st.error(f"❌ Invalid JSON syntax: {e}")
+                            st.session_state.json_edit_show_diff = False
+
+                with col_reset:
+                    if st.button("🔄 Reset to Original", key="json_reset_btn"):
+                        st.session_state.json_edit_modified = None
+                        st.session_state.json_edit_show_diff = False
+                        st.info("Reverted to original JSON")
+                        st.rerun()
+
+            # Step 3: Display Diff
+            if st.session_state.json_edit_show_diff and st.session_state.json_edit_modified:
+                st.markdown("---")
+                st.markdown("#### Step 3: Review Changes")
+
+                original_dict = json.loads(st.session_state.json_edit_original)
+                modified_dict = json.loads(st.session_state.json_edit_modified)
+
+                # Generate diff
+                diff_data = compare_json_objects(original_dict, modified_dict)
+
+                # Check if there are any changes
+                has_changes = (
+                    len(diff_data['added']) > 0 or
+                    len(diff_data['removed']) > 0 or
+                    len(diff_data['changed']) > 0
+                )
+
+                if not has_changes:
+                    st.info("ℹ️ No changes detected. The JSON is identical to the original.")
+                else:
+                    # Display the diff
+                    display_json_diff(diff_data, st.session_state.json_edit_selected_book)
+
+                    # Step 4: Confirmation
+                    st.markdown("---")
+                    st.markdown("#### Step 4: Confirm and Save")
+
+                    st.warning(f"⚠️ You are about to update the book: **{st.session_state.json_edit_selected_book.get('title', 'N/A')}**")
+
+                    col_confirm, col_cancel = st.columns([1, 1])
+
+                    with col_confirm:
+                        if st.button("✅ Confirm & Save to Firebase", type="primary", key="json_confirm_save"):
+                            # Prepare update data (only changed/added fields)
+                            update_data = {}
+                            update_data.update(diff_data['added'])
+                            for field, change in diff_data['changed'].items():
+                                update_data[field] = change['new']
+
+                            # Handle removed fields by setting them to empty string or None
+                            # (Firebase doesn't have a direct "delete field" in update)
+                            for field in diff_data['removed'].keys():
+                                update_data[field] = firestore.DELETE_FIELD
+
+                            # Perform the update
+                            book_id = st.session_state.json_edit_selected_book['id']
+
+                            try:
+                                success = firebase_client.update_multiple_fields(
+                                    collection_name,
+                                    book_id,
+                                    update_data,
+                                    verbose=True
+                                )
+
+                                if success:
+                                    st.success(f"🎉 Successfully updated book: {st.session_state.json_edit_selected_book.get('title', 'N/A')}")
+                                    st.balloons()
+
+                                    # Reset state
+                                    st.session_state.json_edit_selected_book = None
+                                    st.session_state.json_edit_original = None
+                                    st.session_state.json_edit_modified = None
+                                    st.session_state.json_edit_show_diff = False
+                                    st.session_state.json_search_results = []
+
+                                    st.info("💡 You can now search for another book to edit.")
+                                else:
+                                    st.error("❌ Failed to update the book. Check the console for errors.")
+
+                            except Exception as e:
+                                st.error(f"❌ Error saving to Firebase: {e}")
+
+                    with col_cancel:
+                        if st.button("❌ Cancel Changes", key="json_cancel_save"):
+                            st.session_state.json_edit_show_diff = False
+                            st.session_state.json_edit_modified = None
+                            st.info("Changes discarded. You can continue editing or select a different book.")
+                            st.rerun()
 
         if db_action == db_options[4]: # Export Single Book
             # Radio button to choose between "Title" and "ID"
