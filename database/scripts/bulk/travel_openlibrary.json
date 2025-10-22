@@ -1,0 +1,1002 @@
+[
+  {
+    "title": "Adventures of Huckleberry Finn",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1876,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Frankenstein or The Modern Prometheus",
+    "author": "Mary Shelley",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1818,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "King Solomon's Mines",
+    "author": "H. Rider Haggard",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1880,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Connecticut Yankee in King Arthur's Court",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1889,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Three Men in a Boat (to say nothing of the dog)",
+    "author": "Jerome Klapka Jerome",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1889,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Prisoner of Zenda",
+    "author": "Anthony Hope",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Voyage Out",
+    "author": "Virginia Woolf",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1915,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Heart of Darkness",
+    "author": "Joseph Conrad",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1899,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Alhambra",
+    "author": "Washington Irving",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Le Tour du Monde en Quatre-Vingts Jours",
+    "author": "Jules Verne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1872,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Roughing It",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1872,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Os Lusíadas",
+    "author": "Luís de Camões",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1572,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Meditations",
+    "author": "Marcus Aurelius",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1626,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The sketch-book of Geoffrey Crayon, Esq",
+    "author": "Washington Irving",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1819,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Lord Jim",
+    "author": "Joseph Conrad",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1900,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Two years before the mast",
+    "author": "Richard Henry Dana",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1000,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Tom Sawyer Abroad",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1894,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Astoria",
+    "author": "Washington Irving",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Sailing alone around the world",
+    "author": "Joshua Slocum",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Martin Chuzzlewit",
+    "author": "Charles Dickens",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Daisy Miller",
+    "author": "Henry James",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1877,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Picasso",
+    "author": "Pablo Picasso",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1926,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Life of Samuel Johnson",
+    "author": "James Boswell",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1776,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "American notes",
+    "author": "Charles Dickens",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Murder on the Orient Express",
+    "author": "Agatha Christie",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1933,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The museum experience revisited",
+    "author": "John H. Falk",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1992,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "All's Well That Ends Well",
+    "author": "William Shakespeare",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1734,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A week on the Concord and Merrimack Rivers",
+    "author": "Henry David Thoreau",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1849,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Die Leiden des jungen Werthers",
+    "author": "Johann Wolfgang von Goethe",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1779,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Return of the Native",
+    "author": "Thomas Hardy",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1878,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Martin Rattler, or, A boy's adventures in the forests of Brazil",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1867,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Tramp Abroad",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1878,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Essays of Elia",
+    "author": "Charles Lamb",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1823,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Room with a View",
+    "author": "E. M. Forster",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1905,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Innocents Abroad",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Death on the Nile",
+    "author": "Agatha Christie",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1937,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Mademoiselle Fifi",
+    "author": "Guy de Maupassant",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1882,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Hudson Bay Company",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1848,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Life on the Mississippi",
+    "author": "Mark Twain",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1883,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Paul Klee",
+    "author": "Paul Klee",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1930,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The adventures of Captain Bonneville, U.S.A.",
+    "author": "Washington Irving",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The gorilla hunters",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1858,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "By the King",
+    "author": "King James VI and I",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1603,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Survey of London",
+    "author": "John Stow",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1598,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Lost Horizon",
+    "author": "James Hilton",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1933,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The American",
+    "author": "Henry James",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1877,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Palmetto-leaves",
+    "author": "Harriet Beecher Stowe",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1873,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Rivals",
+    "author": "Richard Brinsley Sheridan",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1775,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Razor's Edge",
+    "author": "William Somerset Maugham",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1944,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Their Wedding Journey",
+    "author": "William Dean Howells",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1872,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The journals of André Gide, 1889-1949",
+    "author": "André Gide",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1939,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Gascoyne",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "South: the story of Shackleton's 1914-1917 expedition",
+    "author": "Sir Ernest Henry Shackleton",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1919,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Columbus",
+    "author": "Washington Irving",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Cape Cod",
+    "author": "Henry David Thoreau",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1864,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Travels of Marco Polo",
+    "author": "Marco Polo",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1818,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Ker-bloom!",
+    "author": "artnoose",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1996,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The Maine Woods",
+    "author": "Henry David Thoreau",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1803,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Peer Gynt",
+    "author": "Henrik Ibsen",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1867,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Aus meinem Leben",
+    "author": "Johann Wolfgang von Goethe",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Backwoods of Canada",
+    "author": "Catherine Parr Traill",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1836,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Caribbean Mystery",
+    "author": "Agatha Christie",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1964,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The History, Civil and Commercial, of the British Colonies in the West Indies ...: In Two Volumes",
+    "author": "Bryan Edwards",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1789,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Queer places",
+    "author": "Elisa Rolle",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 2016,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Goethe's Werke",
+    "author": "Johann Wolfgang von Goethe",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A dictionary of the English language",
+    "author": "Samuel Johnson",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1747,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "From sea to sea; letters of travel",
+    "author": "Rudyard Kipling",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1889,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "California and Oregon trail",
+    "author": "Francis Parkman",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1872,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Homage to Catalonia",
+    "author": "George Orwell",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1938,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Pictures from Italy",
+    "author": "Charles Dickens",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1846,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Travels in Arabia Deserta",
+    "author": "Charles Montagu Doughty",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1888,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Away in the wilderness",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "The world of ice, or, Adventures in the polar regions",
+    "author": "Robert Michael Ballantyne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1860,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Omoo",
+    "author": "Herman Melville",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1847,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "What I saw in America",
+    "author": "Gilbert Keith Chesterton",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1922,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "First footsteps in East Africa",
+    "author": "Richard Francis Burton",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1856,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Venetian life",
+    "author": "William Dean Howells",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1866,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Tristes Tropiques",
+    "author": "Claude Lévi-Strauss",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1955,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Andy Warhol",
+    "author": "Andy Warhol",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1967,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Journal of researches into the geology and natural history of the various countries visited by H.M.S. Beagle",
+    "author": "Charles Darwin",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1839,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Excursions",
+    "author": "Henry David Thoreau",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1840,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Tarzan of the Apes Tale #1 the Man-Child",
+    "author": "Edgar Rice Burroughs",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 2002,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Lettres philosophiques",
+    "author": "Voltaire",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1733,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Works (American Notes / Pictures from Italy)",
+    "author": "Charles Dickens",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1800,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Historia Alexandri Magni",
+    "author": "Quintus Curtius Rufus",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1481,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Zen and the Art of Motorcycle Maintenance",
+    "author": "Robert M. Pirsig",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1974,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Souvenirs d'un voyage dans la Tartarie et le Thibet, pendant les années 1844, 1845 et 1846",
+    "author": "Evariste Régis Huc",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1847,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Italienische Reise",
+    "author": "Johann Wolfgang von Goethe",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1860,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Travels with Charley",
+    "author": "John Steinbeck",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1962,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Five Little Peppers Abroad",
+    "author": "Margaret Sidney",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1902,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Views a-foot: or, Europe seen with a knapsack and staff",
+    "author": "Bayard Taylor",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1846,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "American notes",
+    "author": "Rudyard Kipling",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1890,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Facundo, or, civilization and barbarism",
+    "author": "Domingo Faustino Sarmiento",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1868,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Our Old Home",
+    "author": "Nathaniel Hawthorne",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1863,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Annals of the parish, or",
+    "author": "John Galt",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1821,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Le Corbusier",
+    "author": "Le Corbusier",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1938,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Italian journeys",
+    "author": "William Dean Howells",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1867,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "Boy",
+    "author": "Roald Dahl",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1984,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Journey to the Western Islands of Scotland",
+    "author": "Samuel Johnson",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1775,
+    "tags": [],
+    "description": "",
+    "locations": []
+  },
+  {
+    "title": "A Confederacy of Dunces",
+    "author": "John Kennedy Toole",
+    "booktype": "Travel",
+    "isbn": "",
+    "year": 1980,
+    "tags": [],
+    "description": "",
+    "locations": []
+  }
+]
