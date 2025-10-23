@@ -4,12 +4,17 @@
  * Book Marker styles in unhighlighted state.
  */
 .bookCard {
-    border-radius: 2px;
+    border-radius: 3px;
     color: #FFFFFF;
     font-size: 8 px;
-    padding: 3px 4px;
+    padding: 4px 5px;
     position: relative;
     z-index: 1;
+    /* Add border and shadow to make pins stand out from map markers */
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+    /* Slightly larger size for better visibility */
+    font-weight: 600;
 }
 
 .bookCard::after {
