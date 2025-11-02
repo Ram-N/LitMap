@@ -79,6 +79,9 @@ class TravelBookGenerator:
             "errors": 0
         }
 
+        # Track failed books
+        self.failed_books = []
+
         # Existing books cache
         self.existing_books = set()
 
@@ -184,11 +187,94 @@ class TravelBookGenerator:
                 'country': row.get('Country', ''),
                 'location': row.get('Location', ''),
                 'isbn': row.get('ISBN', ''),
-                'year': row.get('Year', '')
+                'year': row.get('Year', ''),
+                'description': row.get('Description', '')
             }
             books.append(book)
 
         return books
+
+    def _is_structured_format(self, entry: str) -> bool:
+        """
+        Check if entry uses structured multi-line format.
+
+        Format example:
+            Title: Book Title
+            Author: Author Name
+            Description: Book description...
+        """
+        lines = entry.split('\n')
+
+        # Need at least 2 lines and should have field labels
+        if len(lines) < 2:
+            return False
+
+        # Check if first line starts with a field label
+        field_labels = ['Title:', 'Author:', 'Description:', 'Country:', 'Location:', 'ISBN:', 'Year:']
+        return any(lines[0].strip().startswith(label) for label in field_labels)
+
+    def _parse_structured_entry(self, entry: str) -> Dict[str, str]:
+        """
+        Parse entry in structured multi-line format.
+
+        Format example:
+            Title: Book Title
+            Author: Author Name
+            Description: Book description...
+            Country: Country Name
+            Location: Location Name
+            ISBN: 1234567890
+            Year: 2020
+        """
+        book = {
+            'title': '',
+            'author': '',
+            'description': '',
+            'country': '',
+            'location': '',
+            'isbn': '',
+            'year': ''
+        }
+
+        current_field = None
+        current_value = []
+
+        for line in entry.split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+
+            # Check if line starts with a field label
+            matched_field = None
+            for field_name, field_label in [
+                ('title', 'Title:'),
+                ('author', 'Author:'),
+                ('description', 'Description:'),
+                ('country', 'Country:'),
+                ('location', 'Location:'),
+                ('isbn', 'ISBN:'),
+                ('year', 'Year:')
+            ]:
+                if line.startswith(field_label):
+                    # Save previous field if exists
+                    if current_field:
+                        book[current_field] = ' '.join(current_value).strip()
+
+                    # Start new field
+                    current_field = field_name
+                    current_value = [line[len(field_label):].strip()]
+                    matched_field = True
+                    break
+
+            # If no field label found and we're in a field, it's a continuation line
+            if not matched_field and current_field:
+                current_value.append(line)
+
+        # Save last field
+        if current_field:
+            book[current_field] = ' '.join(current_value).strip()
+
+        return book
 
     def _read_txt_input(self, file_path: str) -> List[Dict[str, str]]:
         """Read books from plain text file."""
@@ -205,21 +291,63 @@ class TravelBookGenerator:
         if len(entries) <= 1:
             entries = [e.strip() for e in content.split('\n') if e.strip()]
 
-        for entry in entries:
-            # Try to parse "Author - Title" or "Title by Author" format
-            book = {'title': '', 'author': ''}
+        # Filter out separator lines like "---", "===", "***", etc.
+        entries = [e for e in entries if not re.match(r'^[-=*_]{3,}$', e)]
 
-            if ' - ' in entry:
-                parts = entry.split(' - ', 1)
-                book['author'] = parts[0].strip()
-                book['title'] = parts[1].strip()
-            elif ' by ' in entry.lower():
-                parts = entry.lower().split(' by ')
-                book['title'] = entry[:entry.lower().index(' by ')].strip()
-                book['author'] = entry[entry.lower().index(' by ') + 4:].strip()
+        for entry in entries:
+            # Check if entry is in structured format first
+            if self._is_structured_format(entry):
+                book = self._parse_structured_entry(entry)
             else:
-                # Assume entire line is the title
-                book['title'] = entry.strip()
+                # Try to parse "Author - Title: Description" or "Title by Author: Description" format
+                book = {'title': '', 'author': '', 'description': ''}
+
+                # Parse based on format
+                if ' - ' in entry:
+                    # Format: "Author - Title" or "Author - Title: Description"
+                    parts = entry.split(' - ', 1)
+                    book['author'] = parts[0].strip()
+
+                    # Check if there's a description after the title (look for : after author - title)
+                    title_part = parts[1]
+                    if ': ' in title_part:
+                        # Split at LAST colon to handle titles with colons
+                        last_colon_idx = title_part.rfind(': ')
+                        book['title'] = title_part[:last_colon_idx].strip()
+                        book['description'] = title_part[last_colon_idx + 2:].strip()
+                    else:
+                        book['title'] = title_part.strip()
+
+                elif ' by ' in entry.lower():
+                    # Format: "Title by Author" or "Title by Author: Description"
+                    by_index = entry.lower().index(' by ')
+                    title_part = entry[:by_index].strip()
+                    author_and_desc = entry[by_index + 4:].strip()
+
+                    # Check if there's a description after the author
+                    if ': ' in author_and_desc:
+                        # Split at FIRST colon after author
+                        author_desc_parts = author_and_desc.split(': ', 1)
+                        book['author'] = author_desc_parts[0].strip()
+                        book['description'] = author_desc_parts[1].strip()
+                    else:
+                        book['author'] = author_and_desc
+
+                    book['title'] = title_part
+                else:
+                    # Format: just "Title" or "Title: Description"
+                    # Only split if there's a colon and it looks like a description separator
+                    # (heuristic: description separator usually has substantial text after it)
+                    if ': ' in entry:
+                        parts = entry.rsplit(': ', 1)  # Use rsplit to split at last colon
+                        # Only treat as description if the part after colon is reasonably long (>20 chars)
+                        if len(parts[1]) > 20:
+                            book['title'] = parts[0].strip()
+                            book['description'] = parts[1].strip()
+                        else:
+                            book['title'] = entry.strip()
+                    else:
+                        book['title'] = entry.strip()
 
             # Clean up title: remove year in parentheses like "(1988)" or "(born 1956)"
             if book['title']:
@@ -254,6 +382,8 @@ class TravelBookGenerator:
         """Build the prompt for a specific book."""
         additional_info_parts = []
 
+        if book.get('description'):
+            additional_info_parts.append(f"Description: {book['description']}")
         if book.get('country'):
             additional_info_parts.append(f"Country/Region: {book['country']}")
         if book.get('location'):
@@ -326,6 +456,18 @@ class TravelBookGenerator:
     def _process_book_response(self, response_text: str, book_input: Dict[str, str]) -> Optional[Dict[str, Any]]:
         """Process the LLM response and geocode locations."""
         try:
+            # Strip markdown code fences if present
+            response_text = response_text.strip()
+            if response_text.startswith('```'):
+                # Remove opening fence (```json or just ```)
+                lines = response_text.split('\n')
+                if lines[0].startswith('```'):
+                    lines = lines[1:]
+                # Remove closing fence
+                if lines and lines[-1].strip() == '```':
+                    lines = lines[:-1]
+                response_text = '\n'.join(lines).strip()
+
             # Parse JSON response
             book_data = json.loads(response_text)
 
@@ -387,6 +529,7 @@ class TravelBookGenerator:
         if not response:
             print(f"   ❌ LLM call failed")
             self.stats["errors"] += 1
+            self.failed_books.append(book)
             return None
 
         # Process response
@@ -395,6 +538,9 @@ class TravelBookGenerator:
         if book_data:
             print(f"   ✅ Successfully processed")
             self.stats["successful"] += 1
+        else:
+            # Processing failed (JSON parsing error, no locations, etc.)
+            self.failed_books.append(book)
 
         self.stats["processed"] += 1
 
@@ -462,6 +608,35 @@ class TravelBookGenerator:
 
         return results
 
+    def print_failed_books(self):
+        """Print list of books that failed to process."""
+        if not self.failed_books:
+            return
+
+        print("\n" + "="*60)
+        print("❌ FAILED BOOKS")
+        print("="*60)
+        print(f"The following {len(self.failed_books)} book(s) failed to generate JSON output:\n")
+
+        for idx, book in enumerate(self.failed_books, 1):
+            print(f"{idx}. Title: {book.get('title', 'N/A')}")
+            print(f"   Author: {book.get('author', 'N/A')}")
+
+            # Print optional fields if they exist
+            if book.get('description'):
+                print(f"   Description: {book.get('description')}")
+            if book.get('country'):
+                print(f"   Country: {book.get('country')}")
+            if book.get('location'):
+                print(f"   Location: {book.get('location')}")
+            if book.get('isbn'):
+                print(f"   ISBN: {book.get('isbn')}")
+            if book.get('year'):
+                print(f"   Year: {book.get('year')}")
+            print()
+
+        print("="*60)
+
     def print_statistics(self):
         """Print processing statistics."""
         print("\n" + "="*60)
@@ -473,6 +648,9 @@ class TravelBookGenerator:
         print(f"🔄 Duplicates:     {self.stats['duplicates_skipped']}")
         print(f"❌ Errors:         {self.stats['errors']}")
         print("="*60)
+
+        # Print failed books if any
+        self.print_failed_books()
 
 
 def main():
@@ -486,8 +664,8 @@ def main():
     )
     parser.add_argument(
         "-o", "--output",
-        default="output/travel_books_generated.json",
-        help="Output JSON file path (default: output/travel_books_generated.json)"
+        default=None,
+        help="Output JSON file path (default: output_json/YYYY-MM-DD-HHMMSS.json)"
     )
     parser.add_argument(
         "-m", "--model",
@@ -514,6 +692,11 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Generate default output filename with timestamp if not provided
+    if args.output is None:
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+        args.output = f"output_json/{timestamp}.json"
 
     # Validate input file exists
     if not os.path.exists(args.input_file):
