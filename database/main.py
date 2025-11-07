@@ -1442,6 +1442,10 @@ with db_tab:
 
         if db_action == db_options[3]: # Export Collection (Full Backup)
             print('attempting Export Collection to JSON')
+            # Initialize backup_confirmed if not exists
+            if 'backup_confirmed' not in st.session_state:
+                st.session_state.backup_confirmed = False
+
             if not st.session_state.backup_confirmed:
                 # Create a container for the confirmation dialog
                 with st.container():

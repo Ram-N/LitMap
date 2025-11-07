@@ -19,6 +19,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from dotenv import load_dotenv
 from groq import Groq
+from rapidfuzz import fuzz
 
 # Load environment variables from scripts/.env (parent directory)
 script_dir = Path(__file__).parent
@@ -76,14 +77,21 @@ class TravelBookGenerator:
             "successful": 0,
             "skipped": 0,
             "duplicates_skipped": 0,
+            "potential_duplicates_logged": 0,
             "errors": 0
         }
 
         # Track failed books
         self.failed_books = []
 
+        # Track potential duplicates for logging
+        self.potential_duplicates = []
+
         # Existing books cache
         self.existing_books = set()
+
+        # Store full book data for fuzzy matching
+        self.existing_books_data = []
 
     def _load_prompt(self, relative_path: str) -> str:
         """Load a prompt from a file."""
@@ -140,12 +148,20 @@ class TravelBookGenerator:
                 existing_data = json.load(f)
 
             # Create set of (title, author) tuples in lowercase for case-insensitive matching
+            # Also store full book data for fuzzy matching
             for book in existing_data:
                 title = book.get('title', '').lower().strip()
                 author = book.get('author', '').lower().strip()
 
                 if title and author:
                     self.existing_books.add((title, author))
+                    # Store full data for fuzzy matching
+                    self.existing_books_data.append({
+                        'title': title,
+                        'author': author,
+                        'original_title': book.get('title', ''),
+                        'original_author': book.get('author', '')
+                    })
 
             print(f"✅ Loaded {len(self.existing_books)} existing books")
 
@@ -153,21 +169,114 @@ class TravelBookGenerator:
             print(f"⚠️  Error loading existing books: {e}")
             print("   Will process all books without duplicate checking")
 
+    def _calculate_similarity(self, str1: str, str2: str) -> float:
+        """
+        Calculate similarity score between two strings using Levenshtein distance.
+
+        Args:
+            str1: First string
+            str2: Second string
+
+        Returns:
+            Similarity score from 0-100 (100 = identical)
+        """
+        return fuzz.ratio(str1.lower().strip(), str2.lower().strip())
+
+    def _find_similar_books(self, title: str, author: str, similarity_threshold: float = 85.0) -> List[Dict[str, Any]]:
+        """
+        Find existing books with similar title and author using fuzzy matching.
+
+        Args:
+            title: Book title to search for
+            author: Book author to search for
+            similarity_threshold: Minimum similarity score (0-100) for both title and author
+
+        Returns:
+            List of matching books with similarity scores
+        """
+        similar_books = []
+        title_lower = title.lower().strip()
+        author_lower = author.lower().strip()
+
+        for existing_book in self.existing_books_data:
+            title_similarity = self._calculate_similarity(title_lower, existing_book['title'])
+            author_similarity = self._calculate_similarity(author_lower, existing_book['author'])
+
+            # Both title and author must meet threshold
+            if title_similarity >= similarity_threshold and author_similarity >= similarity_threshold:
+                similar_books.append({
+                    'existing_title': existing_book['original_title'],
+                    'existing_author': existing_book['original_author'],
+                    'title_similarity': round(title_similarity, 2),
+                    'author_similarity': round(author_similarity, 2)
+                })
+
+        return similar_books
+
     def _is_duplicate(self, title: str, author: str) -> bool:
         """
-        Check if book already exists in database (case-insensitive).
+        Check if book already exists in database using exact match (case-insensitive).
+        For fuzzy matching, use _find_similar_books instead.
 
         Args:
             title: Book title
             author: Book author
 
         Returns:
-            True if book exists, False otherwise
+            True if book exists (exact match), False otherwise
         """
         title_lower = title.lower().strip()
         author_lower = author.lower().strip()
 
         return (title_lower, author_lower) in self.existing_books
+
+    def _log_potential_duplicate(self, new_book_title: str, new_book_author: str, similar_books: List[Dict[str, Any]]) -> None:
+        """
+        Log a potential duplicate for manual review.
+
+        Args:
+            new_book_title: Title of the new book being processed
+            new_book_author: Author of the new book being processed
+            similar_books: List of similar existing books with similarity scores
+        """
+        duplicate_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'new_book': {
+                'title': new_book_title,
+                'author': new_book_author
+            },
+            'similar_existing_books': similar_books
+        }
+
+        self.potential_duplicates.append(duplicate_entry)
+        self.stats['potential_duplicates_logged'] += 1
+
+        # Print warning to console
+        print(f"   ⚠️  Potential duplicate detected!")
+        for match in similar_books:
+            print(f"      Similar to: \"{match['existing_title']}\" by {match['existing_author']}")
+            print(f"      Similarity: Title {match['title_similarity']}%, Author {match['author_similarity']}%")
+
+    def _save_potential_duplicates(self, output_dir: str = "output") -> None:
+        """
+        Save potential duplicates to a JSON file for manual review.
+
+        Args:
+            output_dir: Directory to save the duplicates file
+        """
+        if not self.potential_duplicates:
+            return
+
+        output_path = Path(output_dir) / "potential_duplicates.json"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(self.potential_duplicates, f, indent=2, ensure_ascii=False)
+
+            print(f"\n📋 Potential duplicates logged to: {output_path}")
+        except Exception as e:
+            print(f"\n⚠️  Error saving potential duplicates: {e}")
 
     def _detect_input_format(self, file_path: str) -> str:
         """Detect if input is CSV or plain text."""
@@ -175,20 +284,67 @@ class TravelBookGenerator:
             return 'csv'
         return 'txt'
 
+    def _map_csv_column(self, df: pd.DataFrame, possible_names: List[str], default: str = '') -> str:
+        """
+        Find and return the first matching column name from a list of possibilities.
+
+        Args:
+            df: DataFrame to search
+            possible_names: List of possible column names (case-insensitive)
+            default: Default value if no match found
+
+        Returns:
+            The actual column name found in the DataFrame, or None if not found
+        """
+        # Create case-insensitive mapping
+        column_map = {col.lower(): col for col in df.columns}
+
+        for name in possible_names:
+            if name.lower() in column_map:
+                return column_map[name.lower()]
+        return None
+
     def _read_csv_input(self, file_path: str) -> List[Dict[str, str]]:
-        """Read books from CSV file."""
+        """Read books from CSV file with intelligent column mapping."""
         books = []
         df = pd.read_csv(file_path)
 
+        print(f"   CSV columns detected: {', '.join(df.columns)}")
+
+        # Map column names (try multiple common variations)
+        title_col = self._map_csv_column(df, ['Title', 'Book', 'title', 'book'])
+        author_col = self._map_csv_column(df, ['Author', 'author', 'Authors', 'authors'])
+        isbn_col = self._map_csv_column(df, ['ISBN', 'isbn', 'Isbn', 'ISBN13', 'isbn13'])
+        description_col = self._map_csv_column(df, ['Description', 'description', 'Summary', 'summary', 'Synopsis', 'synopsis'])
+        country_col = self._map_csv_column(df, ['Country', 'country'])
+        location_col = self._map_csv_column(df, ['Location', 'location', 'City', 'city'])
+        year_col = self._map_csv_column(df, ['Year', 'year', 'Publication Year', 'publication_year', 'PublicationYear'])
+
+        # Print mapping info
+        print(f"   Column mapping:")
+        print(f"      Title: {title_col or 'NOT FOUND'}")
+        print(f"      Author: {author_col or 'NOT FOUND'}")
+        if isbn_col:
+            print(f"      ISBN: {isbn_col}")
+        if description_col:
+            print(f"      Description: {description_col}")
+        if country_col:
+            print(f"      Country: {country_col}")
+        if location_col:
+            print(f"      Location: {location_col}")
+        if year_col:
+            print(f"      Year: {year_col}")
+        print()
+
         for _, row in df.iterrows():
             book = {
-                'title': row.get('Book', ''),
-                'author': row.get('Author', ''),
-                'country': row.get('Country', ''),
-                'location': row.get('Location', ''),
-                'isbn': row.get('ISBN', ''),
-                'year': row.get('Year', ''),
-                'description': row.get('Description', '')
+                'title': str(row[title_col]).strip() if title_col and pd.notna(row[title_col]) else '',
+                'author': str(row[author_col]).strip() if author_col and pd.notna(row[author_col]) else '',
+                'isbn': str(row[isbn_col]).strip() if isbn_col and pd.notna(row[isbn_col]) else '',
+                'description': str(row[description_col]).strip() if description_col and pd.notna(row[description_col]) else '',
+                'country': str(row[country_col]).strip() if country_col and pd.notna(row[country_col]) else '',
+                'location': str(row[location_col]).strip() if location_col and pd.notna(row[location_col]) else '',
+                'year': str(row[year_col]).strip() if year_col and pd.notna(row[year_col]) else ''
             }
             books.append(book)
 
@@ -560,8 +716,8 @@ class TravelBookGenerator:
         books = self.read_input_file(input_file)
         print(f"\n📊 Found {len(books)} books to process")
 
-        # Filter out duplicates
-        if self.existing_books:
+        # Filter out duplicates (exact match) and check for fuzzy matches
+        if self.existing_books or self.existing_books_data:
             print(f"\n🔍 Checking for duplicates...")
             books_to_process = []
 
@@ -569,14 +725,28 @@ class TravelBookGenerator:
                 title = book.get('title', '')
                 author = book.get('author', '')
 
+                # Check for exact duplicate first
                 if self._is_duplicate(title, author):
-                    print(f"⏭️  Already exists: {title} by {author}")
+                    print(f"⏭️  Already exists (exact match): {title} by {author}")
+                    self.stats['duplicates_skipped'] += 1
+                    continue
+
+                # Check for fuzzy matches (similarity >= 85%)
+                similar_books = self._find_similar_books(title, author, similarity_threshold=85.0)
+
+                if similar_books:
+                    # Log potential duplicate and skip processing
+                    print(f"⏭️  Potential duplicate (fuzzy match): {title} by {author}")
+                    self._log_potential_duplicate(title, author, similar_books)
                     self.stats['duplicates_skipped'] += 1
                 else:
+                    # No duplicates found, add to processing queue
                     books_to_process.append(book)
 
             duplicates_count = len(books) - len(books_to_process)
             print(f"\n📊 Filtered out {duplicates_count} duplicate(s)")
+            print(f"   • Exact matches: {self.stats['duplicates_skipped'] - self.stats['potential_duplicates_logged']}")
+            print(f"   • Fuzzy matches (logged for review): {self.stats['potential_duplicates_logged']}")
             print(f"📊 {len(books_to_process)} new book(s) to process")
 
             books = books_to_process
@@ -605,6 +775,10 @@ class TravelBookGenerator:
                     json.dump(results, f, indent=2, ensure_ascii=False)
 
                 print(f"   💾 Progress saved ({len(results)} books)")
+
+        # Save potential duplicates log
+        output_dir = output_path.parent
+        self._save_potential_duplicates(str(output_dir))
 
         return results
 
@@ -646,6 +820,8 @@ class TravelBookGenerator:
         print(f"✅ Successful:     {self.stats['successful']}")
         print(f"⏭️  Skipped:        {self.stats['skipped']}")
         print(f"🔄 Duplicates:     {self.stats['duplicates_skipped']}")
+        if self.stats['potential_duplicates_logged'] > 0:
+            print(f"   • Fuzzy matches (logged): {self.stats['potential_duplicates_logged']}")
         print(f"❌ Errors:         {self.stats['errors']}")
         print("="*60)
 
