@@ -1,0 +1,143 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useUIStore = defineStore('ui', () => {
+  // State
+  const isMenuOpen = ref(false)
+  const bottomSheetState = ref('hidden') // 'hidden', 'half', 'full'
+  const bottomSheetContent = ref(null) // 'search-results', 'book-details'
+  const selectedBook = ref(null)
+  const highlightedMarkerId = ref(null)
+  const isClusteringEnabled = ref(true)
+  const searchQuery = ref('')
+  const searchField = ref('any') // 'title', 'author', 'location', 'keyword', 'any'
+  const searchResults = ref([])
+
+  // Map state
+  const mapCenter = ref(null)
+  const mapZoom = ref(3)
+  const mapType = ref('terrain') // 'roadmap', 'satellite', 'hybrid', 'terrain'
+
+  // Getters
+  const hasSearchResults = computed(() => searchResults.value.length > 0)
+  const isBottomSheetVisible = computed(() => bottomSheetState.value !== 'hidden')
+  const searchResultsCount = computed(() => searchResults.value.length)
+
+  // Actions
+  function toggleMenu() {
+    isMenuOpen.value = !isMenuOpen.value
+  }
+
+  function openMenu() {
+    isMenuOpen.value = true
+  }
+
+  function closeMenu() {
+    isMenuOpen.value = false
+  }
+
+  function setBottomSheet(state, content = null) {
+    bottomSheetState.value = state
+    if (content) {
+      bottomSheetContent.value = content
+    }
+  }
+
+  function showSearchResults(results) {
+    searchResults.value = results
+    bottomSheetContent.value = 'search-results'
+    bottomSheetState.value = results.length > 0 ? 'half' : 'hidden'
+  }
+
+  function showBookDetails(book) {
+    selectedBook.value = book
+    bottomSheetContent.value = 'book-details'
+    bottomSheetState.value = 'full'
+  }
+
+  function hideBottomSheet() {
+    bottomSheetState.value = 'hidden'
+    // Clear content after animation
+    setTimeout(() => {
+      bottomSheetContent.value = null
+      if (bottomSheetContent.value === 'book-details') {
+        selectedBook.value = null
+      }
+    }, 300)
+  }
+
+  function setHighlightedMarker(markerId) {
+    highlightedMarkerId.value = markerId
+  }
+
+  function clearHighlightedMarker() {
+    highlightedMarkerId.value = null
+  }
+
+  function toggleClustering() {
+    isClusteringEnabled.value = !isClusteringEnabled.value
+  }
+
+  function setSearchQuery(query) {
+    searchQuery.value = query
+  }
+
+  function setSearchField(field) {
+    searchField.value = field
+  }
+
+  function clearSearch() {
+    searchQuery.value = ''
+    searchResults.value = []
+    hideBottomSheet()
+  }
+
+  function setMapCenter(center) {
+    mapCenter.value = center
+  }
+
+  function setMapZoom(zoom) {
+    mapZoom.value = zoom
+  }
+
+  function setMapType(type) {
+    mapType.value = type
+  }
+
+  return {
+    // State
+    isMenuOpen,
+    bottomSheetState,
+    bottomSheetContent,
+    selectedBook,
+    highlightedMarkerId,
+    isClusteringEnabled,
+    searchQuery,
+    searchField,
+    searchResults,
+    mapCenter,
+    mapZoom,
+    mapType,
+    // Getters
+    hasSearchResults,
+    isBottomSheetVisible,
+    searchResultsCount,
+    // Actions
+    toggleMenu,
+    openMenu,
+    closeMenu,
+    setBottomSheet,
+    showSearchResults,
+    showBookDetails,
+    hideBottomSheet,
+    setHighlightedMarker,
+    clearHighlightedMarker,
+    toggleClustering,
+    setSearchQuery,
+    setSearchField,
+    clearSearch,
+    setMapCenter,
+    setMapZoom,
+    setMapType,
+  }
+})
