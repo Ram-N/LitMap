@@ -89,7 +89,7 @@ const bookMarkers = computed(() => {
 // Handle marker click
 function handleMarkerClick(book) {
   console.log('Clicked book:', book.title)
-  // TODO: Show book details in bottom sheet
+  uiStore.showBookDetails(book)
 }
 
 onMounted(() => {
