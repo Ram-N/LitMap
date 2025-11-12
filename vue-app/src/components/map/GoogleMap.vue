@@ -11,38 +11,7 @@
       :map-id="mapId"
       class="w-full h-full"
     >
-      <!-- Advanced Markers for each book location -->
-      <gmp-advanced-marker
-        v-for="(marker, index) in bookMarkers"
-        :key="`${marker.book.id}-${index}`"
-        :ref="el => setMarkerRef(el, index)"
-        :position="marker.position"
-        :title="`${marker.book.title} by ${marker.book.author}`"
-        gmp-clickable
-        @gmp-click="handleMarkerClick(marker.book)"
-      >
-        <!-- Custom marker content -->
-        <div
-          class="book-marker"
-          :style="{
-            backgroundColor: generateBookColor(marker.book),
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            border: '2px solid white',
-            cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-          }"
-        >
-          {{ getTitleInitials(marker.book.title) }}
-        </div>
-      </gmp-advanced-marker>
+      <!-- Markers are created programmatically in JavaScript for clustering support -->
     </gmp-map>
   </div>
 </template>
@@ -63,11 +32,11 @@ const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID
 
 // Map element reference
 const mapElement = ref(null)
-const markerClusterer = ref(null)
-const markerElements = ref([])
 const mapInstance = ref(null)
+const markerInstances = ref([])
+const markerClusterer = ref(null)
 
-// Create markers from books with locations
+// Create marker data from books with locations
 const bookMarkers = computed(() => {
   const markers = []
 
@@ -91,111 +60,224 @@ const bookMarkers = computed(() => {
   return markers
 })
 
+// Create custom marker content
+function createMarkerContent(book) {
+  const div = document.createElement('div')
+  div.className = 'book-marker'
+  div.style.cssText = `
+    background-color: ${generateBookColor(book)};
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    border: 2px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+  `
+  div.textContent = getTitleInitials(book.title)
+
+  // Add hover effect
+  div.addEventListener('mouseenter', () => {
+    div.style.transform = 'scale(1.2)'
+    div.style.zIndex = '1000'
+  })
+  div.addEventListener('mouseleave', () => {
+    div.style.transform = 'scale(1)'
+    div.style.zIndex = 'auto'
+  })
+
+  return div
+}
+
+// Initialize map and markers
+async function initializeMap() {
+  console.log('Initializing map...')
+
+  // Check if Google Maps is loaded
+  if (typeof google === 'undefined' || !google.maps) {
+    console.warn('Google Maps not loaded yet, retrying...')
+    setTimeout(initializeMap, 200)
+    return
+  }
+
+  if (!mapElement.value) {
+    console.warn('Map element not ready, retrying...')
+    setTimeout(initializeMap, 100)
+    return
+  }
+
+  // Get the map instance from gmp-map element
+  // Try different properties to access the internal Google Map
+  let map = mapElement.value.innerMap ||
+            mapElement.value.map ||
+            mapElement.value._map ||
+            mapElement.value.$map
+
+  // If still not found, try getting it from the element's properties
+  if (!map && mapElement.value) {
+    console.log('Checking all properties of gmp-map element:', Object.keys(mapElement.value))
+    // Access the private property that holds the map
+    const keys = Object.keys(mapElement.value)
+    const mapKey = keys.find(key => key.includes('map') || key.includes('Map'))
+    if (mapKey) {
+      map = mapElement.value[mapKey]
+      console.log(`Found map via property: ${mapKey}`)
+    }
+  }
+
+  if (!map) {
+    console.warn('Map instance not ready, retrying...')
+    setTimeout(initializeMap, 100)
+    return
+  }
+
+  mapInstance.value = map
+  console.log('Map instance obtained:', map)
+
+  try {
+    // Load the marker library
+    const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
+    console.log('AdvancedMarkerElement loaded:', AdvancedMarkerElement)
+
+    // Clear existing markers
+    clearMarkers()
+
+    // Create marker instances
+    console.log('Creating', bookMarkers.value.length, 'markers...')
+
+    markerInstances.value = bookMarkers.value.map(markerData => {
+      const marker = new AdvancedMarkerElement({
+        map: map,
+        position: markerData.position,
+        content: createMarkerContent(markerData.book),
+        title: `${markerData.book.title} by ${markerData.book.author}`
+      })
+
+      // Add click listener
+      marker.addListener('click', () => {
+        handleMarkerClick(markerData.book)
+      })
+
+      return marker
+    })
+
+    console.log('Created', markerInstances.value.length, 'marker instances')
+
+    // Initialize clustering if enabled
+    updateClustering()
+  } catch (error) {
+    console.error('Error initializing map markers:', error)
+    // Retry after a delay
+    setTimeout(initializeMap, 500)
+  }
+}
+
 // Handle marker click
 function handleMarkerClick(book) {
   uiStore.showBookDetails(book)
 }
 
-// Store marker references
-function setMarkerRef(el, index) {
-  if (el) {
-    markerElements.value[index] = el
+// Clear all markers
+function clearMarkers() {
+  console.log('Clearing markers...')
+
+  // Clear clusterer
+  if (markerClusterer.value) {
+    markerClusterer.value.clearMarkers()
+    markerClusterer.value = null
   }
+
+  // Remove all marker instances
+  markerInstances.value.forEach(marker => {
+    marker.map = null
+  })
+  markerInstances.value = []
 }
 
-// Initialize clustering
-function initializeClustering() {
-  // Get the map instance from the gmp-map element
-  if (!mapElement.value) {
+// Update clustering based on toggle state
+function updateClustering() {
+  console.log('updateClustering called, enabled:', uiStore.isClusteringEnabled)
+  console.log('Marker instances:', markerInstances.value.length)
+  console.log('Map instance:', mapInstance.value)
+
+  if (!mapInstance.value || markerInstances.value.length === 0) {
+    console.warn('Cannot update clustering - map or markers not ready')
     return
   }
-
-  // Access the internal map - might be 'innerMap' or just the element itself exposes the map
-  const map = mapElement.value.innerMap || mapElement.value.map
-
-  if (!map) {
-    // Try again after a delay if map isn't ready
-    setTimeout(initializeClustering, 500)
-    return
-  }
-
-  mapInstance.value = map
 
   // Clear existing clusterer
   if (markerClusterer.value) {
+    console.log('Clearing existing clusterer')
     markerClusterer.value.clearMarkers()
     markerClusterer.value = null
   }
 
-  // Only create clusterer if clustering is enabled
-  if (!uiStore.isClusteringEnabled) {
-    return
-  }
-
-  // Get actual marker instances from the gmp-advanced-marker elements
-  const markers = markerElements.value
-    .filter(Boolean)
-    .map(el => el.marker || el.$el?.marker || el)
-    .filter(Boolean)
-
-  if (markers.length === 0) {
-    console.warn('No markers available for clustering')
-    return
-  }
-
-  // Create new clusterer
-  markerClusterer.value = new MarkerClusterer({
-    map: mapInstance.value,
-    markers: markers,
-    zoomOnClick: false,
-    gridSize: 50,
-    maxZoom: 15,
-  })
-
-  // Add cluster click handler
-  markerClusterer.value.addListener('clusterclick', (cluster) => {
-    const bounds = cluster.getBounds()
-    mapInstance.value.fitBounds(bounds)
-
-    // Limit zoom level
-    google.maps.event.addListenerOnce(mapInstance.value, 'zoom_changed', () => {
-      if (mapInstance.value.getZoom() > 10) {
-        mapInstance.value.setZoom(10)
-      }
+  if (uiStore.isClusteringEnabled) {
+    console.log('Enabling clustering...')
+    // Create new clusterer
+    markerClusterer.value = new MarkerClusterer({
+      map: mapInstance.value,
+      markers: markerInstances.value,
+      zoomOnClick: false,
+      gridSize: 50,
+      maxZoom: 15,
     })
-  })
+
+    // Add cluster click handler
+    markerClusterer.value.addListener('clusterclick', (cluster) => {
+      const bounds = cluster.getBounds()
+      mapInstance.value.fitBounds(bounds)
+
+      // Limit zoom level
+      google.maps.event.addListenerOnce(mapInstance.value, 'zoom_changed', () => {
+        if (mapInstance.value.getZoom() > 10) {
+          mapInstance.value.setZoom(10)
+        }
+      })
+    })
+
+    console.log('Clustering enabled with', markerClusterer.value.clusters.length, 'clusters')
+  } else {
+    console.log('Clustering disabled, showing individual markers')
+    // Re-add all markers to map individually
+    markerInstances.value.forEach(marker => {
+      marker.map = mapInstance.value
+    })
+  }
 }
 
-// Watch for clustering toggle
-watch(() => uiStore.isClusteringEnabled, (enabled) => {
-  if (enabled) {
-    initializeClustering()
-  } else if (markerClusterer.value) {
-    markerClusterer.value.clearMarkers()
-    markerClusterer.value = null
+// Watch for clustering toggle changes
+watch(() => uiStore.isClusteringEnabled, () => {
+  console.log('Clustering toggle changed to:', uiStore.isClusteringEnabled)
+  updateClustering()
+})
+
+// Watch for book changes and recreate markers
+watch(() => bookMarkers.value.length, () => {
+  console.log('Book markers changed, reinitializing...')
+  if (mapInstance.value) {
+    initializeMap()
   }
 })
 
-// Watch for marker changes
-watch(() => bookMarkers.value, () => {
-  // Re-initialize clustering when markers change
-  setTimeout(() => {
-    initializeClustering()
-  }, 500)
-}, { deep: true })
-
 onMounted(() => {
-  // Wait for map to be ready, then initialize clustering
+  console.log('GoogleMap component mounted')
+  console.log('Total book markers:', bookMarkers.value.length)
+
+  // Wait for map element to be ready
   setTimeout(() => {
-    initializeClustering()
-  }, 1000)
+    initializeMap()
+  }, 500)
 })
 
 onBeforeUnmount(() => {
-  if (markerClusterer.value) {
-    markerClusterer.value.clearMarkers()
-    markerClusterer.value = null
-  }
+  clearMarkers()
 })
 </script>
 

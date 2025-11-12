@@ -317,6 +317,9 @@ export function buildContent(book, location) {
 }
 
 //Rendering ALL books on the Explore Map
+// Store markers globally so they can be accessed by clustering functions
+let allMarkers = [];
+
 function renderBooksOnMap() {
 
   if (window.books && window.books.length > 0) {
@@ -423,17 +426,23 @@ function renderBooksOnMap() {
       }, 150);
     };
 
+    // Store markers in global variable for clustering functions
+    allMarkers = markers;
+
     const clusterToggle = document.getElementById('clusterToggle');
 
     function toggleClustering() {
+      console.log('toggleClustering called, checked:', clusterToggle.checked);
+      console.log('allMarkers array length:', allMarkers.length);
       if (clusterToggle.checked) {
-        enableClustering(markers);
+        enableClustering(allMarkers);
       } else {
         disableClustering();
       }
     }
 
     function enableClustering(markers) {
+      console.log('enableClustering called with markers:', markers.length);
       markerClusterer = new MarkerClusterer({
         map: map,
         markers: markers,
@@ -441,14 +450,27 @@ function renderBooksOnMap() {
         gridSize: 50,
         maxZoom: 15,
       });
+      console.log('Clustering enabled, markerClusterer:', markerClusterer);
     }
 
     function disableClustering() {
+      console.log('disableClustering called');
+      console.log('markerClusterer exists?', !!markerClusterer);
+      console.log('allMarkers length:', allMarkers.length);
+      console.log('map object:', map);
+
       if (markerClusterer) {
         markerClusterer.clearMarkers();
+        console.log('Cleared markers from clusterer');
         markerClusterer = null;
       }
-      markers.forEach(marker => marker.setMap(map));
+      // Re-add all markers to the map individually
+      allMarkers.forEach((marker, index) => {
+        console.log(`Setting marker ${index} on map:`, marker);
+        marker.setMap(map);
+        console.log(`Marker ${index} map after setMap:`, marker.map);
+      });
+      console.log('All markers should now be on the map');
     }
     // Initial clustering state
     toggleClustering();
