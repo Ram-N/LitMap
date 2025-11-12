@@ -111,8 +111,8 @@ const { switchCollection } = useFirebase()
 
 const collections = [
   { value: 'newbooks', label: 'New Books', count: '~50' },
-  { value: 'books', label: 'Mid Collection', count: '~200' },
-  { value: 'small_books', label: 'All Books', count: '~500' },
+  { value: 'small_books', label: 'Mid Collection', count: '~10' },
+  { value: 'books', label: 'All Books', count: '~500' },
 ]
 
 const mapTypes = [

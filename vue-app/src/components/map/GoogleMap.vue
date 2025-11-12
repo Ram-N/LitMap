@@ -15,6 +15,7 @@
       <gmp-advanced-marker
         v-for="(marker, index) in bookMarkers"
         :key="`${marker.book.id}-${index}`"
+        :ref="el => setMarkerRef(el, index)"
         :position="marker.position"
         :title="`${marker.book.title} by ${marker.book.author}`"
         gmp-clickable
@@ -47,7 +48,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import MapControls from './MapControls.vue'
 import { useBooksStore } from '@/stores/books'
 import { useUIStore } from '@/stores/ui'
@@ -61,6 +63,9 @@ const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID
 
 // Map element reference
 const mapElement = ref(null)
+const markerClusterer = ref(null)
+const markerElements = ref([])
+const mapInstance = ref(null)
 
 // Create markers from books with locations
 const bookMarkers = computed(() => {
@@ -88,13 +93,109 @@ const bookMarkers = computed(() => {
 
 // Handle marker click
 function handleMarkerClick(book) {
-  console.log('Clicked book:', book.title)
   uiStore.showBookDetails(book)
 }
 
+// Store marker references
+function setMarkerRef(el, index) {
+  if (el) {
+    markerElements.value[index] = el
+  }
+}
+
+// Initialize clustering
+function initializeClustering() {
+  // Get the map instance from the gmp-map element
+  if (!mapElement.value) {
+    return
+  }
+
+  // Access the internal map - might be 'innerMap' or just the element itself exposes the map
+  const map = mapElement.value.innerMap || mapElement.value.map
+
+  if (!map) {
+    // Try again after a delay if map isn't ready
+    setTimeout(initializeClustering, 500)
+    return
+  }
+
+  mapInstance.value = map
+
+  // Clear existing clusterer
+  if (markerClusterer.value) {
+    markerClusterer.value.clearMarkers()
+    markerClusterer.value = null
+  }
+
+  // Only create clusterer if clustering is enabled
+  if (!uiStore.isClusteringEnabled) {
+    return
+  }
+
+  // Get actual marker instances from the gmp-advanced-marker elements
+  const markers = markerElements.value
+    .filter(Boolean)
+    .map(el => el.marker || el.$el?.marker || el)
+    .filter(Boolean)
+
+  if (markers.length === 0) {
+    console.warn('No markers available for clustering')
+    return
+  }
+
+  // Create new clusterer
+  markerClusterer.value = new MarkerClusterer({
+    map: mapInstance.value,
+    markers: markers,
+    zoomOnClick: false,
+    gridSize: 50,
+    maxZoom: 15,
+  })
+
+  // Add cluster click handler
+  markerClusterer.value.addListener('clusterclick', (cluster) => {
+    const bounds = cluster.getBounds()
+    mapInstance.value.fitBounds(bounds)
+
+    // Limit zoom level
+    google.maps.event.addListenerOnce(mapInstance.value, 'zoom_changed', () => {
+      if (mapInstance.value.getZoom() > 10) {
+        mapInstance.value.setZoom(10)
+      }
+    })
+  })
+}
+
+// Watch for clustering toggle
+watch(() => uiStore.isClusteringEnabled, (enabled) => {
+  if (enabled) {
+    initializeClustering()
+  } else if (markerClusterer.value) {
+    markerClusterer.value.clearMarkers()
+    markerClusterer.value = null
+  }
+})
+
+// Watch for marker changes
+watch(() => bookMarkers.value, () => {
+  // Re-initialize clustering when markers change
+  setTimeout(() => {
+    initializeClustering()
+  }, 500)
+}, { deep: true })
+
 onMounted(() => {
-  console.log('GoogleMap component mounted with gmp-map web component')
-  console.log(`Will render ${bookMarkers.value.length} markers`)
+  // Wait for map to be ready, then initialize clustering
+  setTimeout(() => {
+    initializeClustering()
+  }, 1000)
+})
+
+onBeforeUnmount(() => {
+  if (markerClusterer.value) {
+    markerClusterer.value.clearMarkers()
+    markerClusterer.value = null
+  }
 })
 </script>
 
