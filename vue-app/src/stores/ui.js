@@ -50,17 +50,23 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function showBookDetails(book) {
+    console.log('showBookDetails called for:', book.title, 'Current state:', bottomSheetState.value)
     selectedBook.value = book
     bottomSheetContent.value = 'book-details'
-    bottomSheetState.value = 'full'
+    bottomSheetState.value = 'half'
   }
 
   function hideBottomSheet() {
+    console.log('hideBottomSheet called - current state:', bottomSheetState.value)
     bottomSheetState.value = 'hidden'
+    // Clear highlighted marker immediately
+    clearHighlightedMarker()
     // Clear content after animation
+    const wasBookDetails = bottomSheetContent.value === 'book-details'
     setTimeout(() => {
+      console.log('Clearing bottom sheet content after animation')
       bottomSheetContent.value = null
-      if (bottomSheetContent.value === 'book-details') {
+      if (wasBookDetails) {
         selectedBook.value = null
       }
     }, 300)

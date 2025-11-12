@@ -19,9 +19,22 @@
       @touchmove="handleTouchMove"
       @touchend="handleTouchEnd"
     >
-      <!-- Drag Handle -->
-      <div class="flex justify-center pt-3 pb-2">
-        <div class="w-12 h-1.5 bg-gray-300 rounded-full" />
+      <!-- Drag Handle and Close Button -->
+      <div class="flex items-center justify-between pt-3 pb-2 px-4">
+        <div class="flex-1 flex justify-center">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full" />
+        </div>
+        <button
+          v-if="uiStore.bottomSheetContent === 'book-details'"
+          @click.stop.prevent="handleCollapse"
+          @touchstart.stop.prevent="handleCollapse"
+          class="text-gray-500 hover:text-gray-700 transition-colors"
+          aria-label="Close"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <!-- Content -->
@@ -129,6 +142,7 @@ function handleTouchEnd() {
 }
 
 function handleCollapse() {
+  console.log('handleCollapse called - closing bottom sheet')
   uiStore.hideBottomSheet()
 }
 
