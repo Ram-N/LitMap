@@ -13,7 +13,7 @@
     <div
       v-if="uiStore.isBottomSheetVisible"
       ref="sheetRef"
-      class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-40 safe-bottom"
+      class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-elevated z-40 safe-bottom"
       :class="sheetClasses"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
@@ -22,13 +22,13 @@
       <!-- Drag Handle and Close Button -->
       <div class="flex items-center justify-between pt-3 pb-2 px-4">
         <div class="flex-1 flex justify-center">
-          <div class="w-12 h-1.5 bg-gray-300 rounded-full" />
+          <div class="w-12 h-1 bg-parchment-200 rounded-full" />
         </div>
         <button
           v-if="uiStore.bottomSheetContent === 'book-details'"
           @click.stop.prevent="handleCollapse"
           @touchstart.stop.prevent="handleCollapse"
-          class="text-gray-500 hover:text-gray-700 transition-colors"
+          class="text-text-tertiary hover:text-text-secondary transition-colors"
           aria-label="Close"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -90,3 +90,13 @@ user_preferences.json
 # Database script input/output directories
 database/input_data/
 database/output_json/
+
+design/
+
+# Docs
+docs/prompts
+
+database/input_data
+database/output
+database/output_json
+
