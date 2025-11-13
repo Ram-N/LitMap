@@ -1,0 +1,30 @@
+:root {
+  /* Colors */
+  --color-primary: #3D6960;
+  --color-accent: #C17A3A;
+  --color-bg-light: #F5F1E8;
+  --color-bg-medium: #E8E3D8;
+  --color-border: #E0D9C8;
+  --color-text-primary: #2D3E3C;
+  --color-text-secondary: #6B7C7A;
+  --color-text-tertiary: #9CA5A3;
+
+  /* Typography */
+  --font-serif: Georgia, 'Libre Baskerville', serif;
+  --font-sans: system-ui, -apple-system, sans-serif;
+
+  /* Spacing */
+  --space-card: 1rem;
+  --space-section: 1.5rem;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(45, 62, 60, 0.1);
+  --shadow-elevated: 0 4px 16px rgba(45, 62, 60, 0.15);
+  --shadow-fab: 0 6px 20px rgba(45, 62, 60, 0.2);
+
+  /* Border Radius */
+  --radius-card: 16px;
+  --radius-drawer: 24px;
+  --radius-button: 12px;
+  --radius-fab: 50%;
+}
