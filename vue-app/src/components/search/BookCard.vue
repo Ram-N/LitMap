@@ -1,42 +1,47 @@
 <template>
   <div
-    class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+    class="bg-white rounded-xl shadow-card hover:shadow-elevated transition-shadow p-4 cursor-pointer border border-transparent hover:border-copper-warm"
     @click="$emit('click')"
   >
-    <div class="flex gap-3 p-3">
-      <!-- Book Cover -->
-      <div class="flex-shrink-0">
-        <img
-          v-if="book.isbn"
-          :src="coverUrl"
-          :alt="`Cover of ${book.title}`"
-          class="w-16 h-24 object-cover rounded"
-          @error="handleImageError"
-        />
-        <div
-          v-else
-          class="w-16 h-24 bg-gradient-to-br from-primary-400 to-primary-600 rounded flex items-center justify-center text-white font-bold text-xs"
-        >
-          {{ bookInitials }}
+    <div class="flex gap-4">
+      <!-- Mock book cover with generated color -->
+      <div
+        class="w-20 h-28 rounded-lg flex-shrink-0 relative overflow-hidden"
+        :style="{ backgroundColor: coverColor }"
+      >
+        <!-- Pattern overlay -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-20">
+          <BookOpen class="w-8 h-8 text-white" :stroke-width="1.5" />
         </div>
       </div>
 
       <!-- Book Info -->
       <div class="flex-1 min-w-0">
-        <h3 class="font-semibold text-gray-900 line-clamp-2 mb-1">
+        <!-- Title with Georgia serif -->
+        <h3 class="font-serif text-lg font-semibold text-text-primary mb-1 line-clamp-2 leading-tight">
           {{ book.title }}
         </h3>
-        <p class="text-sm text-gray-600 mb-2">{{ book.author }}</p>
 
-        <div v-if="book.booktype" class="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded mb-2">
-          {{ book.booktype }}
+        <!-- Author -->
+        <p class="text-sm text-text-secondary mb-2">
+          {{ book.author }}
+        </p>
+
+        <!-- Genre badges -->
+        <div v-if="displayGenres.length > 0" class="flex gap-2 flex-wrap mb-2">
+          <GenreBadge
+            v-for="genre in displayGenres"
+            :key="genre"
+            :genre="genre"
+          />
         </div>
 
-        <!-- Locations -->
-        <div v-if="book.locations && book.locations.length > 0" class="text-xs text-gray-500">
-          <span class="inline-flex items-center gap-1">
+        <!-- Metadata -->
+        <div class="flex items-center gap-4 text-xs text-text-tertiary">
+          <span v-if="book.publication_year">{{ book.publication_year }}</span>
+          <span v-if="primaryLocation" class="inline-flex items-center gap-1">
             <MapPin :size="12" />
-            {{ locationText }}
+            {{ primaryLocation }}
           </span>
         </div>
       </div>
@@ -45,8 +50,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { MapPin } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { MapPin, BookOpen } from 'lucide-vue-next'
+import GenreBadge from '../shared/GenreBadge.vue'
 
 const props = defineProps({
   book: {
@@ -57,35 +63,50 @@ const props = defineProps({
 
 defineEmits(['click'])
 
-const imageError = ref(false)
-
-const coverUrl = computed(() => {
-  return `https://covers.openlibrary.org/b/isbn/${props.book.isbn}-M.jpg`
+// Generate color based on book title hash
+const coverColor = computed(() => {
+  const hash = hashString(props.book.title)
+  const hue = hash % 360
+  return `hsl(${hue}, 40%, 60%)`
 })
 
-const bookInitials = computed(() => {
-  return props.book.title
-    .split(' ')
-    .slice(0, 2)
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
+// Simple string hash function
+function hashString(str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash)
+}
+
+// Display up to 2 genres
+const displayGenres = computed(() => {
+  const genres = []
+
+  if (props.book.genre) {
+    genres.push(props.book.genre)
+  }
+
+  if (props.book.tags && Array.isArray(props.book.tags)) {
+    genres.push(...props.book.tags.slice(0, 2 - genres.length))
+  }
+
+  return genres.slice(0, 2)
 })
 
-const locationText = computed(() => {
+// Primary location for display
+const primaryLocation = computed(() => {
   if (!props.book.locations || props.book.locations.length === 0) return ''
 
   const location = props.book.locations[0]
-  const parts = [location.city, location.state, location.country].filter(Boolean)
+  const parts = [location.city, location.country].filter(Boolean)
 
   if (props.book.locations.length > 1) {
-    return `${parts.join(', ')} +${props.book.locations.length - 1} more`
+    return `${parts.join(', ')} +${props.book.locations.length - 1}`
   }
 
   return parts.join(', ')
 })
-
-function handleImageError() {
-  imageError.value = true
-}
 </script>

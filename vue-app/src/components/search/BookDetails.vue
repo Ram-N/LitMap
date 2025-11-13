@@ -1,78 +1,95 @@
 <template>
-  <div class="space-y-4">
-    <!-- Book Header -->
-    <div class="flex gap-4">
-      <img
-        v-if="book.isbn"
-        :src="coverUrl"
-        :alt="`Cover of ${book.title}`"
-        class="w-24 h-36 object-cover rounded-lg shadow-md"
-      />
-      <div class="flex-1">
-        <h2 class="text-xl font-bold text-gray-900 mb-2">{{ book.title }}</h2>
-        <p class="text-gray-700 mb-1">{{ book.author }}</p>
-        <div v-if="book.booktype" class="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-sm rounded-full">
-          {{ book.booktype }}
+  <div class="pb-6">
+    <!-- Book Cover -->
+    <div class="px-6 py-6">
+      <div
+        class="w-48 h-64 mx-auto rounded-lg shadow-elevated"
+        :style="{ backgroundColor: coverColor }"
+      >
+        <!-- Mock cover design -->
+        <div class="w-full h-full flex items-center justify-center opacity-20">
+          <BookOpen class="w-16 h-16 text-white" :stroke-width="1.5" />
         </div>
       </div>
     </div>
 
-    <!-- Description -->
-    <div v-if="book.description">
-      <h3 class="font-semibold text-gray-900 mb-2">Description</h3>
-      <p class="text-gray-700 text-sm leading-relaxed">{{ book.description }}</p>
+    <!-- Title & Author -->
+    <div class="px-6 mb-6">
+      <h1 class="font-serif text-2xl font-semibold text-text-primary mb-2 leading-tight">
+        {{ book.title }}
+      </h1>
+      <p class="text-lg text-text-secondary">
+        {{ book.author }}
+      </p>
     </div>
 
-    <!-- Locations -->
-    <div v-if="book.locations && book.locations.length > 0">
-      <h3 class="font-semibold text-gray-900 mb-2">Locations</h3>
-      <div class="space-y-2">
-        <div
-          v-for="(location, index) in book.locations"
-          :key="index"
-          class="flex items-start gap-2 text-sm"
-        >
-          <MapPin :size="16" class="text-primary-600 flex-shrink-0 mt-0.5" />
-          <span class="text-gray-700">
-            {{ formatLocation(location) }}
-          </span>
+    <!-- Genre Badges -->
+    <div v-if="displayGenres.length > 0" class="px-6 mb-6 flex gap-2 flex-wrap">
+      <GenreBadge v-for="genre in displayGenres" :key="genre" :genre="genre" />
+    </div>
+
+    <!-- Metadata -->
+    <div class="px-6 mb-6 flex gap-6">
+      <div v-if="book.publication_year" class="flex items-center gap-2 text-text-secondary">
+        <Calendar class="w-4 h-4" />
+        <span class="text-sm">{{ book.publication_year }}</span>
+      </div>
+      <div v-if="book.page_count" class="flex items-center gap-2 text-text-secondary">
+        <BookOpenIcon class="w-4 h-4" />
+        <span class="text-sm">{{ book.page_count }} pages</span>
+      </div>
+    </div>
+
+    <!-- Journey Location Section -->
+    <section v-if="book.locations && book.locations.length > 0" class="px-6 mb-6">
+      <h2 class="font-serif text-xl font-semibold text-text-primary mb-3">
+        Journey Locations
+      </h2>
+      <div class="bg-parchment-50 rounded-xl p-4 border border-parchment-200">
+        <div class="space-y-2">
+          <div
+            v-for="(location, index) in book.locations"
+            :key="index"
+            class="flex items-center gap-2 text-sm text-text-secondary"
+          >
+            <MapPin class="w-4 h-4 text-teal-deep" />
+            <span>{{ formatLocation(location) }}</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Genre/Tags -->
-    <div v-if="book.genre || book.tags">
-      <h3 class="font-semibold text-gray-900 mb-2">Tags</h3>
-      <div class="flex flex-wrap gap-2">
-        <span v-if="book.genre" class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-          {{ book.genre }}
-        </span>
-        <span
-          v-for="tag in parsedTags"
-          :key="tag"
-          class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-        >
-          {{ tag }}
-        </span>
+    <!-- Synopsis Section -->
+    <section v-if="book.description" class="px-6 mb-6">
+      <h2 class="font-serif text-xl font-semibold text-text-primary mb-3">
+        Synopsis
+      </h2>
+      <div class="bg-white rounded-xl shadow-card p-5">
+        <p class="text-text-secondary leading-relaxed">
+          {{ book.description }}
+        </p>
       </div>
-    </div>
+    </section>
 
     <!-- Goodreads Link -->
-    <a
-      v-if="book.isbn"
-      :href="goodreadsUrl"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="block w-full touch-target bg-primary-600 text-white text-center py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
-    >
-      View on Goodreads
-    </a>
+    <div v-if="book.isbn" class="px-6">
+      <a
+        :href="goodreadsUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block w-full bg-copper-warm text-white text-center py-4 rounded-xl font-medium hover:shadow-elevated transition-shadow"
+      >
+        View on Goodreads
+      </a>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { MapPin } from 'lucide-vue-next'
+import { MapPin, Calendar, BookOpen as BookOpenIcon } from 'lucide-vue-next'
+import { BookOpen } from 'lucide-vue-next'
+import GenreBadge from '../shared/GenreBadge.vue'
 
 const props = defineProps({
   book: {
@@ -81,21 +98,41 @@ const props = defineProps({
   }
 })
 
-const coverUrl = computed(() => {
-  return `https://covers.openlibrary.org/b/isbn/${props.book.isbn}-L.jpg`
+// Generate color based on book title hash
+const coverColor = computed(() => {
+  const hash = hashString(props.book.title)
+  const hue = hash % 360
+  return `hsl(${hue}, 40%, 60%)`
 })
+
+// Simple string hash function
+function hashString(str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash)
+}
 
 const goodreadsUrl = computed(() => {
   return `https://www.goodreads.com/book/isbn/${props.book.isbn}`
 })
 
-const parsedTags = computed(() => {
-  if (!props.book.tags) return []
-  if (Array.isArray(props.book.tags)) return props.book.tags
-  if (typeof props.book.tags === 'string') {
-    return props.book.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+// Display genres
+const displayGenres = computed(() => {
+  const genres = []
+
+  if (props.book.genre) {
+    genres.push(props.book.genre)
   }
-  return []
+
+  if (props.book.tags && Array.isArray(props.book.tags)) {
+    genres.push(...props.book.tags.slice(0, 3 - genres.length))
+  }
+
+  return genres.slice(0, 3)
 })
 
 function formatLocation(location) {

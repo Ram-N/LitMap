@@ -1,0 +1,542 @@
+[
+    {
+        "description": "A comprehensive look at the history, culture, and politics of the Mekong River region.",
+        "tags": [
+            "Mekong River",
+            "Southeast Asia",
+            "History"
+        ],
+        "isbn": "9780871137821",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Cambodia's capital, a major city on the Mekong.",
+                "latitude": 11.5564,
+                "place": "Phnom Penh, Cambodia",
+                "longitude": 104.9282
+            },
+            {
+                "description": "Former royal capital of Laos, situated on the Mekong.",
+                "latitude": 19.8863,
+                "place": "Luang Prabang, Laos",
+                "longitude": 102.1346
+            },
+            {
+                "description": "Largest city in the Mekong Delta region of Vietnam.",
+                "latitude": 10.0452,
+                "place": "Can Tho, Vietnam",
+                "longitude": 105.7469
+            },
+            {
+                "description": "Thai town on the Mekong, bordering Laos.",
+                "latitude": 20.2744,
+                "place": "Chiang Khong, Thailand",
+                "longitude": 100.4044
+            }
+        ],
+        "title": "The Mekong: Turbulent Past, Uncertain Future",
+        "publicationDate": "2000",
+        "author": "Milton Osborne",
+        "genre": "History, Travel Literature",
+        "id": "10mhXWzFO5tBTA0VV0xM"
+    },
+    {
+        "description": "A novel about a man's search for a missing friend in India, blending mystery and reflections on identity and displacement.",
+        "tags": [
+            "India",
+            "Mystery",
+            "Identity"
+        ],
+        "isbn": "9780811213172",
+        "booktype": "Fiction",
+        "locations": [
+            {
+                "description": "The story unfolds across various locations in India, with this coordinate representing a central point in the country.",
+                "latitude": 20.5937,
+                "place": "Various locations in India",
+                "longitude": 78.9629
+            }
+        ],
+        "title": "Indian Nocturne",
+        "publicationDate": "1984",
+        "author": "Antonio Tabucchi",
+        "genre": "Mystery, Literary Fiction",
+        "id": "3D8yLEdpcLM0a8xEwDPj"
+    },
+    {
+        "description": "A satirical novel about a young Russian billionaire, set against the backdrop of the chaos and corruption of post-Soviet states.",
+        "tags": [
+            "Post-Soviet",
+            "Satire",
+            "Russia"
+        ],
+        "isbn": "9780312426316",
+        "booktype": "Fiction",
+        "locations": [
+            {
+                "description": "The novel spans various locations in post-Soviet countries, highlighting the cultural and political landscape of the region.",
+                "latitude": 48.1351,
+                "place": "Various Post-Soviet states",
+                "longitude": 11.582
+            }
+        ],
+        "title": "Absurdistan",
+        "publicationDate": "2006",
+        "author": "Gary Shteyngart",
+        "genre": "Satire",
+        "id": "3UMfQMQM3EaOi6xqBNN1"
+    },
+    {
+        "description": "Stevenson's account of his travels through the C\u00e9vennes mountains of southern France, blending nature writing and personal reflection.",
+        "tags": [
+            "France",
+            "Nature",
+            "Travel Literature"
+        ],
+        "isbn": "9780140439106",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "The C\u00e9vennes mountain range in southern France, where Stevenson embarked on his journey with a donkey, experiencing the local landscape and culture.",
+                "latitude": 44.537,
+                "place": "C\u00e9vennes, France",
+                "longitude": 3.523
+            }
+        ],
+        "title": "Travels with a Donkey in the C\u00e9vennes",
+        "publicationDate": "1879",
+        "author": "Robert Louis Stevenson",
+        "genre": "Travel, Memoir",
+        "id": "6P8hLaKO77gBruQltAi7"
+    },
+    {
+        "description": "Strayed's memoir of her solo hike along the Pacific Crest Trail, a journey of personal transformation and healing.",
+        "tags": [
+            "Hiking",
+            "Self-discovery",
+            "Nature"
+        ],
+        "isbn": "9780307476074",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "The Pacific Crest Trail stretches from Mexico to Canada through California, Oregon, and Washington, serving as the backdrop for Strayed's transformative journey.",
+                "latitude": 38.1618,
+                "place": "Pacific Crest Trail, United States",
+                "longitude": -122.5026
+            }
+        ],
+        "title": "Wild: From Lost to Found on the Pacific Crest Trail",
+        "publicationDate": "2012",
+        "author": "Cheryl Strayed",
+        "genre": "Memoir, Travel",
+        "id": "H1oRmwUnCCxnPE4BWDDP"
+    },
+    {
+        "description": "Steinbeck's account of his road trip across America in search of the essence of the nation and its people.",
+        "tags": [
+            "Road Trip",
+            "America",
+            "Travel Literature"
+        ],
+        "isbn": "9780140053203",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "The book covers a cross-country journey across the United States, exploring various regions and their unique characteristics.",
+                "latitude": 39.8283,
+                "place": "United States",
+                "longitude": -98.5795
+            }
+        ],
+        "title": "Travels with Charley: In Search of America",
+        "publicationDate": "1962",
+        "author": "John Steinbeck",
+        "genre": "Travel, Memoir",
+        "id": "L8cP6PjfAEp39ZGTpTZj"
+    },
+    {
+        "description": "A novel about the decline of a once-famous American novelist, set against the backdrop of Hollywood and the East Coast literary scene.",
+        "tags": [
+            "Hollywood",
+            "American Literature",
+            "Writers"
+        ],
+        "publisher": "Ivan R. Dee",
+        "locations": [
+            {
+                "description": "One of the main settings, representing the glamour and pitfalls of the film industry.",
+                "latitude": 34.0522,
+                "place": "Hollywood",
+                "longitude": -118.2437
+            },
+            {
+                "description": "Representing the East Coast literary scene in the novel.",
+                "latitude": 40.7128,
+                "place": "New York",
+                "longitude": -74.006
+            }
+        ],
+        "isbn": "9781566634687",
+        "addedBy": "user101",
+        "rating": 4.0,
+        "booktype": "Fiction",
+        "genre": "Literary Fiction",
+        "language": "English",
+        "coverImageUrl": "https://example.com/cover/the_disenchanted.jpg",
+        "pageCount": 388,
+        "title": "The Disenchanted",
+        "publicationDate": "1950",
+        "author": "Budd Schulberg",
+        "id": "Lg43qoFJ5cXFHryzs1Bs"
+    },
+    {
+        "description": "Seth's account of his hitchhiking journey through the remote regions of western China, offering insights into the local cultures and landscapes.",
+        "tags": [
+            "China",
+            "Tibet",
+            "Xinjiang",
+            "Travel",
+            "Culture"
+        ],
+        "publisher": "Vintage",
+        "locations": [
+            {
+                "description": "The western Chinese region where Seth's journey begins.",
+                "latitude": 41.1129,
+                "place": "Xinjiang",
+                "longitude": 80.2329
+            },
+            {
+                "description": "The final destination of Seth's journey, known for its unique culture and landscape.",
+                "latitude": 35.1331,
+                "place": "Tibet",
+                "longitude": 81.2989
+            }
+        ],
+        "isbn": "9780099367710",
+        "addedBy": "user202",
+        "rating": 4.1,
+        "booktype": "Nonfiction",
+        "genre": "Travel",
+        "language": "English",
+        "coverImageUrl": "https://example.com/cover/from_heaven_lake.jpg",
+        "pageCount": 192,
+        "title": "From Heaven Lake: Travels Through Sinkiang and Tibet",
+        "publicationDate": "1983",
+        "author": "Vikram Seth",
+        "id": "NWDrJSWID0Wk1lt2P6mB"
+    },
+    {
+        "description": "A travelogue of Syme's journey through the Middle East, exploring the region's history, culture, and religious significance.",
+        "tags": [
+            "Middle East",
+            "Islam",
+            "Cultural Exploration"
+        ],
+        "locations": [
+            {
+                "description": "The book covers various locations across the Middle East, with this coordinate representing a central point in the region.",
+                "latitude": 30.0444,
+                "place": "Middle East",
+                "longitude": 31.2357
+            }
+        ],
+        "booktype": "Non-fiction",
+        "title": "The Road to Mecca",
+        "publicationDate": "1948",
+        "author": "Ronald Syme",
+        "genre": "Travel, History",
+        "id": "PCiefnQNWPyIFVQcVUbU"
+    },
+    {
+        "description": "Terzani's account of his year-long journey through Asia by land and sea, avoiding air travel.",
+        "tags": [
+            "Southeast Asia",
+            "Travel",
+            "Culture"
+        ],
+        "isbn": "9780006550716",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Starting point of Terzani's journey.",
+                "latitude": 13.7563,
+                "place": "Bangkok, Thailand",
+                "longitude": 100.5018
+            },
+            {
+                "description": "Capital of Laos, visited during his travels.",
+                "latitude": 17.9757,
+                "place": "Vientiane, Laos",
+                "longitude": 102.6331
+            },
+            {
+                "description": "One of the major cities Terzani explores in Vietnam.",
+                "latitude": 21.0278,
+                "place": "Hanoi, Vietnam",
+                "longitude": 105.8342
+            },
+            {
+                "description": "Capital of Cambodia, another stop on Terzani's journey.",
+                "latitude": 11.5564,
+                "place": "Phnom Penh, Cambodia",
+                "longitude": 104.9282
+            }
+        ],
+        "title": "A Fortune-Teller Told Me: Earthbound Travels in the Far East",
+        "publicationDate": "1997",
+        "author": "Tiziano Terzani",
+        "genre": "Travel Literature",
+        "id": "e5Tct4oqPG5f3pvYxHUP"
+    },
+    {
+        "description": "A travelogue of Lewis's journeys through Vietnam in the 1950s, during the French Indochina War.",
+        "tags": [
+            "Vietnam",
+            "Travel",
+            "War"
+        ],
+        "isbn": "9780907871309",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Capital of Vietnam, a major focus of Lewis's observations.",
+                "latitude": 21.0278,
+                "place": "Hanoi",
+                "longitude": 105.8342
+            },
+            {
+                "description": "Important port city visited by Lewis.",
+                "latitude": 20.8449,
+                "place": "Haiphong",
+                "longitude": 106.6881
+            },
+            {
+                "description": "Former imperial capital of Vietnam.",
+                "latitude": 16.4637,
+                "place": "Hue",
+                "longitude": 107.5909
+            },
+            {
+                "description": "Then-capital of South Vietnam, another key location in the book.",
+                "latitude": 10.8231,
+                "place": "Saigon (Ho Chi Minh City)",
+                "longitude": 106.6297
+            }
+        ],
+        "title": "Vietnam: A Dragon Apparent",
+        "publicationDate": "1951",
+        "author": "Norman Lewis",
+        "genre": "Travel Literature",
+        "id": "ekX1x9xAnevOa5qK5hH0"
+    },
+    {
+        "description": "Shackleton's firsthand narrative of his ill-fated expedition to Antarctica, detailing the incredible story of survival and heroism.",
+        "tags": [
+            "Antarctica",
+            "Exploration",
+            "Survival"
+        ],
+        "locations": [
+            {
+                "description": "The primary setting of Shackleton's expedition, where the crew faced extreme challenges in the frozen landscape.",
+                "latitude": -82.8628,
+                "place": "Antarctica",
+                "longitude": 135.0
+            }
+        ],
+        "booktype": "Non-fiction",
+        "title": "South: The Story of Shackleton's Last Expedition 1914\u20131917",
+        "author": "Ernest Shackleton",
+        "genre": "Adventure, Travel",
+        "id": "gSnYpa0FR2ruYxUT1139"
+    },
+    {
+        "description": "Rushdie's personal and political exploration of Nicaragua during the Sandinista revolution, blending travelogue and reportage.",
+        "tags": [
+            "Nicaragua",
+            "Politics",
+            "Revolution",
+            "Latin America"
+        ],
+        "publisher": "Vintage",
+        "locations": [
+            {
+                "description": "The book covers various locations across Nicaragua during the Sandinista period.",
+                "latitude": 12.1696,
+                "place": "Nicaragua",
+                "longitude": -85.0361
+            }
+        ],
+        "isbn": "9780099285229",
+        "addedBy": "user789",
+        "rating": 3.8,
+        "booktype": "Nonfiction",
+        "genre": "Travel",
+        "language": "English",
+        "coverImageUrl": "https://example.com/cover/jaguar_smile.jpg",
+        "pageCount": 160,
+        "title": "The Jaguar Smile: A Nicaraguan Journey",
+        "publicationDate": "1987",
+        "author": "Salman Rushdie",
+        "id": "gsl6Xx0xuwbOnZiWaDbF"
+    },
+    {
+        "description": "An account of the 1866-1868 French expedition to explore the Mekong River.",
+        "tags": [
+            "Mekong River",
+            "Exploration",
+            "Colonial History"
+        ],
+        "isbn": "9780007111152",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Starting point of the French Mekong Expedition.",
+                "latitude": 10.8231,
+                "place": "Saigon (Ho Chi Minh City), Vietnam",
+                "longitude": 106.6297
+            },
+            {
+                "description": "Important stop on the expedition's journey.",
+                "latitude": 11.5564,
+                "place": "Phnom Penh, Cambodia",
+                "longitude": 104.9282
+            },
+            {
+                "description": "Capital of Laos, visited during the expedition.",
+                "latitude": 17.9757,
+                "place": "Vientiane, Laos",
+                "longitude": 102.6331
+            },
+            {
+                "description": "City in Yunnan province, China, near the expedition's northernmost point.",
+                "latitude": 22.0057,
+                "place": "Jinghong, China",
+                "longitude": 100.7948
+            }
+        ],
+        "title": "Mad about the Mekong: Exploration and Empire in South-East Asia",
+        "publicationDate": "2005",
+        "author": "John Keay",
+        "genre": "History, Travel Literature",
+        "id": "hDkKu2ZPIVXAtGGL2GpB"
+    },
+    {
+        "description": "Tashi's memoir of her life with a Bedouin tribe in Jordan, offering insights into their culture and traditions.",
+        "tags": [
+            "Jordan",
+            "Bedouin Culture",
+            "Personal Experience"
+        ],
+        "isbn": "9781844082209",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Petra, the ancient city in southern Jordan, serves as the primary setting for Tashi's experiences with the Bedouin tribe.",
+                "latitude": 30.3285,
+                "place": "Petra, Jordan",
+                "longitude": 35.4444
+            }
+        ],
+        "title": "Married to a Bedouin",
+        "publicationDate": "2006",
+        "author": "Tashi Tenzing",
+        "genre": "Memoir, Cultural Studies",
+        "id": "rIaMbAdcKZ5ZBDk7arvH"
+    },
+    {
+        "description": "Swift's classic satirical novel about the travels of Lemuel Gulliver to fantastical lands, providing commentary on human nature and society.",
+        "tags": [
+            "Satire",
+            "Fantasy",
+            "Classic Literature"
+        ],
+        "isbn": "9780141439495",
+        "booktype": "Fiction",
+        "locations": [
+            {
+                "description": "The book features multiple imaginary lands, each representing different aspects of human society and behavior.",
+                "latitude": 0.0,
+                "place": "Various Fictional Locations",
+                "longitude": 0.0
+            }
+        ],
+        "title": "Gulliver's Travels",
+        "publicationDate": "1726",
+        "author": "Jonathan Swift",
+        "genre": "Satire, Adventure",
+        "id": "wcH3uIu6tkFZvpX1Kzyn"
+    },
+    {
+        "description": "A journey through Vietnam's history and culture through the lens of its ceramic art.",
+        "tags": [
+            "Vietnam",
+            "Ceramics",
+            "Art History"
+        ],
+        "isbn": "9780878467785",
+        "booktype": "Non-fiction",
+        "locations": [
+            {
+                "description": "Capital city, home to many important ceramic collections.",
+                "latitude": 21.0278,
+                "place": "Hanoi",
+                "longitude": 105.8342
+            },
+            {
+                "description": "Famous pottery village near Hanoi.",
+                "latitude": 21.0549,
+                "place": "Bat Trang",
+                "longitude": 105.9131
+            },
+            {
+                "description": "Former imperial capital, significant for its historical ceramics.",
+                "latitude": 16.4637,
+                "place": "Hue",
+                "longitude": 107.5909
+            },
+            {
+                "description": "Ancient town known for its pottery and ceramic traditions.",
+                "latitude": 15.8801,
+                "place": "Hoi An",
+                "longitude": 108.338
+            }
+        ],
+        "title": "The Elephant and the Lotus: Vietnamese Ceramics in the Museum of Fine Arts, Boston",
+        "publicationDate": "2011",
+        "author": "John Stevenson",
+        "genre": "Art History, Travel Literature",
+        "id": "zgim3HktBKOBY8lhdEGR"
+    },
+    {
+        "description": "Raban's account of his journey down the Mississippi River, exploring the river's history, ecology, and the people living along its banks.",
+        "tags": [
+            "Mississippi River",
+            "American History",
+            "Travelogue"
+        ],
+        "publisher": "Vintage",
+        "locations": [
+            {
+                "description": "The main setting of the book, spanning multiple states along its course.",
+                "latitude": 37.6528,
+                "place": "Mississippi River",
+                "longitude": -89.3412
+            }
+        ],
+        "isbn": "9780375701023",
+        "addedBy": "user456",
+        "rating": 4.2,
+        "booktype": "Nonfiction",
+        "genre": "Travel",
+        "language": "English",
+        "coverImageUrl": "https://example.com/cover/old_glory.jpg",
+        "pageCount": 416,
+        "title": "Old Glory: A Voyage Down the Mississippi",
+        "publicationDate": "1981",
+        "author": "Jonathan Raban",
+        "id": "znjBR6snNHBSYWTYDqDY"
+    }
+]

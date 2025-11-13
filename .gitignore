@@ -90,6 +90,7 @@ user_preferences.json
 # Database script input/output directories
 database/input_data/
 database/output_json/
+database/python/
 
 design/
 
