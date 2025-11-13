@@ -85,15 +85,22 @@ function hashString(str) {
 const displayGenres = computed(() => {
   const genres = []
 
+  // Handle genre - it can be a string or an array
   if (props.book.genre) {
-    genres.push(props.book.genre)
+    if (Array.isArray(props.book.genre)) {
+      genres.push(...props.book.genre)
+    } else {
+      genres.push(props.book.genre)
+    }
   }
 
-  if (props.book.tags && Array.isArray(props.book.tags)) {
+  // Add tags if we don't have enough genres yet
+  if (props.book.tags && Array.isArray(props.book.tags) && genres.length < 2) {
     genres.push(...props.book.tags.slice(0, 2 - genres.length))
   }
 
-  return genres.slice(0, 2)
+  // Remove duplicates using Set and return up to 2 unique genres
+  return [...new Set(genres)].slice(0, 2)
 })
 
 // Primary location for display

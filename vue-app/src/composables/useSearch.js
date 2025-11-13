@@ -50,6 +50,12 @@ export function useSearch() {
     uiStore.setSearchField(field)
     uiStore.showSearchResults(results)
 
+    // Fit map bounds for author or location searches
+    if ((field === 'author' || field === 'location') && results.length > 0) {
+      console.log(`Fitting map bounds for ${field} search results`)
+      uiStore.triggerFitBounds()
+    }
+
     return { results, searchQuery }
   }
 

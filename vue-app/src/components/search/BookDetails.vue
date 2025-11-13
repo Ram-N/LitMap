@@ -124,15 +124,22 @@ const goodreadsUrl = computed(() => {
 const displayGenres = computed(() => {
   const genres = []
 
+  // Handle genre - it can be a string or an array
   if (props.book.genre) {
-    genres.push(props.book.genre)
+    if (Array.isArray(props.book.genre)) {
+      genres.push(...props.book.genre)
+    } else {
+      genres.push(props.book.genre)
+    }
   }
 
-  if (props.book.tags && Array.isArray(props.book.tags)) {
+  // Add tags if we don't have enough genres yet
+  if (props.book.tags && Array.isArray(props.book.tags) && genres.length < 3) {
     genres.push(...props.book.tags.slice(0, 3 - genres.length))
   }
 
-  return genres.slice(0, 3)
+  // Remove duplicates using Set and return up to 3 unique genres
+  return [...new Set(genres)].slice(0, 3)
 })
 
 function formatLocation(location) {

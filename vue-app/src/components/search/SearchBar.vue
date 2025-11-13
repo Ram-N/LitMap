@@ -81,12 +81,14 @@ const searchInput = ref(null)
 
 async function expand() {
   isExpanded.value = true
+  uiStore.openSearchModal()
   await nextTick()
   searchInput.value?.focus()
 }
 
 function collapse() {
   isExpanded.value = false
+  uiStore.closeSearchModal()
   if (!searchQuery.value) {
     searchField.value = 'any'
   }

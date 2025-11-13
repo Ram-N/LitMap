@@ -10,15 +10,6 @@
       :style="{ backgroundImage: textureDataUrl }"
     ></div>
 
-    <!-- Toggle Button for Showcase (temporary) -->
-    <button
-      @click="showComponentShowcase = true"
-      class="fixed top-20 right-4 z-50 bg-copper-warm text-white px-3 py-2 rounded-lg shadow-elevated text-sm"
-      title="View new design system components"
-    >
-      🎨 Design System
-    </button>
-
     <!-- Main content wrapper with padding for bottom nav -->
     <div class="min-h-screen pb-20">
       <!-- Top Bar -->
@@ -41,6 +32,17 @@
             <p class="text-text-secondary text-sm">{{ booksStore.error }}</p>
           </div>
         </div>
+
+        <!-- Floating Controls (hidden when loading, search modal, or bottom sheet is open) -->
+        <FloatingLocationSelector
+          v-if="!booksStore.isLoading && !uiStore.isSearchModalOpen && !uiStore.isBottomSheetVisible"
+        />
+        <FloatingZoomControls
+          v-if="!booksStore.isLoading && !uiStore.isSearchModalOpen && !uiStore.isBottomSheetVisible"
+        />
+        <ClusterToggle
+          v-if="!booksStore.isLoading && !uiStore.isSearchModalOpen && !uiStore.isBottomSheetVisible"
+        />
 
         <!-- FAB Buttons -->
         <FAB
@@ -68,7 +70,10 @@ import TopBar from './components/layout/TopBar.vue'
 import BottomSheet from './components/layout/BottomSheet.vue'
 import BottomNavigation from './components/layout/BottomNavigation.vue'
 import GoogleMapComponent from './components/map/GoogleMap.vue'
+import ClusterToggle from './components/map/ClusterToggle.vue'
 import FAB from './components/shared/FAB.vue'
+import FloatingLocationSelector from './components/shared/FloatingLocationSelector.vue'
+import FloatingZoomControls from './components/shared/FloatingZoomControls.vue'
 import LoadingSpinner from './components/shared/LoadingSpinner.vue'
 import { useBooksStore } from './stores/books'
 import { useUIStore } from './stores/ui'

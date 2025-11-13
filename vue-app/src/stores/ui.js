@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 export const useUIStore = defineStore('ui', () => {
   // State
   const isMenuOpen = ref(false)
+  const isSearchModalOpen = ref(false)
   const bottomSheetState = ref('hidden') // 'hidden', 'half', 'full'
   const bottomSheetContent = ref(null) // 'search-results', 'book-details'
   const selectedBook = ref(null)
@@ -17,6 +18,7 @@ export const useUIStore = defineStore('ui', () => {
   const mapCenter = ref(null)
   const mapZoom = ref(3)
   const mapType = ref('terrain') // 'roadmap', 'satellite', 'hybrid', 'terrain'
+  const shouldFitBounds = ref(0) // Counter to trigger fitBounds (increment to trigger)
 
   // Getters
   const hasSearchResults = computed(() => searchResults.value.length > 0)
@@ -34,6 +36,14 @@ export const useUIStore = defineStore('ui', () => {
 
   function closeMenu() {
     isMenuOpen.value = false
+  }
+
+  function openSearchModal() {
+    isSearchModalOpen.value = true
+  }
+
+  function closeSearchModal() {
+    isSearchModalOpen.value = false
   }
 
   function setBottomSheet(state, content = null) {
@@ -110,9 +120,14 @@ export const useUIStore = defineStore('ui', () => {
     mapType.value = type
   }
 
+  function triggerFitBounds() {
+    shouldFitBounds.value++
+  }
+
   return {
     // State
     isMenuOpen,
+    isSearchModalOpen,
     bottomSheetState,
     bottomSheetContent,
     selectedBook,
@@ -124,6 +139,7 @@ export const useUIStore = defineStore('ui', () => {
     mapCenter,
     mapZoom,
     mapType,
+    shouldFitBounds,
     // Getters
     hasSearchResults,
     isBottomSheetVisible,
@@ -132,6 +148,8 @@ export const useUIStore = defineStore('ui', () => {
     toggleMenu,
     openMenu,
     closeMenu,
+    openSearchModal,
+    closeSearchModal,
     setBottomSheet,
     showSearchResults,
     showBookDetails,
@@ -145,5 +163,6 @@ export const useUIStore = defineStore('ui', () => {
     setMapCenter,
     setMapZoom,
     setMapType,
+    triggerFitBounds,
   }
 })

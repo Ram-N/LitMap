@@ -1,8 +1,5 @@
 <template>
   <div class="relative w-full h-full">
-    <!-- Map Controls -->
-    <MapControls class="absolute top-4 left-4 right-4 z-10" />
-
     <!-- Google Map using Web Component -->
     <gmp-map
       ref="mapElement"
@@ -19,7 +16,6 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
-import MapControls from './MapControls.vue'
 import { useBooksStore } from '@/stores/books'
 import { useUIStore } from '@/stores/ui'
 import { generateBookColor, getTitleInitials } from '@/utils/colors'
@@ -169,6 +165,14 @@ async function initializeMap() {
 
     console.log('Created', markerInstances.value.length, 'marker instances')
 
+    // Add zoom change listener to sync zoom level with store
+    map.addListener('zoom_changed', () => {
+      const currentZoom = map.getZoom()
+      if (currentZoom !== undefined && currentZoom !== uiStore.mapZoom) {
+        uiStore.setMapZoom(currentZoom)
+      }
+    })
+
     // Initialize clustering if enabled
     updateClustering()
   } catch (error) {
@@ -176,6 +180,61 @@ async function initializeMap() {
     // Retry after a delay
     setTimeout(initializeMap, 500)
   }
+}
+
+// Fit map to show markers from specific books (or all markers if no books specified)
+function fitMapToMarkers(books = null) {
+  if (!mapInstance.value) {
+    return
+  }
+
+  const bounds = new google.maps.LatLngBounds()
+  let hasLocations = false
+
+  // If books are specified, fit to those books' locations
+  if (books && books.length > 0) {
+    books.forEach(book => {
+      if (book.locations && Array.isArray(book.locations)) {
+        book.locations.forEach(location => {
+          const lat = location.lat || location.latitude
+          const lng = location.lng || location.longitude
+          if (lat && lng) {
+            bounds.extend({ lat, lng })
+            hasLocations = true
+          }
+        })
+      }
+    })
+  } else {
+    // Fit to all markers
+    if (markerInstances.value.length === 0) {
+      return
+    }
+    markerInstances.value.forEach(marker => {
+      bounds.extend(marker.position)
+      hasLocations = true
+    })
+  }
+
+  if (!hasLocations) {
+    console.warn('No locations found to fit bounds')
+    return
+  }
+
+  mapInstance.value.fitBounds(bounds)
+
+  // Update the store's zoom level after fitBounds completes
+  google.maps.event.addListenerOnce(mapInstance.value, 'bounds_changed', () => {
+    const zoom = mapInstance.value.getZoom()
+    if (zoom > 15) {
+      mapInstance.value.setZoom(15)
+      uiStore.setMapZoom(15)
+    } else {
+      uiStore.setMapZoom(zoom)
+    }
+  })
+
+  console.log('Fitted map to show markers')
 }
 
 // Handle marker click
@@ -207,7 +266,13 @@ function updateClustering() {
   console.log('Map instance:', mapInstance.value)
 
   if (!mapInstance.value || markerInstances.value.length === 0) {
-    console.warn('Cannot update clustering - map or markers not ready')
+    console.warn('Cannot update clustering - map or markers not ready, will retry')
+    // Retry after a short delay if map is still initializing
+    setTimeout(() => {
+      if (mapInstance.value && markerInstances.value.length > 0) {
+        updateClustering()
+      }
+    }, 200)
     return
   }
 
@@ -263,6 +328,14 @@ watch(() => bookMarkers.value.length, () => {
   console.log('Book markers changed, reinitializing...')
   if (mapInstance.value) {
     initializeMap()
+  }
+})
+
+// Watch for fitBounds trigger (from author/location searches)
+watch(() => uiStore.shouldFitBounds, () => {
+  if (uiStore.shouldFitBounds > 0 && uiStore.searchResults.length > 0) {
+    console.log('Fitting bounds to search results')
+    fitMapToMarkers(uiStore.searchResults)
   }
 })
 
