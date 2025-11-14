@@ -19,6 +19,7 @@ import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import { useBooksStore } from '@/stores/books'
 import { useUIStore } from '@/stores/ui'
 import { generateBookColor, getTitleInitials } from '@/utils/colors'
+import { vintageMapStyles } from '@/utils/mapStyles'
 
 const booksStore = useBooksStore()
 const uiStore = useUIStore()
@@ -135,6 +136,20 @@ async function initializeMap() {
 
   mapInstance.value = map
   console.log('Map instance obtained:', map)
+
+  // Apply vintage map styling
+  try {
+    map.setOptions({
+      styles: vintageMapStyles,
+      mapTypeId: 'roadmap', // Custom styles work best with roadmap
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false
+    })
+    console.log('Vintage map styles applied')
+  } catch (error) {
+    console.error('Failed to apply map styles:', error)
+  }
 
   try {
     // Load the marker library
