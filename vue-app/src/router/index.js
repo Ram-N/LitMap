@@ -1,45 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import MapView from '@/views/MapView.vue'
-import ListView from '@/views/ListView.vue'
-import LibraryView from '@/views/LibraryView.vue'
-import ContributeView from '@/views/ContributeView.vue'
-import BookDetailView from '@/views/BookDetailView.vue'
-import AuthorProfileView from '@/views/AuthorProfileView.vue'
 
+// Lazy-load all route components for code splitting
 const routes = [
   {
     path: '/',
     name: 'map',
-    component: MapView,
+    component: () => import('@/views/MapView.vue'),
     meta: { tab: 'map' }
   },
   {
     path: '/list',
     name: 'list',
-    component: ListView,
+    component: () => import('@/views/ListView.vue'),
     meta: { tab: 'list' }
   },
   {
     path: '/library',
     name: 'library',
-    component: LibraryView,
+    component: () => import('@/views/LibraryView.vue'),
     meta: { tab: 'library' }
   },
   {
     path: '/contribute',
     name: 'contribute',
-    component: ContributeView,
+    component: () => import('@/views/ContributeView.vue'),
     meta: { tab: 'contribute' }
   },
   {
     path: '/book/:id',
     name: 'book-detail',
-    component: BookDetailView,
+    component: () => import('@/views/BookDetailView.vue'),
   },
   {
     path: '/author/:name',
     name: 'author-profile',
-    component: AuthorProfileView,
+    component: () => import('@/views/AuthorProfileView.vue'),
   }
 ]
 

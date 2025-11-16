@@ -22,5 +22,25 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true
-  }
+  },
+  build: {
+    // Generate source maps for debugging in production
+    sourcemap: false,
+    // Reduce chunk size warnings threshold
+    chunkSizeWarningLimit: 1000,
+    // Optimize bundle
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'firebase': ['firebase/app', 'firebase/firestore'],
+          'maps': ['@googlemaps/markerclusterer']
+        }
+      }
+    }
+  },
+  // Base path for GitHub Pages deployment
+  // Use /LitMap/ for GitHub Pages, or '/' for custom domain
+  base: process.env.VITE_BASE_PATH || '/'
 })

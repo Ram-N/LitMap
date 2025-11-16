@@ -1,14 +1,25 @@
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-parchment-200 z-30 pb-safe">
+  <nav
+    class="fixed bottom-0 left-0 right-0 bg-white border-t border-parchment-200 z-30 pb-safe"
+    role="navigation"
+    aria-label="Main navigation"
+  >
     <div class="flex justify-around items-center h-20">
       <button
         v-for="tab in tabs"
         :key="tab.id"
         :class="tabClasses(tab)"
         @click="handleNavigate(tab.id)"
+        :aria-label="`Navigate to ${tab.label}`"
+        :aria-current="props.activeTab === tab.id ? 'page' : undefined"
         class="flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors min-h-touch"
       >
-        <component :is="tab.icon" :class="iconClasses(tab)" :stroke-width="2" />
+        <component
+          :is="tab.icon"
+          :class="iconClasses(tab)"
+          :stroke-width="2"
+          aria-hidden="true"
+        />
         <span :class="labelClasses(tab)">{{ tab.label }}</span>
       </button>
     </div>

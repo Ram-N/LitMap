@@ -30,13 +30,16 @@
 
         <!-- Search Input -->
         <div class="relative mb-4">
+          <label for="search-input" class="sr-only">Search books</label>
           <input
+            id="search-input"
             ref="searchInput"
             v-model="searchQuery"
             type="text"
             placeholder="Search by title, author, location..."
             class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             @keyup.enter="handleSearch"
+            aria-label="Search books by title, author, or location"
           />
           <button
             v-if="searchQuery"
@@ -44,7 +47,7 @@
             class="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-lg"
             aria-label="Clear search"
           >
-            <X :size="20" class="text-gray-400" />
+            <X :size="20" class="text-gray-400" aria-hidden="true" />
           </button>
         </div>
 
