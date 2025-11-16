@@ -18,9 +18,12 @@
       <h1 class="font-serif text-2xl font-semibold text-text-primary mb-2 leading-tight">
         {{ book.title }}
       </h1>
-      <p class="text-lg text-text-secondary">
+      <button
+        @click="navigateToAuthor"
+        class="text-lg text-text-secondary hover:text-teal-deep transition-colors cursor-pointer underline decoration-dotted underline-offset-2"
+      >
         {{ book.author }}
-      </p>
+      </button>
     </div>
 
     <!-- Genre Badges -->
@@ -87,6 +90,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { MapPin, Calendar, BookOpen as BookOpenIcon } from 'lucide-vue-next'
 import { BookOpen } from 'lucide-vue-next'
 import GenreBadge from '../shared/GenreBadge.vue'
@@ -97,6 +101,17 @@ const props = defineProps({
     required: true
   }
 })
+
+const router = useRouter()
+
+function navigateToAuthor() {
+  if (props.book.author) {
+    router.push({
+      name: 'author-profile',
+      params: { name: encodeURIComponent(props.book.author) }
+    })
+  }
+}
 
 // Generate color based on book title hash
 const coverColor = computed(() => {
