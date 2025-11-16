@@ -17,7 +17,6 @@ export const useUIStore = defineStore('ui', () => {
   // Map state
   const mapCenter = ref(null)
   const mapZoom = ref(3)
-  const mapType = ref('terrain') // 'roadmap', 'satellite', 'hybrid', 'terrain'
   const shouldFitBounds = ref(0) // Counter to trigger fitBounds (increment to trigger)
 
   // Getters
@@ -116,10 +115,6 @@ export const useUIStore = defineStore('ui', () => {
     mapZoom.value = zoom
   }
 
-  function setMapType(type) {
-    mapType.value = type
-  }
-
   function triggerFitBounds() {
     shouldFitBounds.value++
   }
@@ -138,7 +133,6 @@ export const useUIStore = defineStore('ui', () => {
     searchResults,
     mapCenter,
     mapZoom,
-    mapType,
     shouldFitBounds,
     // Getters
     hasSearchResults,
@@ -162,7 +156,6 @@ export const useUIStore = defineStore('ui', () => {
     clearSearch,
     setMapCenter,
     setMapZoom,
-    setMapType,
     triggerFitBounds,
   }
 })

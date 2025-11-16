@@ -6,14 +6,13 @@ export function useFirebase() {
   const booksStore = useBooksStore()
 
   /**
-   * Get all books from a specific Firestore collection
+   * Get all books from Firestore 'books' collection
    */
-  async function getAllBooks(collectionName = null) {
+  async function getAllBooks() {
     const db = getDb()
-    const targetCollection = collectionName || booksStore.currentCollection
 
     try {
-      const booksRef = collection(db, targetCollection)
+      const booksRef = collection(db, 'books')
       const querySnapshot = await getDocs(booksRef)
       const books = []
 
@@ -34,25 +33,18 @@ export function useFirebase() {
   /**
    * Load books from Firestore and update the store
    */
-  async function loadBooks(collectionName = null) {
+  async function loadBooks() {
     booksStore.setLoading(true)
     booksStore.setError(null)
 
     try {
-      const targetCollection = collectionName || booksStore.currentCollection
-
-      // Update collection in store if different
-      if (collectionName && collectionName !== booksStore.currentCollection) {
-        booksStore.setCollection(collectionName)
-      }
-
       // Fetch books from Firestore
-      const books = await getAllBooks(targetCollection)
+      const books = await getAllBooks()
 
       // Update store
       booksStore.setBooks(books)
 
-      console.log(`Loaded ${books.length} books from ${targetCollection}`)
+      console.log(`Loaded ${books.length} books from 'books' collection`)
 
       return books
     } catch (error) {
@@ -72,23 +64,9 @@ export function useFirebase() {
     return await loadBooks()
   }
 
-  /**
-   * Switch to a different collection and load books
-   */
-  async function switchCollection(collectionName) {
-    if (collectionName === booksStore.currentCollection) {
-      console.log('Already on collection:', collectionName)
-      return booksStore.allBooks
-    }
-
-    console.log('Switching to collection:', collectionName)
-    return await loadBooks(collectionName)
-  }
-
   return {
     getAllBooks,
     loadBooks,
     refreshBookCache,
-    switchCollection,
   }
 }

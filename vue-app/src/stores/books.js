@@ -4,7 +4,6 @@ import { ref, computed } from 'vue'
 export const useBooksStore = defineStore('books', () => {
   // State
   const allBooks = ref([])
-  const currentCollection = ref('books')
   const isLoading = ref(false)
   const error = ref(null)
   const lastFetchTime = ref(null)
@@ -24,10 +23,6 @@ export const useBooksStore = defineStore('books', () => {
     lastFetchTime.value = Date.now()
   }
 
-  function setCollection(collectionName) {
-    currentCollection.value = collectionName
-  }
-
   function setLoading(loading) {
     isLoading.value = loading
   }
@@ -44,7 +39,6 @@ export const useBooksStore = defineStore('books', () => {
   return {
     // State
     allBooks,
-    currentCollection,
     isLoading,
     error,
     lastFetchTime,
@@ -53,7 +47,6 @@ export const useBooksStore = defineStore('books', () => {
     booksWithLocations,
     // Actions
     setBooks,
-    setCollection,
     setLoading,
     setError,
     clearBooks,
