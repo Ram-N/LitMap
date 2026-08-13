@@ -24,12 +24,13 @@ const markerClusterGroup = ref(null)
 const markerLayer = ref(null) // plain layer group for unclustered mode
 const markers = ref([]) // all individual markers
 
-// Vintage/parchment tile layer URL — Stadia Stamen Watercolor with labels overlay
-const TILE_URL = 'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg'
-const LABELS_URL = 'https://tiles.stadiamaps.com/tiles/stamen_terrain_labels/{z}/{x}/{y}{r}.png'
-const TILE_ATTRIBUTION = '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com/">Stamen Design</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// Stadia Maps — Stamen Watercolor tiles for vintage aesthetic
+const STADIA_KEY = import.meta.env.VITE_STADIA_API_KEY || ''
+const WATERCOLOR_URL = `https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg${STADIA_KEY ? '?api_key=' + STADIA_KEY : ''}`
+const LABELS_URL = `https://tiles.stadiamaps.com/tiles/stamen_terrain_labels/{z}/{x}/{y}{r}.png${STADIA_KEY ? '?api_key=' + STADIA_KEY : ''}`
+const STADIA_ATTRIBUTION = '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com/">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
-// Fallback to standard OSM tiles
+// Fallback OSM tiles if no Stadia key
 const OSM_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
@@ -89,31 +90,21 @@ function initializeMap() {
     attributionControl: true,
   })
 
-  // Try watercolor tiles first, fall back to OSM
-  const tileLayer = L.tileLayer(OSM_URL, {
-    attribution: OSM_ATTRIBUTION,
-    maxZoom: 18,
-  }).addTo(map)
-
-  // Try adding watercolor tiles as primary
-  try {
-    const watercolor = L.tileLayer(TILE_URL, {
-      attribution: TILE_ATTRIBUTION,
+  if (STADIA_KEY) {
+    // Watercolor base + terrain labels overlay
+    L.tileLayer(WATERCOLOR_URL, {
+      attribution: STADIA_ATTRIBUTION,
       maxZoom: 18,
-    })
-    watercolor.on('tileerror', () => {
-      // If watercolor tiles fail, OSM is already the base
-      map.removeLayer(watercolor)
-    })
-    watercolor.addTo(map)
-
-    // Add labels on top of watercolor
+    }).addTo(map)
     L.tileLayer(LABELS_URL, {
       attribution: '',
       maxZoom: 18,
     }).addTo(map)
-  } catch (e) {
-    // OSM fallback already added
+  } else {
+    L.tileLayer(OSM_URL, {
+      attribution: OSM_ATTRIBUTION,
+      maxZoom: 18,
+    }).addTo(map)
   }
 
   // Sync map state back to store

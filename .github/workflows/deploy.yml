@@ -34,6 +34,7 @@ jobs:
         working-directory: vue-app
         env:
           VITE_BASE_PATH: /LitMap/
+          VITE_STADIA_API_KEY: ${{ secrets.VITE_STADIA_API_KEY }}
         run: npm run build
 
       - name: Copy legacy app
