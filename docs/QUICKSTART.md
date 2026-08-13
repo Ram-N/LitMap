@@ -14,6 +14,7 @@ alias cdlit='cd ~/projects/LitMap'           # Navigate to project
 alias litenv='source litmap-env/bin/activate' # Activate venv (if needed)
 alias runlit='cd ~/projects/LitMap/; wserve'  # Run LitMap locally
 alias runstream='uv run streamlit run main.py' # Run Streamlit admin
+alias managecovers='cdlit; cd database; python -m http.server 8001 & sleep 2 && xdg-open http://localhost:8001/book-covers-admin.html' # Book covers tool
 alias uview='uv run streamlit run viewer.py'   # Run viewer (PhotoScribe)
 ```
 
@@ -35,6 +36,14 @@ runstream                       # Run Streamlit admin (using alias)
 # Opens at: http://localhost:8501
 ```
 **What you can do:** Add/edit books, search/filter, manage duplicates, backup collections, geocode addresses
+
+### Book Covers Management Tool
+```bash
+managecovers                    # Quick way (auto-opens browser)
+# Or manually: cd database/ && python -m http.server 8001
+# Then open: http://localhost:8001/book-covers-admin.html
+```
+**What you can do:** Review all book covers, fix missing/broken covers, fetch alternatives from Open Library & Google Books, batch update Firestore. See `docs/BOOK_COVERS_README.md` for details.
 
 ### Adding New Books (LLM Method)
 1. **Add books to input file:**
@@ -90,13 +99,14 @@ LitMap/
 ```
 
 ## Common Tasks
-| Task | Command |
-|------|---------|
-| Run app locally | `wserve` or `python -m http.server 8000` |
-| Database admin | `cd database/ && runstream` |
-| Add books (LLM) | `cd database/ && python python/generate_travelbooks_json.py input_data/books1.txt -o output/result.json` |
-| Deploy | `firebase deploy` |
-| Check Firebase | Check Firebase Console for Firestore data |
+| Task | Command | Port |
+|------|---------|------|
+| Run app locally | `runlit` or `wserve` | 8000 |
+| Database admin (Streamlit) | `cd database/ && runstream` | 8501 |
+| Book covers management | `managecovers` | 8001 |
+| Add books (LLM) | `cd database/ && python python/generate_travelbooks_json.py input_data/books1.txt -o output/result.json` | - |
+| Deploy | `firebase deploy` | - |
+| Check Firebase | Check Firebase Console for Firestore data | - |
 
 ## Troubleshooting
 

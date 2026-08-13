@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LitMap - Book Cover Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input[type="text"], select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.success:hover {
+            background: #218838;
+        }
+
+        .stats {
+            padding: 15px 30px;
+            background: #e7f3ff;
+            border-bottom: 1px solid #b8daff;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #004085;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: calc(100vh - 400px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #343a40;
+            color: white;
+            z-index: 10;
+        }
+
+        th {
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        th.center {
+            text-align: center;
+        }
+
+        td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+
+        td.center {
+            text-align: center;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        tr.missing {
+            background: #fff3cd;
+        }
+
+        tr.selected {
+            background: #d4edda;
+        }
+
+        .book-info {
+            max-width: 250px;
+        }
+
+        .book-title {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+
+        .book-author {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .isbn {
+            color: #495057;
+            font-size: 0.85em;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+
+        .cover-preview {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .cover-preview.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .cover-preview.missing {
+            border-color: #ffc107;
+            background: #fff3cd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            color: #856404;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .cover-url {
+            max-width: 200px;
+            font-size: 0.85em;
+            color: #495057;
+            word-break: break-all;
+        }
+
+        .cover-url.empty {
+            color: #dc3545;
+            font-style: italic;
+        }
+
+        .cover-sources {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cover-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cover-option img {
+            width: 60px;
+            height: 90px;
+            object-fit: cover;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+        }
+
+        .cover-option .source-name {
+            font-size: 0.8em;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .cover-option button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        .edit-url {
+            width: 100%;
+            max-width: 300px;
+            padding: 6px 10px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons button {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin: 20px 30px;
+            border-radius: 6px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 30px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 LitMap Book Cover Management</h1>
+            <p>Review and update book covers for all books in your collection</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="collection-select">Collection:</label>
+                <select id="collection-select">
+                    <option value="books">books</option>
+                    <option value="midbooks">midbooks</option>
+                    <option value="newbooks">newbooks</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="filter-select">Filter:</label>
+                <select id="filter-select">
+                    <option value="all">All Books</option>
+                    <option value="missing">Missing Covers Only</option>
+                    <option value="broken">Broken Images Only</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="google-api-key">Google Books API Key (optional):</label>
+                <input type="text" id="google-api-key" placeholder="Enter API key..." style="width: 250px;">
+            </div>
+
+            <button id="load-books-btn" class="success">Load Books</button>
+            <button id="update-selected-btn" disabled>Update Selected</button>
+            <button id="export-csv-btn" class="secondary">Export to CSV</button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat">
+                <span class="stat-label">Total Books</span>
+                <span class="stat-value" id="stat-total">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Missing Covers</span>
+                <span class="stat-value" id="stat-missing">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Broken Images</span>
+                <span class="stat-value" id="stat-broken">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Selected</span>
+                <span class="stat-value" id="stat-selected">0</span>
+            </div>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div id="loading" class="loading">
+            <div>Click "Load Books" to start</div>
+        </div>
+
+        <div class="table-container" id="table-container" style="display: none;">
+            <table id="books-table">
+                <thead>
+                    <tr>
+                        <th class="center">Select</th>
+                        <th>Book Info</th>
+                        <th class="center">Current Cover</th>
+                        <th>Current URL</th>
+                        <th>Alternative Sources</th>
+                        <th>New Cover URL</th>
+                        <th class="center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="books-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>LitMap Book Cover Management Tool v1.0</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRqFv-SkNKmjQHdtPXhFxnEDhJaNGHlgw",
+            authDomain: "litmap-88358.firebaseapp.com",
+            projectId: "litmap-88358",
+            storageBucket: "litmap-88358.firebasestorage.app",
+            messagingSenderId: "824572913034",
+            appId: "1:824572913034:web:c1b4ec7cfdd6e46b3cefd0",
+            measurementId: "G-58CGBRMYCY"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global state
+        let allBooks = [];
+        let filteredBooks = [];
+        let selectedBookIds = new Set();
+
+        // DOM elements
+        const loadBooksBtn = document.getElementById('load-books-btn');
+        const updateSelectedBtn = document.getElementById('update-selected-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const collectionSelect = document.getElementById('collection-select');
+        const filterSelect = document.getElementById('filter-select');
+        const googleApiKeyInput = document.getElementById('google-api-key');
+        const loadingDiv = document.getElementById('loading');
+        const tableContainer = document.getElementById('table-container');
+        const booksTable = document.getElementById('books-table');
+        const booksTbody = document.getElementById('books-tbody');
+        const statsDiv = document.getElementById('stats');
+        const messageContainer = document.getElementById('message-container');
+
+        // Event listeners
+        loadBooksBtn.addEventListener('click', loadBooks);
+        updateSelectedBtn.addEventListener('click', updateSelectedBooks);
+        exportCsvBtn.addEventListener('click', exportToCSV);
+        filterSelect.addEventListener('change', applyFilter);
+
+        // Load books from Firestore
+        async function loadBooks() {
+            const collectionName = collectionSelect.value;
+            showLoading('Loading books from Firestore...');
+            clearMessage();
+
+            try {
+                const booksCollection = collection(db, collectionName);
+                const booksSnapshot = await getDocs(booksCollection);
+
+                allBooks = [];
+                booksSnapshot.forEach(doc => {
+                    allBooks.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                showMessage(`Loaded ${allBooks.length} books from "${collectionName}" collection`, 'success');
+                await fetchAllCovers();
+                applyFilter();
+                updateStats();
+
+            } catch (error) {
+                console.error('Error loading books:', error);
+                showMessage('Error loading books: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Fetch covers from multiple sources
+        async function fetchAllCovers() {
+            showLoading('Fetching alternative cover sources...');
+            const apiKey = googleApiKeyInput.value.trim();
+
+            for (let i = 0; i < allBooks.length; i++) {
+                const book = allBooks[i];
+                if (book.isbn) {
+                    book.coverSources = await fetchCoverSources(book.isbn, apiKey);
+                } else {
+                    book.coverSources = [];
+                }
+
+                // Update progress
+                if ((i + 1) % 50 === 0) {
+                    showLoading(`Fetched covers for ${i + 1}/${allBooks.length} books...`);
+                }
+
+                // Rate limiting
+                await sleep(100);
+            }
+        }
+
+        // Fetch cover from different sources
+        async function fetchCoverSources(isbn, googleApiKey) {
+            const sources = [];
+
+            // Open Library
+            const olUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+            const olValid = await checkImageUrl(olUrl);
+            sources.push({
+                name: 'Open Library',
+                url: olUrl,
+                valid: olValid
+            });
+
+            // Google Books API
+            if (googleApiKey) {
+                try {
+                    const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${googleApiKey}`;
+                    const response = await fetch(gbUrl);
+                    const data = await response.json();
+
+                    if (data.items && data.items.length > 0) {
+                        const imageLinks = data.items[0].volumeInfo.imageLinks;
+                        if (imageLinks) {
+                            const coverUrl = imageLinks.thumbnail || imageLinks.smallThumbnail || '';
+                            if (coverUrl) {
+                                sources.push({
+                                    name: 'Google Books',
+                                    url: coverUrl.replace('http:', 'https:'),
+                                    valid: true
+                                });
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Google Books API error for ISBN', isbn, error);
+                }
+            }
+
+            return sources;
+        }
+
+        // Check if image URL is valid
+        async function checkImageUrl(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Apply filter
+        function applyFilter() {
+            const filter = filterSelect.value;
+
+            filteredBooks = allBooks.filter(book => {
+                if (filter === 'missing') {
+                    return !book.cover && !book.coverUrls;
+                } else if (filter === 'broken') {
+                    return book.coverBroken === true;
+                }
+                return true;
+            });
+
+            renderTable();
+        }
+
+        // Render table
+        function renderTable() {
+            booksTbody.innerHTML = '';
+
+            filteredBooks.forEach((book, index) => {
+                const row = createBookRow(book, index);
+                booksTbody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+            hideLoading();
+        }
+
+        // Create book row
+        function createBookRow(book, index) {
+            const tr = document.createElement('tr');
+            tr.id = `book-row-${book.id}`;
+
+            const currentCover = book.cover || book.coverUrls?.M || '';
+            const isMissing = !currentCover;
+
+            if (isMissing) {
+                tr.classList.add('missing');
+            }
+
+            tr.innerHTML = `
+                <td class="center">
+                    <input type="checkbox" class="checkbox book-select" data-book-id="${book.id}">
+                </td>
+                <td>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.title || 'Untitled')}</div>
+                        <div class="book-author">${escapeHtml(book.author || 'Unknown Author')}</div>
+                        ${book.isbn ? `<div class="isbn">ISBN: ${book.isbn}</div>` : '<div class="isbn">No ISBN</div>'}
+                    </div>
+                </td>
+                <td class="center">
+                    ${currentCover
+                        ? `<img src="${currentCover}" class="cover-preview" alt="Current cover" onerror="this.classList.add('error')">`
+                        : '<div class="cover-preview missing">No Cover</div>'}
+                </td>
+                <td>
+                    <div class="cover-url ${isMissing ? 'empty' : ''}">
+                        ${currentCover || 'No URL'}
+                    </div>
+                </td>
+                <td>
+                    <div class="cover-sources" id="sources-${book.id}">
+                        ${renderCoverSources(book)}
+                    </div>
+                </td>
+                <td>
+                    <input type="text" class="edit-url" id="new-url-${book.id}" placeholder="Paste new cover URL..." value="${currentCover}">
+                </td>
+                <td class="center">
+                    <div class="action-buttons">
+                        <button onclick="window.previewCover('${book.id}')" class="secondary">Preview</button>
+                    </div>
+                </td>
+            `;
+
+            // Add event listener for checkbox
+            tr.querySelector('.book-select').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    selectedBookIds.add(book.id);
+                    tr.classList.add('selected');
+                } else {
+                    selectedBookIds.delete(book.id);
+                    tr.classList.remove('selected');
+                }
+                updateStats();
+            });
+
+            return tr;
+        }
+
+        // Render cover sources
+        function renderCoverSources(book) {
+            if (!book.coverSources || book.coverSources.length === 0) {
+                return '<div style="color: #6c757d; font-size: 0.9em;">No ISBN - cannot fetch alternatives</div>';
+            }
+
+            return book.coverSources.map(source => {
+                if (source.valid) {
+                    return `
+                        <div class="cover-option">
+                            <img src="${source.url}" alt="${source.name}">
+                            <div>
+                                <div class="source-name">${source.name}</div>
+                                <button onclick="window.useThisCover('${book.id}', '${escapeHtml(source.url)}')">Use This</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="cover-option" style="opacity: 0.5;">
+                            <div style="width: 60px; height: 90px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 0.7em; text-align: center;">Not Found</div>
+                            <div class="source-name">${source.name}</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // Global functions for button clicks
+        window.useThisCover = function(bookId, url) {
+            const input = document.getElementById(`new-url-${bookId}`);
+            if (input) {
+                input.value = url;
+                // Auto-select the book
+                const checkbox = document.querySelector(`.book-select[data-book-id="${bookId}"]`);
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }
+        };
+
+        window.previewCover = function(bookId) {
+            const input = document.getElementById(`new-url-${bookId}`);
+            if (input && input.value) {
+                window.open(input.value, '_blank');
+            } else {
+                alert('No URL to preview');
+            }
+        };
+
+        // Update selected books in Firestore
+        async function updateSelectedBooks() {
+            if (selectedBookIds.size === 0) {
+                alert('No books selected');
+                return;
+            }
+
+            if (!confirm(`Update ${selectedBookIds.size} book(s) in Firestore?`)) {
+                return;
+            }
+
+            updateSelectedBtn.disabled = true;
+            showLoading('Updating books...');
+
+            const collectionName = collectionSelect.value;
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const bookId of selectedBookIds) {
+                try {
+                    const newUrl = document.getElementById(`new-url-${bookId}`).value.trim();
+
+                    if (newUrl) {
+                        const bookRef = doc(db, collectionName, bookId);
+                        await updateDoc(bookRef, {
+                            cover: newUrl,
+                            coverLastUpdated: new Date().toISOString()
+                        });
+                        successCount++;
+
+                        // Update local data
+                        const book = allBooks.find(b => b.id === bookId);
+                        if (book) {
+                            book.cover = newUrl;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating book', bookId, error);
+                    errorCount++;
+                }
+            }
+
+            showMessage(`Updated ${successCount} book(s). ${errorCount > 0 ? `${errorCount} error(s).` : ''}`, successCount > 0 ? 'success' : 'error');
+
+            // Clear selections
+            selectedBookIds.clear();
+            document.querySelectorAll('.book-select').forEach(cb => cb.checked = false);
+            document.querySelectorAll('tr.selected').forEach(tr => tr.classList.remove('selected'));
+
+            updateSelectedBtn.disabled = true;
+            updateStats();
+            hideLoading();
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const csvRows = [];
+            csvRows.push(['Title', 'Author', 'ISBN', 'Current Cover URL', 'New Cover URL'].join(','));
+
+            filteredBooks.forEach(book => {
+                const currentCover = book.cover || book.coverUrls?.M || '';
+                const newUrl = document.getElementById(`new-url-${book.id}`)?.value || '';
+
+                csvRows.push([
+                    `"${(book.title || '').replace(/"/g, '""')}"`,
+                    `"${(book.author || '').replace(/"/g, '""')}"`,
+                    book.isbn || '',
+                    `"${currentCover.replace(/"/g, '""')}"`,
+                    `"${newUrl.replace(/"/g, '""')}"`
+                ].join(','));
+            });
+
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `litmap-covers-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allBooks.length;
+            const missing = allBooks.filter(b => !b.cover && !b.coverUrls).length;
+            const broken = allBooks.filter(b => b.coverBroken === true).length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-missing').textContent = missing;
+            document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-selected').textContent = selectedBookIds.size;
+
+            statsDiv.style.display = 'flex';
+            updateSelectedBtn.disabled = selectedBookIds.size === 0;
+        }
+
+        // UI Helper functions
+        function showLoading(message) {
+            loadingDiv.innerHTML = `<div class="spinner"></div><div>${message}</div>`;
+            loadingDiv.style.display = 'block';
+            tableContainer.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loadingDiv.style.display = 'none';
+            tableContainer.style.display = 'block';
+        }
+
+        function showMessage(message, type = 'error') {
+            const className = type === 'success' ? 'success-message' : 'error-message';
+            messageContainer.innerHTML = `<div class="${className}">${message}</div>`;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function clearMessage() {
+            messageContainer.innerHTML = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
