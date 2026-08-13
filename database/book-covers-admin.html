@@ -382,6 +382,7 @@
                     <option value="all">All Books</option>
                     <option value="missing">Missing Covers Only</option>
                     <option value="broken">Broken Images Only</option>
+                    <option value="flagged">Flagged Covers</option>
                 </select>
             </div>
 
@@ -407,6 +408,10 @@
             <div class="stat">
                 <span class="stat-label">Broken Images</span>
                 <span class="stat-value" id="stat-broken">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Flagged</span>
+                <span class="stat-value" id="stat-flagged">0</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Selected</span>
@@ -601,6 +606,8 @@
                     return !book.cover && !book.coverUrls;
                 } else if (filter === 'broken') {
                     return book.coverBroken === true;
+                } else if (filter === 'flagged') {
+                    return book.coverFlagged === true;
                 }
                 return true;
             });
@@ -665,6 +672,9 @@
                 <td class="center">
                     <div class="action-buttons">
                         <button onclick="window.previewCover('${book.id}')" class="secondary">Preview</button>
+                        ${book.coverFlagged
+                            ? `<button onclick="window.clearFlag('${book.id}')" class="success" title="Clear flag">Unflag</button>`
+                            : `<button onclick="window.flagCover('${book.id}')" style="background:#dc3545" title="Flag as wrong cover">Flag</button>`}
                     </div>
                 </td>
             `;
@@ -732,6 +742,52 @@
                 window.open(input.value, '_blank');
             } else {
                 alert('No URL to preview');
+            }
+        };
+
+        window.flagCover = async function(bookId) {
+            const reason = prompt('Flag reason:\n• wrong_book\n• poor_quality\n• broken', 'wrong_book');
+            if (!reason) return;
+            const collectionName = collectionSelect.value;
+            try {
+                const bookRef = doc(db, collectionName, bookId);
+                await updateDoc(bookRef, {
+                    coverFlagged: true,
+                    coverFlagReason: reason,
+                    coverFlaggedAt: new Date().toISOString()
+                });
+                const book = allBooks.find(b => b.id === bookId);
+                if (book) {
+                    book.coverFlagged = true;
+                    book.coverFlagReason = reason;
+                }
+                showMessage(`Flagged "${book?.title || bookId}" as ${reason}`, 'success');
+                updateStats();
+                applyFilter();
+            } catch (error) {
+                showMessage('Error flagging book: ' + error.message, 'error');
+            }
+        };
+
+        window.clearFlag = async function(bookId) {
+            const collectionName = collectionSelect.value;
+            try {
+                const bookRef = doc(db, collectionName, bookId);
+                await updateDoc(bookRef, {
+                    coverFlagged: false,
+                    coverFlagReason: '',
+                    coverFlagClearedAt: new Date().toISOString()
+                });
+                const book = allBooks.find(b => b.id === bookId);
+                if (book) {
+                    book.coverFlagged = false;
+                    book.coverFlagReason = '';
+                }
+                showMessage(`Cleared flag for "${book?.title || bookId}"`, 'success');
+                updateStats();
+                applyFilter();
+            } catch (error) {
+                showMessage('Error clearing flag: ' + error.message, 'error');
             }
         };
 
@@ -822,10 +878,12 @@
             const total = allBooks.length;
             const missing = allBooks.filter(b => !b.cover && !b.coverUrls).length;
             const broken = allBooks.filter(b => b.coverBroken === true).length;
+            const flagged = allBooks.filter(b => b.coverFlagged === true).length;
 
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-missing').textContent = missing;
             document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-flagged').textContent = flagged;
             document.getElementById('stat-selected').textContent = selectedBookIds.size;
 
             statsDiv.style.display = 'flex';

@@ -4,14 +4,21 @@
     @click="$emit('click')"
   >
     <div class="flex gap-4">
-      <!-- Mock book cover with generated color -->
-      <div
-        class="w-20 h-28 rounded-lg flex-shrink-0 relative overflow-hidden"
-        :style="{ backgroundColor: coverColor }"
-      >
-        <!-- Pattern overlay -->
-        <div class="absolute inset-0 flex items-center justify-center opacity-20">
-          <BookOpen class="w-8 h-8 text-white" :stroke-width="1.5" />
+      <!-- Book cover -->
+      <div class="w-20 h-28 rounded-lg flex-shrink-0 relative overflow-hidden">
+        <img
+          v-if="showCover"
+          :src="coverSrc"
+          :alt="book.title"
+          class="w-full h-full object-cover"
+          @error="showCover = false"
+        />
+        <div
+          v-else
+          class="w-full h-full flex items-center justify-center"
+          :style="{ backgroundColor: coverColor }"
+        >
+          <BookOpen class="w-8 h-8 text-white opacity-20" :stroke-width="1.5" />
         </div>
       </div>
 
@@ -50,7 +57,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { MapPin, BookOpen } from 'lucide-vue-next'
 import GenreBadge from '../shared/GenreBadge.vue'
 
@@ -62,6 +69,12 @@ const props = defineProps({
 })
 
 defineEmits(['click'])
+
+const showCover = ref(props.book.hasCover)
+
+const coverSrc = computed(() => {
+  return `${import.meta.env.BASE_URL}covers/${props.book.id}.jpg`
+})
 
 // Generate color based on book title hash
 const coverColor = computed(() => {

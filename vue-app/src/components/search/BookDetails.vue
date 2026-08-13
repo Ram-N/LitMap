@@ -2,13 +2,20 @@
   <div class="pb-6">
     <!-- Book Cover -->
     <div class="px-6 py-6">
-      <div
-        class="w-48 h-64 mx-auto rounded-lg shadow-elevated"
-        :style="{ backgroundColor: coverColor }"
-      >
-        <!-- Mock cover design -->
-        <div class="w-full h-full flex items-center justify-center opacity-20">
-          <BookOpen class="w-16 h-16 text-white" :stroke-width="1.5" />
+      <div class="w-48 h-64 mx-auto rounded-lg shadow-elevated overflow-hidden">
+        <img
+          v-if="showCover"
+          :src="coverSrc"
+          :alt="book.title"
+          class="w-full h-full object-cover"
+          @error="showCover = false"
+        />
+        <div
+          v-else
+          class="w-full h-full flex items-center justify-center"
+          :style="{ backgroundColor: coverColor }"
+        >
+          <BookOpen class="w-16 h-16 text-white opacity-20" :stroke-width="1.5" />
         </div>
       </div>
     </div>
@@ -89,7 +96,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { MapPin, Calendar, BookOpen as BookOpenIcon } from 'lucide-vue-next'
 import { BookOpen } from 'lucide-vue-next'
@@ -103,6 +110,12 @@ const props = defineProps({
 })
 
 const router = useRouter()
+
+const showCover = ref(props.book.hasCover)
+
+const coverSrc = computed(() => {
+  return `${import.meta.env.BASE_URL}covers/${props.book.id}.jpg`
+})
 
 function navigateToAuthor() {
   if (props.book.author) {

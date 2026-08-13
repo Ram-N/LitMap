@@ -1,12 +1,15 @@
 """Export all Firebase book data to GeoJSON format for static site deployment."""
 
 import json
+from pathlib import Path
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 SERVICE_ACCOUNT_KEY = "litmap-88358-firebase-adminsdk-9w1l9-73ca515ce7.json"
 COLLECTIONS = ["books", "newbooks"]
 OUTPUT_FILE = "../vue-app/public/litmap-data.geojson"
+COVERS_DIR = Path(__file__).parent / "../vue-app/public/covers"
 
 
 def init_firebase():
@@ -59,7 +62,8 @@ def book_to_geojson_features(book):
         "language": book.get("language", ""),
         "publisher": book.get("publisher", ""),
         "publicationDate": book.get("publicationDate", ""),
-        "coverImageUrl": book.get("coverImageUrl", ""),
+        "coverImageUrl": book.get("cover", "") or book.get("coverImageUrl", ""),
+        "hasCover": (COVERS_DIR / f"{book.get('id', '')}.jpg").exists(),
         "tags": book.get("tags", []),
         "bookId": book.get("id", ""),
     }

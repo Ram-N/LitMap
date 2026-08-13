@@ -63,6 +63,7 @@ export function useGeoJSON() {
           publisher: props.publisher || '',
           publicationDate: props.publicationDate || '',
           coverImageUrl: props.coverImageUrl || '',
+          hasCover: props.hasCover || false,
           tags: props.tags || [],
           locations: [],
         })
