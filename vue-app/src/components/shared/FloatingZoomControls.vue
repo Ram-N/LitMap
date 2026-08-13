@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed left-6 bottom-28 flex flex-col gap-2 z-20">
+  <div class="fixed left-6 bottom-28 flex flex-col gap-2" style="z-index: 1000;">
     <!-- Zoom In -->
     <button
       @click="zoomIn"

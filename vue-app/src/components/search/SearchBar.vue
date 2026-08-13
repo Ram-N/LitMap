@@ -2,7 +2,8 @@
   <div class="relative">
     <!-- Expanded Search Form -->
     <div
-      class="fixed inset-x-0 top-0 safe-top bg-white shadow-lg z-50 p-4 transition-all duration-300"
+      class="fixed inset-x-0 top-0 safe-top bg-white shadow-lg p-4 transition-all duration-300"
+      style="z-index: 10000;"
     >
       <div class="max-w-2xl mx-auto">
         <!-- Header with close button -->

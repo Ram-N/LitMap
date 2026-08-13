@@ -1,6 +1,7 @@
 <template>
   <nav
-    class="fixed bottom-0 left-0 right-0 bg-white border-t border-parchment-200 z-30 pb-safe"
+    class="fixed bottom-0 left-0 right-0 bg-white border-t border-parchment-200 pb-safe"
+    style="z-index: 9200;"
     role="navigation"
     aria-label="Main navigation"
   >

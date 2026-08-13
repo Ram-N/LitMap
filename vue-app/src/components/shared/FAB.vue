@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed right-6 bottom-28 flex flex-col gap-3 z-20">
+  <div class="fixed right-6 bottom-28 flex flex-col gap-3" style="z-index: 1000;">
     <!-- Random location FAB -->
     <button
       class="w-12 h-12 rounded-full bg-teal-deep shadow-fab hover:shadow-xl transition-shadow flex items-center justify-center touch-target"

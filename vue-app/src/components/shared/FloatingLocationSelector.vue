@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed top-20 left-4 z-20">
+  <div class="fixed top-20 left-4" style="z-index: 1000;">
     <!-- Compact Location Selector -->
     <select
       v-model="selectedLocation"

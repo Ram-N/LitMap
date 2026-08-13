@@ -3,7 +3,8 @@
   <Transition name="fade">
     <div
       v-if="uiStore.bottomSheetState === 'full'"
-      class="fixed inset-0 bg-black bg-opacity-30 z-30"
+      class="fixed inset-0 bg-black bg-opacity-30"
+      style="z-index: 9000;"
       @click="handleCollapse"
     />
   </Transition>
@@ -13,7 +14,8 @@
     <div
       v-if="uiStore.isBottomSheetVisible"
       ref="sheetRef"
-      class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-elevated z-40 safe-bottom"
+      class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-elevated safe-bottom"
+      style="z-index: 9100;"
       :class="sheetClasses"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"

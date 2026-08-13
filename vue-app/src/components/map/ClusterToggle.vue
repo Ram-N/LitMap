@@ -1,6 +1,7 @@
 <template>
   <button
-    class="absolute top-20 right-4 z-10 bg-white rounded-full p-3 shadow-card hover:shadow-elevated transition-shadow touch-target"
+    class="absolute top-20 right-4 bg-white rounded-full p-3 shadow-card hover:shadow-elevated transition-shadow touch-target"
+    style="z-index: 1000;"
     @click="toggleClustering"
     :title="clusteringEnabled ? 'Show individual markers' : 'Show clustered markers'"
   >
