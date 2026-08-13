@@ -10,7 +10,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 const props = defineProps({
   locations: {
@@ -28,51 +30,49 @@ const uniqueCountries = computed(() => {
   return countries.size
 })
 
-async function initMap() {
-  if (!mapContainer.value || !window.google) return
+function initMap() {
+  if (!mapContainer.value) return
 
-  // Create map
-  const { Map } = await google.maps.importLibrary("maps")
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker")
+  if (map) {
+    map.remove()
+    map = null
+  }
 
-  // Get center from first location or default
   const center = props.locations[0]
-    ? { lat: props.locations[0].lat, lng: props.locations[0].lng }
-    : { lat: 40, lng: -3 }
+    ? [props.locations[0].lat || props.locations[0].latitude, props.locations[0].lng || props.locations[0].longitude]
+    : [40, -3]
 
-  map = new Map(mapContainer.value, {
+  map = L.map(mapContainer.value, {
     zoom: 4,
-    center: center,
-    mapId: 'author-journey-map',
-    disableDefaultUI: true,
-    gestureHandling: 'greedy',
-    styles: [
-      {
-        featureType: 'all',
-        elementType: 'geometry',
-        stylers: [{ saturation: -20 }]
-      }
-    ]
+    center,
+    zoomControl: false,
+    attributionControl: false,
   })
 
-  // Add markers for all locations
-  markers = props.locations.map(location => {
-    const marker = new AdvancedMarkerElement({
-      map,
-      position: { lat: location.lat, lng: location.lng },
-      title: location.city || location.country
-    })
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+  }).addTo(map)
 
-    return marker
+  // Add markers
+  markers = props.locations.map(loc => {
+    const lat = loc.lat || loc.latitude
+    const lng = loc.lng || loc.longitude
+    return L.circleMarker([lat, lng], {
+      radius: 6,
+      fillColor: '#3D6960',
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 0.8,
+    }).addTo(map).bindTooltip(loc.city || loc.country || '')
   })
 
-  // Fit bounds to show all markers
+  // Fit bounds
   if (props.locations.length > 0) {
-    const bounds = new google.maps.LatLngBounds()
-    props.locations.forEach(loc => {
-      bounds.extend({ lat: loc.lat, lng: loc.lng })
-    })
-    map.fitBounds(bounds)
+    const points = props.locations.map(loc => [
+      loc.lat || loc.latitude,
+      loc.lng || loc.longitude
+    ])
+    map.fitBounds(L.latLngBounds(points), { padding: [20, 20] })
   }
 }
 
@@ -80,12 +80,14 @@ onMounted(() => {
   initMap()
 })
 
-watch(() => props.locations, () => {
+onBeforeUnmount(() => {
   if (map) {
-    // Clear old markers
-    markers.forEach(marker => marker.map = null)
-    // Re-init map
-    initMap()
+    map.remove()
+    map = null
   }
+})
+
+watch(() => props.locations, () => {
+  initMap()
 })
 </script>

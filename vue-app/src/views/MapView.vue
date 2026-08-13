@@ -5,8 +5,8 @@
 
     <!-- Main Content: Map View -->
     <main class="relative h-[calc(100vh-4rem-5rem)]">
-      <!-- Google Map (always rendered) -->
-      <GoogleMapComponent />
+      <!-- Leaflet Map (always rendered) -->
+      <LeafletMap />
 
       <!-- Loading State Overlay -->
       <div v-if="booksStore.isLoading" class="absolute inset-0 z-50 bg-white/95 flex items-center justify-center pointer-events-none">
@@ -47,7 +47,7 @@
 <script setup>
 import TopBar from '@/components/layout/TopBar.vue'
 import BottomSheet from '@/components/layout/BottomSheet.vue'
-import GoogleMapComponent from '@/components/map/GoogleMap.vue'
+import LeafletMap from '@/components/map/LeafletMap.vue'
 import ClusterToggle from '@/components/map/ClusterToggle.vue'
 import FAB from '@/components/shared/FAB.vue'
 import FloatingLocationSelector from '@/components/shared/FloatingLocationSelector.vue'

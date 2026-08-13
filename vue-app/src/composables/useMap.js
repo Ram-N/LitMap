@@ -4,8 +4,6 @@ import { presetLocations, getRandomLocation } from '@/utils/mapLocations'
 
 export function useMap() {
   const uiStore = useUIStore()
-  const mapRef = ref(null)
-  const googleMapRef = ref(null)
 
   /**
    * Navigate to a preset location
@@ -16,8 +14,6 @@ export function useMap() {
     const location = presetLocations[locationKey]
     uiStore.setMapCenter({ lat: location.lat, lng: location.lng })
     uiStore.setMapZoom(location.zoom)
-
-    console.log(`Navigating to ${locationKey}:`, location)
   }
 
   /**
@@ -27,56 +23,43 @@ export function useMap() {
     const location = getRandomLocation()
 
     uiStore.setMapCenter({ lat: location.lat, lng: location.lng })
-    uiStore.setMapZoom(11) // City-level zoom
-
-    console.log(`Random location: ${location.name}`, location)
+    uiStore.setMapZoom(11)
 
     return location
   }
 
   /**
-   * Geocode an address and navigate to it
+   * Geocode an address using OpenStreetMap Nominatim (free, no API key)
    */
   async function geocodeAddress(address) {
     if (!address || !address.trim()) return
 
     try {
-      // Using Google Maps Geocoding API
-      const geocoder = new google.maps.Geocoder()
+      const encoded = encodeURIComponent(address.trim())
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      )
 
-      return new Promise((resolve, reject) => {
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === 'OK' && results[0]) {
-            const result = results[0]
-            const location = result.geometry.location
+      if (!response.ok) {
+        throw new Error(`Geocoding failed: ${response.status}`)
+      }
 
-            // Determine zoom based on location type
-            const zoom = getZoomLevelForLocationType(result.types)
+      const results = await response.json()
 
-            uiStore.setMapCenter({
-              lat: location.lat(),
-              lng: location.lng()
-            })
-            uiStore.setMapZoom(zoom)
+      if (results.length === 0) {
+        throw new Error('No results found')
+      }
 
-            console.log(`Geocoded "${address}":`, {
-              lat: location.lat(),
-              lng: location.lng(),
-              zoom
-            })
+      const result = results[0]
+      const lat = parseFloat(result.lat)
+      const lng = parseFloat(result.lon)
+      const zoom = getZoomForNominatimType(result.type, result.class)
 
-            resolve({
-              lat: location.lat(),
-              lng: location.lng(),
-              zoom,
-              types: result.types
-            })
-          } else {
-            console.error('Geocode failed:', status)
-            reject(new Error(`Geocoding failed: ${status}`))
-          }
-        })
-      })
+      uiStore.setMapCenter({ lat, lng })
+      uiStore.setMapZoom(zoom)
+
+      return { lat, lng, zoom }
     } catch (error) {
       console.error('Error geocoding address:', error)
       throw error
@@ -84,52 +67,22 @@ export function useMap() {
   }
 
   /**
-   * Get zoom level based on location type
+   * Get appropriate zoom level for Nominatim result type
    */
-  function getZoomLevelForLocationType(types) {
-    if (types.includes('continent')) return 3
-    if (types.includes('country')) return 5
-    if (types.includes('administrative_area_level_1')) return 7
-    if (types.includes('administrative_area_level_2')) return 9
-    if (types.includes('locality') || types.includes('postal_town')) return 11
-    if (types.includes('neighborhood') || types.includes('sublocality')) return 13
-    if (types.includes('route')) return 15
-    return 10 // default zoom level
-  }
-
-  /**
-   * Fit map bounds to show all markers
-   */
-  function fitBoundsToMarkers(books) {
-    if (!books || books.length === 0) return
-
-    const bounds = new google.maps.LatLngBounds()
-
-    books.forEach(book => {
-      if (book.locations && Array.isArray(book.locations)) {
-        book.locations.forEach(location => {
-          const lat = location.lat || location.latitude
-          const lng = location.lng || location.longitude
-
-          if (lat && lng) {
-            bounds.extend({ lat, lng })
-          }
-        })
-      }
-    })
-
-    // Update map to fit bounds
-    if (googleMapRef.value && googleMapRef.value.$map) {
-      googleMapRef.value.$map.fitBounds(bounds)
-    }
+  function getZoomForNominatimType(type, cls) {
+    if (type === 'continent') return 3
+    if (type === 'country' || cls === 'boundary') return 5
+    if (type === 'state' || type === 'administrative') return 7
+    if (type === 'county') return 9
+    if (type === 'city' || type === 'town' || type === 'village') return 11
+    if (type === 'suburb' || type === 'neighbourhood') return 13
+    if (type === 'road' || type === 'street') return 15
+    return 10
   }
 
   return {
-    mapRef,
-    googleMapRef,
     goToLocation,
     goToRandomLocation,
     geocodeAddress,
-    fitBoundsToMarkers,
   }
 }

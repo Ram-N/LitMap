@@ -1,18 +1,7 @@
 <template>
   <div class="relative">
-    <!-- Search Button (collapsed state) -->
-    <button
-      v-if="!isExpanded"
-      @click="expand"
-      class="touch-target p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
-      aria-label="Search books"
-    >
-      <Search :size="24" class="text-gray-700" />
-    </button>
-
     <!-- Expanded Search Form -->
     <div
-      v-else
       class="fixed inset-x-0 top-0 safe-top bg-white shadow-lg z-50 p-4 transition-all duration-300"
     >
       <div class="max-w-2xl mx-auto">
@@ -69,7 +58,7 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
-import { Search, X } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next'
 import SearchTypeSelector from './SearchTypeSelector.vue'
 import { useUIStore } from '@/stores/ui'
 import { useSearch } from '@/composables/useSearch'
@@ -77,24 +66,25 @@ import { useSearch } from '@/composables/useSearch'
 const uiStore = useUIStore()
 const { performSearch } = useSearch()
 
-const isExpanded = ref(false)
+const emit = defineEmits(['close'])
+
 const searchQuery = ref('')
 const searchField = ref('any')
 const searchInput = ref(null)
 
-async function expand() {
-  isExpanded.value = true
+// Auto-focus when mounted
+import { onMounted } from 'vue'
+onMounted(() => {
   uiStore.openSearchModal()
-  await nextTick()
-  searchInput.value?.focus()
-}
+  nextTick(() => searchInput.value?.focus())
+})
 
 function collapse() {
-  isExpanded.value = false
   uiStore.closeSearchModal()
   if (!searchQuery.value) {
     searchField.value = 'any'
   }
+  emit('close')
 }
 
 function clearSearch() {

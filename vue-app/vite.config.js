@@ -5,14 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          // Treat gmp-* tags as custom elements (Google Maps Web Components)
-          isCustomElement: (tag) => tag.startsWith('gmp-')
-        }
-      }
-    })
+    vue()
   ],
   resolve: {
     alias: {
@@ -32,10 +25,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Separate vendor chunks for better caching
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'firebase': ['firebase/app', 'firebase/firestore'],
-          'maps': ['@googlemaps/markerclusterer']
+          'leaflet': ['leaflet']
         }
       }
     }
