@@ -1,0 +1,169 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LitMap</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/bookCard.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/search.css">
+</head>
+
+<body>
+    <!-- This div is where React will mount -->
+    <div id="root"></div>
+    <div class="main-container">
+        <div class="sidebar-container">
+            <h1>LitMap</h1>
+
+            <!-- View Toggle Buttons -->
+            <div class="view-toggle">
+                <button class="view-toggle-btn" id="map-btn" onclick="showMap()">
+                    <i data-lucide="globe"></i>
+                    Explore
+                </button>
+                <button class="view-toggle-btn" id="list-btn" onclick="showSearchResults()">
+                    <i data-lucide="search"></i>
+                    Focus
+                </button>
+                <button class="view-toggle-btn" id="random-btn" onclick="showRandomLocation()">
+                    <i data-lucide="shuffle"></i>
+                    Random Location
+                </button>
+            </div>
+
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="clusterToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">Enable Clustering</span>
+            </div>
+
+            <div id="searchControls" class="tab-content" style="display: block;">
+                <form name="searchForm" class="stacked greyBox searchBox searchBox--large" action="/search"
+                    accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
+                    <div class="greyText" style="padding-bottom: 10px">
+                        <input type="text" name="q" id="search_query_main"
+                            class="searchBox__input searchBox--large__input" placeholder="Title, Author, ISBN"
+                            style="width: 100%;">
+                        <input type="submit" value="Search" class="searchBox__button btn btn-primary">
+                    </div>
+
+
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="title" name="search_field" value="title">
+                            <label for="title">Title</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="author" name="search_field" value="author">
+                            <label for="author">Author</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="any" name="search_field" value="any" checked>
+                            <label for="any">Any</label>
+                        </div>
+
+                        <div class="radio-item">
+                            <input type="radio" id="keyword" name="search_field" value="keyword">
+                            <label for="keyword">Keyword</label>
+                        </div>
+
+                        <div class="radio-item full-width">
+                            <input type="radio" id="location" name="search_field" value="location">
+                            <label for="location">Location</label>
+                        </div>
+                    </div>
+
+                    <div class="clear"></div>
+                </form>
+
+            </div>
+
+
+            <div class="collection-selector">
+                <div class="collection-options">
+                    <span class="collection-option" data-collection="newbooks">newbooks</span>
+                    <span class="collection-option" data-collection="small_books">midbooks</span>
+                    <span class="collection-option" data-collection="books">All-Books</span>
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div id="navbar">
+                <button class="suggest-button" id="suggest-btn" onclick="showSuggestForm()">Suggest A Book</button>
+            </div>
+
+
+        </div> <!-- side panel-->
+
+        <!-- Map container -->
+        <div class="map-container" id="map-container">
+            <script>
+                // Load the map.html content into #map-container
+                document.addEventListener('DOMContentLoaded', function () {
+                    fetch('map.html')
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById('map-container').innerHTML = data;
+                            console.log('map loaded');
+                        });
+                });
+            </script>
+        </div>
+
+        <!-- Focus Page Container -->
+        <div class="focus-container" id="focus-container">
+            <!-- List Container -->
+            <div class="list-container" id="list-container">
+                <div id="books-found">
+                </div>
+            </div>
+            <!-- Map Container -->
+            <div class="map-container2" id="map-container2">
+            </div>
+        </div>
+
+        <!-- Focus Page Container -->
+        <div class="suggest-container" id="suggest-container">
+            <div id="suggestControls">
+                <!-- Admin content -->
+                <h3>Suggest A Book </h3>
+                <p>Admin functionalities go here.</p>
+                <!-- Form to add a book with a location -->
+                <div id="form-container">
+                    <form id="locationForm">
+                        <input type="text" id="adminlocationInput" placeholder="Enter location (e.g., New Delhi)"
+                            required>
+                        <input type="text" id="bookTitle" placeholder="Book title" required>
+                        <input type="text" id="bookAuthor" placeholder="Author name" required>
+                        <button type="submit">Add Book</button>
+                    </form>
+                    <div id="controls">
+                        <button id="uploadBooksButton">Upload More Books</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- prettier-ignore -->
+    <script>(g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
+            ({ key: "AIzaSyCgtK2Tq4ZHc0K-GHvxop5Y5S1J8dnpGBc", v: "weekly" });</script>
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/map.js"></script>
+    <script type="module" src="scripts/app.js"></script>
+
+
+</body>
+
+</html>
