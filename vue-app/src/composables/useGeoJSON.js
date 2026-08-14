@@ -16,13 +16,18 @@ export function useGeoJSON() {
     booksStore.setError(null)
 
     try {
+      console.log(`[GeoJSON] Fetching from: ${GEOJSON_URL}`)
+      console.time('[GeoJSON] fetch + parse')
       const response = await fetch(GEOJSON_URL)
       if (!response.ok) {
         throw new Error(`Failed to fetch GeoJSON: ${response.status}`)
       }
 
       const geojson = await response.json()
+      console.timeEnd('[GeoJSON] fetch + parse')
+      console.time('[GeoJSON] geojsonToBooks')
       const books = geojsonToBooks(geojson)
+      console.timeEnd('[GeoJSON] geojsonToBooks')
 
       booksStore.setBooks(books)
       console.log(`Loaded ${books.length} books from GeoJSON (${geojson.features.length} location features)`)

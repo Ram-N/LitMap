@@ -23,6 +23,7 @@ const mapInstance = ref(null)
 const markerClusterGroup = ref(null)
 const markerLayer = ref(null) // plain layer group for unclustered mode
 const markers = ref([]) // all individual markers
+let updatingFromMap = false // guard to prevent moveend → watcher → setView loop
 
 // Stadia Maps — Stamen Watercolor tiles for vintage aesthetic
 const STADIA_KEY = import.meta.env.VITE_STADIA_API_KEY || ''
@@ -78,6 +79,7 @@ function createBookIcon(book) {
 }
 
 function initializeMap() {
+  console.log('[LeafletMap] initializeMap called')
   if (!mapContainer.value) return
 
   const center = uiStore.mapCenter || { lat: 20, lng: 30 }
@@ -107,11 +109,14 @@ function initializeMap() {
     }).addTo(map)
   }
 
-  // Sync map state back to store
+  // Sync map state back to store (guarded to prevent feedback loop)
   map.on('zoomend', () => {
+    updatingFromMap = true
     uiStore.setMapZoom(map.getZoom())
+    updatingFromMap = false
   })
   map.on('moveend', () => {
+    updatingFromMap = true
     const c = map.getCenter()
     uiStore.setMapCenter({ lat: c.lat, lng: c.lng })
     const b = map.getBounds()
@@ -121,14 +126,17 @@ function initializeMap() {
       east: b.getEast(),
       west: b.getWest(),
     })
+    updatingFromMap = false
   })
 
   mapInstance.value = map
+  console.log('[LeafletMap] Map initialized, creating markers')
   createMarkers()
 }
 
 function createMarkers() {
   if (!mapInstance.value) return
+  console.log(`[LeafletMap] createMarkers: ${bookMarkers.value.length} markers to create`)
 
   clearMarkers()
 
@@ -261,14 +269,19 @@ watch(() => bookMarkers.value.length, () => {
 })
 
 // Watch map center/zoom from store (for preset locations, geocoding, etc.)
+// Skip when the change originated from map events (prevents infinite loop)
 watch(() => uiStore.mapCenter, (newCenter) => {
+  if (updatingFromMap) return
   if (newCenter && mapInstance.value) {
+    console.log('[LeafletMap] Store mapCenter changed externally, calling setView')
     mapInstance.value.setView([newCenter.lat, newCenter.lng], uiStore.mapZoom, { animate: true })
   }
 }, { deep: true })
 
 watch(() => uiStore.mapZoom, (newZoom) => {
+  if (updatingFromMap) return
   if (newZoom && mapInstance.value && mapInstance.value.getZoom() !== newZoom) {
+    console.log('[LeafletMap] Store mapZoom changed externally, calling setZoom')
     mapInstance.value.setZoom(newZoom)
   }
 })
