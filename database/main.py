@@ -1,9 +1,7 @@
-# remember to activate the correct env
+# LitMap Data Manager — operates on litmap-data.geojson (no Firebase)
 
 import streamlit as st
 from pprint import pprint
-import firebase_admin
-from firebase_admin import credentials, firestore
 import json, re
 from collections import defaultdict
 from datetime import datetime
@@ -11,49 +9,9 @@ import pandas as pd
 from geopy.geocoders import Nominatim
 import time
 import os
+import urllib.parse
 
-
-# Configuration file for user preferences
-CONFIG_FILE = "user_preferences.json"
-
-def load_user_preferences():
-    """Load user preferences from JSON file."""
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"Error loading preferences: {e}")
-            return {}
-    return {}
-
-def save_user_preferences(preferences):
-    """Save user preferences to JSON file."""
-    try:
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(preferences, f, indent=2)
-        return True
-    except Exception as e:
-        print(f"Error saving preferences: {e}")
-        return False
-
-def get_default_collection():
-    """Get the default collection from preferences."""
-    prefs = load_user_preferences()
-    return prefs.get('default_collection', None)
-
-def set_default_collection(collection_name):
-    """Set the default collection in preferences."""
-    prefs = load_user_preferences()
-    prefs['default_collection'] = collection_name
-    return save_user_preferences(prefs)
-
-def clear_default_collection():
-    """Clear the default collection preference."""
-    prefs = load_user_preferences()
-    if 'default_collection' in prefs:
-        del prefs['default_collection']
-    return save_user_preferences(prefs)
+from generate_book_id import generate_book_id
 
 
 # Helper function to normalize location data for comparison
@@ -120,195 +78,115 @@ def geocode_location(city, country):
         return None
 
 
-class FirebaseClient:
-    def __init__(self, service_account_key: str):
-        """
-        Initialize the Firebase connection using a service account key.
-        Args:
-            service_account_key (str): Path to the Firebase service account key JSON file.
-        """
-        self.cred = credentials.Certificate(service_account_key)
-        # Initialize the Firebase app only if it hasn't been initialized
-        if not firebase_admin._apps:
-            firebase_admin.initialize_app(self.cred)
-        
-        # Get a reference to Firestore
-        self.db = firestore.client()
+class GeoJSONClient:
+    """Client for reading/writing book data from litmap-data.geojson."""
 
-    def get_document_count(self, collection_name: str) -> int:
-        """
-        Get the count of documents in a Firestore collection.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-        
-        Returns:
-            int: The number of documents in the collection.
-        """
-        collection_ref = self.db.collection(collection_name)
-        documents = collection_ref.stream()  # Fetch all documents
-        document_count = sum(1 for _ in documents)  # Count the documents
-        print(f"Number of documents in the '{collection_name}' collection: {document_count}")
-        return document_count
+    def __init__(self, geojson_path: str):
+        self.geojson_path = geojson_path
+        with open(geojson_path) as f:
+            self.geojson = json.load(f)
+        self._build_books_list()
 
-    def get_all_documents(self, collection_name: str) -> list:
-        """
-        Get all documents from a Firestore collection and store them in a list.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-        
-        Returns:
-            list: A list of dictionaries representing the documents in the collection.
-        """
-        collection_ref = self.db.collection(collection_name)
-        documents = collection_ref.stream()  # Fetch all documents
+    def _build_books_list(self):
+        """Extract unique books from GeoJSON features, keyed by bookId."""
+        books_by_id = {}
+        for feat in self.geojson["features"]:
+            props = feat["properties"]
+            bid = props.get("bookId", "")
+            if bid and bid not in books_by_id:
+                book = {}
+                # Map GeoJSON properties to the book dict format used by the UI
+                book['id'] = bid
+                book['title'] = props.get('title', '')
+                book['author'] = props.get('author', '')
+                book['description'] = props.get('description', '')
+                book['booktype'] = props.get('booktype', '')
+                book['genre'] = props.get('genre', '')
+                book['rating'] = props.get('rating')
+                book['pageCount'] = props.get('pageCount')
+                book['isbn'] = props.get('isbn')
+                book['language'] = props.get('language', '')
+                book['publisher'] = props.get('publisher')
+                book['year'] = props.get('publicationDate', '')
+                book['cover'] = props.get('coverImageUrl', '')
+                book['hasCover'] = props.get('hasCover', False)
+                book['tags'] = props.get('tags', [])
+                book['goodreadsLink'] = props.get('goodreadsLink', '')
+                # Collect locations from all features for this book
+                book['locations'] = []
+                books_by_id[bid] = book
 
-        document_list = []
-        for doc in documents:
-            # Convert the document to a dictionary and append it to the list
-            document_data = doc.to_dict()
-            document_data['id'] = doc.id   # Add document ID to the data
-            document_list.append(document_data)
+        # Second pass: collect all locations for each book
+        for feat in self.geojson["features"]:
+            props = feat["properties"]
+            bid = props.get("bookId", "")
+            if bid in books_by_id:
+                coords = feat.get("geometry", {}).get("coordinates", [None, None])
+                loc = {
+                    "city": props.get("locationCity", ""),
+                    "country": props.get("locationCountry", ""),
+                    "latitude": coords[1] if coords[1] is not None else 0,
+                    "longitude": coords[0] if coords[0] is not None else 0,
+                }
+                loc_desc = props.get("locationDescription", "")
+                if loc_desc:
+                    loc["description"] = loc_desc
+                books_by_id[bid]['locations'].append(loc)
 
-        return document_list
+        self._books_by_id = books_by_id
+        self._books_list = list(books_by_id.values())
+
+    def get_all_books(self) -> list:
+        """Return list of all unique books."""
+        return self._books_list
+
+    def get_book_count(self) -> int:
+        return len(self._books_list)
 
     def get_document_by_id(self, books, book_id):
-        """Fetch a book from all_books using its ID."""
-
+        """Fetch a book from a book list using its ID."""
         for book in books:
             if book.get('id') == book_id:
-                return book  # Return the matching book
-
-        # If no match is found, return None or an empty dictionary
+                return book
         st.write(f"No book found with ID: {book_id}")
         return None
 
-    def fb_get_document_by_id(self, collection_name: str, doc_id: str, verbose: bool = False) -> dict:
+    def fuzzy_match(self, books, attribute, search_string):
         """
-        Get a document by its ID from a Firestore collection.
+        Perform a fuzzy (substring) search on a list of books for a given attribute.
+
         Args:
-            collection_name (str): The name of the Firestore collection.
-            doc_id (str): The ID of the document to retrieve.
-            verbose (bool): If True, prints the document's data.
-        
-        Returns:
-            dict: The document's data if it exists, otherwise an empty dictionary.
-        """
-        doc_ref = self.db.collection(collection_name).document(doc_id)
-        doc = doc_ref.get()
-
-        if doc.exists:
-            if verbose:
-                pprint(f"Document data: {doc.to_dict()}")
-            return doc.to_dict()
-        else:
-            print(f"No such document {doc_id}!")
-            return {}
-
-    def update_document_field(self, collection_name: str, doc_id: str, field: str, new_value):
-        """
-        Update a specific field in a Firestore document.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-            doc_id (str): The ID of the document to update.
-            field (str): The field to update.
-            new_value: The new value to set for the field.
-        """
-        doc_ref = self.db.collection(collection_name).document(doc_id)
-
-        # Update the specific field with the new value
-        doc_ref.update({field: new_value})
-        print(f"Document with ID {doc_id} updated. Field '{field}' set to '{new_value}'.")
-
-    def update_multiple_fields(self, collection_name: str, doc_id: str, field_updates: dict, verbose: bool = False) -> bool:
-        """
-        Update multiple fields in a Firestore document at once.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-            doc_id (str): The ID of the document to update.
-            field_updates (dict): Dictionary of field-value pairs to update.
-            verbose (bool): If True, prints detailed update information.
+            books (list): A list of book dicts.
+            attribute (str): The attribute to search (e.g., 'title', 'author').
+            search_string (str): The string to search for.
 
         Returns:
-            bool: True if update successful, False otherwise.
+            list: Books where the attribute contains the search string (case-insensitive).
         """
-        try:
-            doc_ref = self.db.collection(collection_name).document(doc_id)
+        search_string = search_string.lower()
+        matching_books = []
+        for book in books:
+            if attribute in book:
+                attribute_value = str(book[attribute]).lower()
+                if search_string in attribute_value:
+                    matching_books.append(book)
+        return matching_books
 
-            # Update all fields at once
-            doc_ref.update(field_updates)
+    def get_book_by_title(self, books: list, title: str) -> list:
+        return self.fuzzy_match(books, 'title', title)
 
-            if verbose:
-                print(f"Document with ID {doc_id} updated successfully.")
-                print(f"Updated fields: {list(field_updates.keys())}")
+    def get_books_by_author(self, books: list, author_name: str) -> list:
+        return self.fuzzy_match(books, 'author', author_name)
 
-            return True
-        except Exception as e:
-            print(f"Error updating document {doc_id}: {e}")
-            return False
+    def get_books_by_genre(self, books: list, genre: str) -> list:
+        return self.fuzzy_match(books, 'genre', genre)
 
-    def add_new_document(self, collection_name: str, field_value_pairs: dict, verbose: bool = False) -> str:
-        """
-        Add a new document to a Firestore collection with field-value pairs.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-            field_value_pairs (dict): A dictionary containing field-value pairs.
-            verbose (bool): If True, prints the new document's ID.
-        
-        Returns:
-            str: The ID of the newly added document.
-        """
-        # Add a new document with auto-generated ID
-        new_doc_ref = self.db.collection(collection_name).add(field_value_pairs)
-        if verbose:
-            print(f"New document added with ID: {new_doc_ref[1].id}")
-        return new_doc_ref[1].id
-
-    def delete_document_by_id(self, collection_name: str, doc_id: str):
-        """
-        Delete a document from a Firestore collection by its ID.
-        Args:
-            collection_name (str): The name of the Firestore collection.
-            doc_id (str): The ID of the document to delete.
-        """
-        doc_ref = self.db.collection(collection_name).document(doc_id)
-        doc_ref.delete()
-        print(f"Document with ID {doc_id} deleted successfully.")
-
-
-    def book_exists(self, book: dict) -> bool:
-        """
-        Check if a book already exists in the Firestore collection by its title.
-        Args:
-            book (dict): The book data, containing at least the 'title' key.
-        
-        Returns:
-            bool: True if the book exists, False otherwise.
-        """
-        db_book = self.get_book_by_title(all_books, book['title'])
-        if len(db_book) > 0:
-            return True
-        return False
-
-    def add_books_to_db(self, collection_name: str, to_be_added: list):
-        """
-        Add a list of books to the Firestore collection, only if they don't already exist.
-        Args:
-            collection_name (str): The Firestore collection name.
-            to_be_added (list): A list of dictionaries, where each dict represents a book.
-        """
-        st.write(f"Attempting to add {len(to_be_added)} documents")
-        st.write(f"Collection: {collection_name}")
-        
-        for book in to_be_added:
-            if not self.book_exists(book):
-                st.success(f"Adding {book['title']}")
-                self.add_new_document(collection_name, book, verbose=True)
-            else:
-                st.warning(f"{book['title']} already exists in {collection_name}")
-
+    def book_exists(self, book: dict, all_books: list) -> bool:
+        """Check if a book already exists by title."""
+        matches = self.get_book_by_title(all_books, book['title'])
+        return len(matches) > 0
 
     def compare_books(self, books, book_id1, book_id2):
-        # Fetch the two books from Firestore
         book1 = self.get_document_by_id(books, book_id1)
         book2 = self.get_document_by_id(books, book_id2)
 
@@ -317,86 +195,197 @@ class FirebaseClient:
             return
 
         st.write(f"## Comparing Books: `{book_id1}` vs `{book_id2}`")
-        st.write("---")  # Horizontal line for visual separation
+        st.write("---")
 
-        # Compare attributes between the two books
         for key, value1 in book1.items():
             if key in book2:
                 value2 = book2[key]
-
                 if value1 == value2:
-                    # Attributes are the same, print once
                     st.write(f" **{key.capitalize()}**: {value1}")
                 else:
-                    # Attributes differ, print both values
                     st.write(f" **{key.capitalize()}**:")
                     st.write(f"- Book 1: `{value1}`")
                     st.write(f"- Book 2: `{value2}`")
             else:
                 st.write(f"### **{key.capitalize()}** exists only in Book 1: {value1}")
 
-        # Check for any attributes that are in Book 2 but not in Book 1
         for key in book2.keys():
             if key not in book1:
                 st.write(f"### **{key.capitalize()}** exists only in Book 2: {book2[key]}")
 
+    def update_book(self, book_id: str, changes: dict) -> bool:
+        """Update properties for all features matching bookId, then save."""
+        try:
+            # Map book dict fields back to GeoJSON property names
+            field_map = {
+                'title': 'title',
+                'author': 'author',
+                'description': 'description',
+                'booktype': 'booktype',
+                'genre': 'genre',
+                'rating': 'rating',
+                'pageCount': 'pageCount',
+                'isbn': 'isbn',
+                'language': 'language',
+                'publisher': 'publisher',
+                'year': 'publicationDate',
+                'cover': 'coverImageUrl',
+                'hasCover': 'hasCover',
+                'tags': 'tags',
+                'goodreadsLink': 'goodreadsLink',
+            }
 
-    def fuzzy_match(self, books, attribute, search_string):
-        """
-        Perform a fuzzy search on a list of books for a given attribute.
-        Note that this search does not hit the firestore db at all.
+            # Handle location changes separately
+            if 'locations' in changes:
+                self._update_locations(book_id, changes['locations'])
 
-        Args:
-            books (list): A list of book JSON objects.
-            attribute (str): The attribute to search for (e.g., 'title', 'author', 'isbn').
-            search_string (str): The string to search for within the attribute.
+            # Update non-location properties on all features for this book
+            non_loc_changes = {k: v for k, v in changes.items() if k != 'locations'}
+            if non_loc_changes:
+                for feat in self.geojson["features"]:
+                    if feat["properties"].get("bookId") == book_id:
+                        for field, value in non_loc_changes.items():
+                            geojson_field = field_map.get(field, field)
+                            feat["properties"][geojson_field] = value
 
-        Returns:
-            list: A list of books where the attribute matches (even partially) with the search string.
-        """
-        # Normalize the search string to lowercase for case-insensitive comparison
-        search_string = search_string.lower()
-        
-        # List to store matching books
-        matching_books = []
+            self.save()
+            self._build_books_list()
+            return True
+        except Exception as e:
+            print(f"Error updating book {book_id}: {e}")
+            return False
 
-        # Loop through each book
-        for book in books:
-            # Check if the book has the specified attribute
-            if attribute in book:
-                # Get the value of the attribute and normalize it to lowercase
-                attribute_value = str(book[attribute]).lower()
-                
-                # Check if the search string is found within the attribute value (partial match)
-                if search_string in attribute_value:
-                    matching_books.append(book)
+    def _update_locations(self, book_id: str, new_locations: list):
+        """Replace all features for a bookId with new location features."""
+        # Grab a reference feature to copy book-level properties
+        ref_props = None
+        for feat in self.geojson["features"]:
+            if feat["properties"].get("bookId") == book_id:
+                ref_props = dict(feat["properties"])
+                break
 
-        return matching_books
+        if ref_props is None:
+            return
 
+        # Remove old features for this book
+        self.geojson["features"] = [
+            f for f in self.geojson["features"]
+            if f["properties"].get("bookId") != book_id
+        ]
 
+        # Add new features
+        for loc in new_locations:
+            new_props = dict(ref_props)
+            new_props["locationCity"] = loc.get("city", "")
+            new_props["locationCountry"] = loc.get("country", "")
+            new_props["locationDescription"] = loc.get("description", "")
+            lng = loc.get("longitude", 0)
+            lat = loc.get("latitude", 0)
+            new_feat = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lng, lat]
+                },
+                "properties": new_props
+            }
+            self.geojson["features"].append(new_feat)
 
-    # Wrapper methods for specific fields
-    def get_book_by_title(self, books: list, title: str) -> list:
-        return self.fuzzy_match(books, 'title', title)
+    def add_book(self, book_dict: dict) -> str:
+        """Add a new book to the GeoJSON. Returns the generated bookId."""
+        book_id = generate_book_id(
+            book_dict.get('title', ''),
+            book_dict.get('author', ''),
+            book_dict.get('isbn'),
+        )
+        if not book_id:
+            # Fallback: use sanitized title
+            book_id = re.sub(r'[^a-zA-Z0-9]', '', book_dict.get('title', 'unknown'))[:20]
 
-    def get_books_by_author(self,  books: list, author_name: str) -> list:
-        return self.fuzzy_match(books, 'author', author_name)
+        # Ensure uniqueness
+        existing_ids = {f["properties"].get("bookId") for f in self.geojson["features"]}
+        base_id = book_id
+        counter = 1
+        while book_id in existing_ids:
+            book_id = f"{base_id}-{counter}"
+            counter += 1
 
-    def get_books_by_genre(self, books: list, genre: str) -> list:
-        return self.fuzzy_match(books, 'genre', genre)
+        locations = book_dict.get('locations', [])
+        if not locations:
+            locations = [{"city": "", "country": "", "latitude": 0, "longitude": 0}]
 
-    def get_books_by_year(self, collection_name: str, year: str) -> list:
-        return self.get_documents_with_case_variants(collection_name,  'year', year)
+        for loc in locations:
+            props = {
+                "title": book_dict.get('title', ''),
+                "author": book_dict.get('author', ''),
+                "description": book_dict.get('description', ''),
+                "booktype": book_dict.get('booktype', ''),
+                "genre": book_dict.get('genre', ''),
+                "rating": book_dict.get('rating'),
+                "pageCount": book_dict.get('pageCount'),
+                "isbn": book_dict.get('isbn'),
+                "language": book_dict.get('language', ''),
+                "publisher": book_dict.get('publisher'),
+                "publicationDate": book_dict.get('year', book_dict.get('publicationDate', '')),
+                "coverImageUrl": book_dict.get('cover', book_dict.get('coverImageUrl')),
+                "hasCover": book_dict.get('hasCover', False),
+                "tags": book_dict.get('tags', []),
+                "goodreadsLink": book_dict.get('goodreadsLink', ''),
+                "bookId": book_id,
+                "locationCity": loc.get('city', ''),
+                "locationCountry": loc.get('country', ''),
+                "locationDescription": loc.get('description', ''),
+            }
+            lng = loc.get('longitude', 0)
+            lat = loc.get('latitude', 0)
+            feat = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lng, lat]
+                },
+                "properties": props
+            }
+            self.geojson["features"].append(feat)
 
-    def get_books_by_publisher(self, collection_name: str, publisher: str) -> list:
-        return self.get_documents_with_case_variants(collection_name,  'publisher', publisher)
+        self.save()
+        self._build_books_list()
+        return book_id
+
+    def add_books_to_geojson(self, to_be_added: list, all_books: list):
+        """Add a list of books, skipping duplicates."""
+        st.write(f"Attempting to add {len(to_be_added)} book(s)")
+        for book in to_be_added:
+            if not self.book_exists(book, all_books):
+                st.success(f"Adding {book['title']}")
+                self.add_book(book)
+            else:
+                st.warning(f"{book['title']} already exists")
+
+    def delete_book(self, book_id: str):
+        """Remove all features with matching bookId, then save."""
+        before = len(self.geojson["features"])
+        self.geojson["features"] = [
+            f for f in self.geojson["features"]
+            if f["properties"].get("bookId") != book_id
+        ]
+        after = len(self.geojson["features"])
+        self.save()
+        self._build_books_list()
+        print(f"Deleted book {book_id}: removed {before - after} feature(s)")
+
+    def save(self):
+        """Write GeoJSON back to disk."""
+        with open(self.geojson_path, "w") as f:
+            json.dump(self.geojson, f, indent=2)
 
 
 def sanitize_filename(filename):
     """Remove any characters that are not alphanumeric or underscores."""
     return re.sub(r'[^a-zA-Z0-9_]', '_', filename)
 
-def write_book_json(title=None, book_id=None, verbose=False):
+
+def write_book_json(geojson_client, all_books, title=None, book_id=None, verbose=False):
     # Validate inputs
     if not title and not book_id:
         raise ValueError("Please provide either a title or an ID to search for the book.")
@@ -404,9 +393,10 @@ def write_book_json(title=None, book_id=None, verbose=False):
     # Search for the book in all_books
     books = []
     if title:
-        books = firebase_client.get_book_by_title(all_books, title)
+        books = geojson_client.get_book_by_title(all_books, title)
     if book_id:
-        books = firebase_client.get_document_by_id(all_books, book_id)
+        book = geojson_client.get_document_by_id(all_books, book_id)
+        books = [book] if book else []
 
     if not books:
         print(f"No matching Books found {title} {book_id}")
@@ -414,7 +404,7 @@ def write_book_json(title=None, book_id=None, verbose=False):
 
     # Create filename: First 20 chars of title + "_" + book ID + ".json"
     book = books[0]
-    truncated_title = sanitize_filename(book['title'][:20])  # Sanitize to avoid illegal characters
+    truncated_title = sanitize_filename(book['title'][:20])
     filename = f"{truncated_title}_{book['id']}.json"
 
     # Write book details to JSON file
@@ -428,11 +418,9 @@ def write_book_json(title=None, book_id=None, verbose=False):
 
 
 ###########################################################################
-# Initialize Firebase client
-service_account_key = "litmap-88358-firebase-adminsdk-9w1l9-73ca515ce7.json"
-firebase_client = FirebaseClient(service_account_key)
-
-#firebase_client.book_exists("Absurdistan", collection_name='midbooks')
+# Initialize GeoJSON client
+GEOJSON_PATH = os.path.join(os.path.dirname(__file__), "..", "vue-app", "public", "litmap-data.geojson")
+geojson_client = GeoJSONClient(GEOJSON_PATH)
 
 ######## S T R E A M L I T ##########################
 
@@ -440,12 +428,12 @@ firebase_client = FirebaseClient(service_account_key)
 st.set_page_config(layout="wide")
 
 # Streamlit App UI
-st.title("LitMap Firestore Manager")
+st.title("LitMap Data Manager")
 
 # Define tabs
 
 # Create tabs
-view_tab, db_tab, h_tab = st.tabs(["Data Viewer", "DB-Manage", "Help"])
+view_tab, db_tab, isbn_tab, h_tab = st.tabs(["Data Viewer", "DB-Manage", "ISBN Manager", "Help"])
 
 view_options = {
     0: "Select",
@@ -493,30 +481,30 @@ top_options = {
 tooltips = {
     "Select": "Choose an action from the dropdown",
     "Select DB Action": "Choose a database operation to perform",
-    "Document Count": "Shows the total number of books in the collection",
+    "Document Count": "Shows the total number of books in the dataset",
     "List All Book Titles": "Displays a sorted list of all book titles",
-    "List All Authors": "Shows a list of all authors in the collection",
+    "List All Authors": "Shows a list of all authors in the dataset",
     "Show All Locations": "Displays all unique locations mentioned in books",
-    "Find Duplicates": "Identifies potential duplicate books in the collection",
+    "Find Duplicates": "Identifies potential duplicate books in the dataset",
     "Compare 2 Books": "Shows a side-by-side comparison of two selected books",
     "----": "Separator",
-    # New DB tooltips
-    "📤 Upload Books from JSON": "Import books from JSON files into Firebase with validation and duplicate checking",
+    # DB tooltips
+    "📤 Upload Books from JSON": "Import books from JSON files into GeoJSON with validation and duplicate checking",
     "✏️ Edit Book": "Modify book details including title, author, locations, and metadata",
     "📝 Edit Existing JSON": "Advanced: Edit book data directly as JSON with diff preview before saving",
-    "💾 Export Collection (Full Backup)": "Download entire collection as a timestamped backup JSON file",
+    "💾 Export Collection (Full Backup)": "Download entire dataset as a timestamped backup JSON file",
     "📄 Export Single Book": "Export a single book to JSON file by title or ID",
     "🗑️ Delete Book by ID": "Permanently remove a book using its unique identifier",
-    "⚠️ Backup & Delete Book": "Create a backup copy then delete the book from Firebase"
+    "⚠️ Backup & Delete Book": "Create a backup copy then delete the book from the dataset"
 }
 
 # Create the HTML for the dropdown label with tooltip
 tooltip_html = """
     <div style="display: inline-block; position: relative;">
         <span style="margin-left: 5px;">
-            <div style="visibility: hidden; width: 250px; background-color: #555; color: #fff; 
-                        text-align: center; border-radius: 6px; padding: 5px; position: absolute; 
-                        z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; 
+            <div style="visibility: hidden; width: 250px; background-color: #555; color: #fff;
+                        text-align: center; border-radius: 6px; padding: 5px; position: absolute;
+                        z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0;
                         transition: opacity 0.3s;">
                 Hover over each option in the dropdown for more information
             </div>
@@ -525,54 +513,9 @@ tooltip_html = """
 """
 
 
-
-# Every Sidebar: Collection selection
-available_collections = ("books", "midbooks", "newbooks")
-
-# Load default collection preference
-default_collection = get_default_collection()
-
-# Determine initial index
-if default_collection and default_collection in available_collections:
-    initial_index = available_collections.index(default_collection)
-else:
-    initial_index = 1  # Default to 'midbooks' if no preference set
-
-collection_name = st.sidebar.selectbox(
-    "Collection",
-    available_collections,
-    index=initial_index
-)
-
-# Add checkbox to set as default collection
-st.sidebar.markdown("---")
-current_default = get_default_collection()
-is_current_default = (current_default == collection_name)
-
-set_as_default = st.sidebar.checkbox(
-    f"Set '{collection_name}' as default",
-    value=is_current_default,
-    key="set_default_checkbox",
-    help="This collection will be selected by default when you open the app"
-)
-
-# Handle checkbox changes
-if set_as_default and not is_current_default:
-    # User just checked the box - set this as default
-    if set_default_collection(collection_name):
-        st.sidebar.success(f"✅ '{collection_name}' set as default!")
-    else:
-        st.sidebar.error("❌ Failed to save preference")
-elif not set_as_default and is_current_default:
-    # User just unchecked the box - clear default
-    if clear_default_collection():
-        st.sidebar.info("ℹ️ Default collection cleared")
-    else:
-        st.sidebar.error("❌ Failed to clear preference")
-
 st.sidebar.markdown("---")
 
-all_books = firebase_client.get_all_documents(collection_name)
+all_books = geojson_client.get_all_books()
 
 # Initialize session state
 if "current_tab" not in st.session_state:
@@ -600,9 +543,9 @@ with view_tab:
 
         # NUM DOCS
         if view_action == top_options[1]: #DOC COUNT
-            doc_count = firebase_client.get_document_count(collection_name)
+            doc_count = geojson_client.get_book_count()
             print(doc_count)
-            st.write(f"Number of documents in '{collection_name}': {doc_count}")
+            st.write(f"Number of books: {doc_count}")
 
         # LIST ALL BOOK TITLES
         if view_action == top_options[2]: # List All Book Titles
@@ -629,9 +572,9 @@ with view_tab:
             for book in all_books:
                 if 'locations' in book:
                     for location in book['locations']:
-                        if 'city' in location:
+                        if location.get('city'):
                             unique_places.add(location['city'])
-                        if 'place' in location:
+                        if location.get('place'):
                             unique_places.add(location['place'])
 
             locations_df = pd.DataFrame(sorted(unique_places), columns=['Location'])
@@ -657,7 +600,7 @@ with view_tab:
             st.write("Search for and select two books to compare side-by-side.")
 
             # Debug: Show collection info
-            st.info(f"📚 Currently using collection: **{collection_name}** with **{len(all_books)}** books")
+            st.info(f"📚 Currently loaded **{len(all_books)}** books from GeoJSON")
 
             # Debug: Show sample book structure
             if all_books:
@@ -697,11 +640,11 @@ with view_tab:
             # Perform search for Book 1
             if search_btn1 and search_query1:
                 st.write(f"🔍 DEBUG: Searching for '{search_query1}'")
-                st.write(f"🔍 DEBUG: Total books in collection: {len(all_books)}")
+                st.write(f"🔍 DEBUG: Total books: {len(all_books)}")
 
                 # Search in both title and author fields
-                title_matches = firebase_client.fuzzy_match(all_books, 'title', search_query1)
-                author_matches = firebase_client.fuzzy_match(all_books, 'author', search_query1)
+                title_matches = geojson_client.fuzzy_match(all_books, 'title', search_query1)
+                author_matches = geojson_client.fuzzy_match(all_books, 'author', search_query1)
 
                 st.write(f"🔍 DEBUG: Title matches: {len(title_matches)}")
                 st.write(f"🔍 DEBUG: Author matches: {len(author_matches)}")
@@ -747,7 +690,7 @@ with view_tab:
 
                 if selected_display1:
                     book_id1 = book_options1[selected_display1]
-                    st.session_state.selected_book1 = firebase_client.get_document_by_id(all_books, book_id1)
+                    st.session_state.selected_book1 = geojson_client.get_document_by_id(all_books, book_id1)
                     st.success(f"✅ Book 1 selected: {st.session_state.selected_book1['title']}")
 
             elif search_query1 and search_btn1:
@@ -775,11 +718,11 @@ with view_tab:
                 # Perform search for Book 2
                 if search_btn2 and search_query2:
                     st.write(f"🔍 DEBUG: Searching for '{search_query2}'")
-                    st.write(f"🔍 DEBUG: Total books in collection: {len(all_books)}")
+                    st.write(f"🔍 DEBUG: Total books: {len(all_books)}")
 
                     # Search in both title and author fields
-                    title_matches = firebase_client.fuzzy_match(all_books, 'title', search_query2)
-                    author_matches = firebase_client.fuzzy_match(all_books, 'author', search_query2)
+                    title_matches = geojson_client.fuzzy_match(all_books, 'title', search_query2)
+                    author_matches = geojson_client.fuzzy_match(all_books, 'author', search_query2)
 
                     st.write(f"🔍 DEBUG: Title matches: {len(title_matches)}")
                     st.write(f"🔍 DEBUG: Author matches: {len(author_matches)}")
@@ -825,7 +768,7 @@ with view_tab:
 
                     if selected_display2:
                         book_id2 = book_options2[selected_display2]
-                        st.session_state.selected_book2 = firebase_client.get_document_by_id(all_books, book_id2)
+                        st.session_state.selected_book2 = geojson_client.get_document_by_id(all_books, book_id2)
                         st.success(f"✅ Book 2 selected: {st.session_state.selected_book2['title']}")
 
                 elif search_query2 and search_btn2:
@@ -946,7 +889,7 @@ with view_tab:
                 for i in range(0, len(dupe_ids) - 1, 2):
                     book1_id = dupe_ids[i]
                     book2_id = dupe_ids[i+1]
-                    firebase_client.compare_books(all_books, book1_id, book2_id)
+                    geojson_client.compare_books(all_books, book1_id, book2_id)
                     st.markdown("----")
 
 
@@ -1026,7 +969,7 @@ def validate_book_json(books_data, all_books):
 
         # Check for duplicates by title
         title = book.get('title', '')
-        existing_matches = firebase_client.get_book_by_title(all_books, title)
+        existing_matches = geojson_client.get_book_by_title(all_books, title)
 
         if existing_matches:
             results['duplicates'].append((book, existing_matches))
@@ -1062,12 +1005,12 @@ st.markdown(
 
 
 
-def write_all_books_to_json(collection_name, all_books):
-    """Writes all books from the specified collection to a JSON file."""
+def write_all_books_to_json(all_books):
+    """Writes all books to a JSON backup file."""
     # Generate filename with current date and time
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M")
-    filename = f"backup/{collection_name}_{timestamp}.json"
-    
+    filename = f"backup/litmap_{timestamp}.json"
+
     # Write the list of books to the JSON file
     with open(filename, "w") as json_file:
         json.dump(all_books, json_file, indent=4)
@@ -1244,11 +1187,11 @@ with db_tab:
         if search_button:
             st.write(f"{search_option} {search_input}")
             if search_option == "Author":
-                books = firebase_client.get_books_by_author(all_books, search_input)
+                books = geojson_client.get_books_by_author(all_books, search_input)
             elif search_option == "Book Title":
-                books = firebase_client.get_book_by_title(all_books, search_input)
+                books = geojson_client.get_book_by_title(all_books, search_input)
             elif search_option == "Genre":
-                books = firebase_client.fuzzy_match(all_books, 'genre', search_input)
+                books = geojson_client.fuzzy_match(all_books, 'genre', search_input)
 
             # Store results in session state so they persist across reruns
             st.session_state.search_results = books
@@ -1303,13 +1246,10 @@ with db_tab:
                 st.session_state.upload_confirmed = False
 
             print(st.session_state)
-            print('Upload Books to Firebase')
+            print('Upload Books from JSON')
 
             st.write("### 📤 Upload Books from JSON")
             st.write("**Two-step process:** Validate → Confirm → Upload")
-
-            # Display target collection prominently
-            st.info(f"🎯 **Target Collection:** `{collection_name}`")
 
             # File uploader
             uploaded_file = st.file_uploader("Choose a JSON file to Upload", type="json", key="json_uploader")
@@ -1401,7 +1341,7 @@ with db_tab:
 
                 if results['valid_books']:
                     st.markdown("#### Step 3: Confirm Upload")
-                    st.info(f"📊 **Summary:** Ready to add **{len(results['valid_books'])}** new book(s) to `{collection_name}` collection")
+                    st.info(f"📊 **Summary:** Ready to add **{len(results['valid_books'])}** new book(s) to GeoJSON")
 
                     col_confirm, col_cancel = st.columns([1, 1])
 
@@ -1409,9 +1349,9 @@ with db_tab:
                         if st.button("✅ Confirm and Upload Books", type="primary", key="confirm_upload_btn"):
                             # Perform the upload
                             with st.spinner(f"Uploading {len(results['valid_books'])} books..."):
-                                firebase_client.add_books_to_db(collection_name, results['valid_books'])
+                                geojson_client.add_books_to_geojson(results['valid_books'], all_books)
 
-                            st.success(f"🎉 Successfully added {len(results['valid_books'])} book(s) to {collection_name}!")
+                            st.success(f"🎉 Successfully added {len(results['valid_books'])} book(s)!")
                             st.balloons()
 
                             # Reset session state
@@ -1441,7 +1381,7 @@ with db_tab:
                         st.rerun()
 
         if db_action == db_options[3]: # Export Collection (Full Backup)
-            print('attempting Export Collection to JSON')
+            print('attempting Export to JSON')
             # Initialize backup_confirmed if not exists
             if 'backup_confirmed' not in st.session_state:
                 st.session_state.backup_confirmed = False
@@ -1450,45 +1390,45 @@ with db_tab:
                 # Create a container for the confirmation dialog
                 with st.container():
                     st.warning("⚠️ Export Confirmation")
-                    st.write(f"Export {collection_name} collection to JSON?")
+                    st.write("Export all book data to JSON?")
                     st.write("This will:")
                     st.markdown("""
                         - Create a new JSON file with current timestamp
-                        - Save all documents from the collection
+                        - Save all books from the GeoJSON dataset
                         - Store the file in the 'backup' directory
                     """)
-                    
+
                     # Add some space
                     st.write("")
-                    
+
                     # Create columns for buttons
                     col1, col2, col3 = st.columns([1, 1, 3])
-                    
+
                     with col1:
                         if st.button("✅ Yes, Export", type="primary"):
                             st.session_state.backup_confirmed = True
                             st.rerun()
-                    
+
                     with col2:
                         if st.button("❌ No, Cancel"):
                             reset_confirmation()
                             st.write("Backup cancelled.")
-            
+
             else:
                 try:
                     # Show progress indicator
                     with st.spinner("Creating backup..."):
-                        filename = write_all_books_to_json(collection_name, all_books)
-                    
+                        filename = write_all_books_to_json(all_books)
+
                     # Show success message with file details
                     st.success("Backup Completed Successfully!")
                     st.write(f"📁 File saved as: `{filename}`")
-                    
+
                     # Add option to create another backup
                     if st.button("Create Another Backup"):
                         reset_confirmation()
                         st.rerun()
-                    
+
                 except Exception as e:
                     st.error(f"❌ Backup Failed: {str(e)}")
                     if st.button("Try Again"):
@@ -1544,11 +1484,11 @@ with db_tab:
 
                 # Direct ID input as fallback option
                 book_id_input = st.text_input("Enter Book ID to Edit (Optional)", key="edit_book_id",
-                                              placeholder="e.g., Sv7LW8CL3htN1Fj9AJf2")
+                                              placeholder="e.g., glory-in-a-camels-eye-tayler")
 
                 if book_id_input:
                     # Find the book by ID
-                    selected_book = firebase_client.get_document_by_id(all_books, book_id_input)
+                    selected_book = geojson_client.get_document_by_id(all_books, book_id_input)
 
                     if selected_book:
                         st.session_state.edit_selected_book = selected_book
@@ -1901,11 +1841,9 @@ with db_tab:
                         with col_confirm:
                             if st.button("✅ Confirm and Save Changes", type="primary", key="confirm_save"):
                                 # Perform the update
-                                success = firebase_client.update_multiple_fields(
-                                    collection_name,
+                                success = geojson_client.update_book(
                                     book['id'],
-                                    changes,
-                                    verbose=True
+                                    changes
                                 )
 
                                 if success:
@@ -1973,11 +1911,11 @@ with db_tab:
                 # Perform search and store results in session state
                 if json_search_button and json_search_input:
                     if json_search_option == "Author":
-                        books = firebase_client.get_books_by_author(all_books, json_search_input)
+                        books = geojson_client.get_books_by_author(all_books, json_search_input)
                     elif json_search_option == "Title":
-                        books = firebase_client.get_book_by_title(all_books, json_search_input)
+                        books = geojson_client.get_book_by_title(all_books, json_search_input)
                     elif json_search_option == "ID":
-                        book = firebase_client.get_document_by_id(all_books, json_search_input)
+                        book = geojson_client.get_document_by_id(all_books, json_search_input)
                         books = [book] if book else []
 
                     # Store results in session state
@@ -2105,27 +2043,24 @@ with db_tab:
                     col_confirm, col_cancel = st.columns([1, 1])
 
                     with col_confirm:
-                        if st.button("✅ Confirm & Save to Firebase", type="primary", key="json_confirm_save"):
+                        if st.button("✅ Confirm & Save to GeoJSON", type="primary", key="json_confirm_save"):
                             # Prepare update data (only changed/added fields)
                             update_data = {}
                             update_data.update(diff_data['added'])
                             for field, change in diff_data['changed'].items():
                                 update_data[field] = change['new']
 
-                            # Handle removed fields by setting them to empty string or None
-                            # (Firebase doesn't have a direct "delete field" in update)
+                            # For removed fields, set to None (will be stored as null in GeoJSON)
                             for field in diff_data['removed'].keys():
-                                update_data[field] = firestore.DELETE_FIELD
+                                update_data[field] = None
 
                             # Perform the update
                             book_id = st.session_state.json_edit_selected_book['id']
 
                             try:
-                                success = firebase_client.update_multiple_fields(
-                                    collection_name,
+                                success = geojson_client.update_book(
                                     book_id,
-                                    update_data,
-                                    verbose=True
+                                    update_data
                                 )
 
                                 if success:
@@ -2144,7 +2079,7 @@ with db_tab:
                                     st.error("❌ Failed to update the book. Check the console for errors.")
 
                             except Exception as e:
-                                st.error(f"❌ Error saving to Firebase: {e}")
+                                st.error(f"❌ Error saving to GeoJSON: {e}")
 
                     with col_cancel:
                         if st.button("❌ Cancel Changes", key="json_cancel_save"):
@@ -2169,23 +2104,206 @@ with db_tab:
 
                 # Call the write_book_json function based on the search type
                 if search_type == "Title":
-                    write_book_json(title=user_input, book_id=None, verbose=False)
+                    write_book_json(geojson_client, all_books, title=user_input, book_id=None, verbose=False)
                     st.write(f"Saving book with Title: {user_input}")
                 else:
-                    write_book_json(title=None, book_id=user_input, verbose=False)
+                    write_book_json(geojson_client, all_books, title=None, book_id=user_input, verbose=False)
                     st.write(f"Saving book with ID: {user_input}")
 
         # Logic for Delete Book by ID
         if db_action == db_options[5]: # Delete Book by ID
-            doc_id = st.sidebar.text_input("Enter Document ID", "")
+            doc_id = st.sidebar.text_input("Enter Book ID", "")
 
             if doc_id:
-                if st.sidebar.button("Delete Document"):
+                if st.sidebar.button("Delete Book"):
                     try:
-                        firebase_client.delete_document_by_id(collection_name, doc_id)
-                        st.write(f"Document with ID '{doc_id}' deleted successfully.")
+                        geojson_client.delete_book(doc_id)
+                        st.write(f"Book with ID '{doc_id}' deleted successfully.")
                     except Exception as e:
-                        st.error(f"Failed to delete document: {e}")
+                        st.error(f"Failed to delete book: {e}")
+
+
+# ISBN Manager Tab
+with isbn_tab:
+    st.session_state.current_tab = "ISBN Manager"
+    st.header("ISBN Manager")
+
+    ISBN_GEOJSON_PATH = os.path.join(os.path.dirname(__file__), "..", "vue-app", "public", "litmap-data.geojson")
+
+    def load_geojson_books():
+        """Load unique books from the GeoJSON file."""
+        with open(ISBN_GEOJSON_PATH) as f:
+            data = json.load(f)
+        books = {}
+        for feat in data["features"]:
+            props = feat["properties"]
+            bid = props.get("bookId", "")
+            if bid and bid not in books:
+                books[bid] = {
+                    "bookId": bid,
+                    "title": props.get("title", ""),
+                    "author": props.get("author", ""),
+                    "isbn": props.get("isbn"),
+                }
+        return books, data
+
+    def validate_isbn(isbn_str):
+        """Validate an ISBN using check digit algorithm. Returns (is_valid, normalized)."""
+        if not isbn_str or str(isbn_str).strip().lower() in ("na", "none", "null", ""):
+            return False, None
+        digits = re.sub(r"[^0-9Xx]", "", str(isbn_str).strip())
+        if len(digits) == 13:
+            total = sum(int(d) * (1 if i % 2 == 0 else 3) for i, d in enumerate(digits[:12]))
+            check = (10 - (total % 10)) % 10
+            if check == int(digits[12]):
+                return True, digits
+            return False, None
+        if len(digits) == 10:
+            total = 0
+            for i, ch in enumerate(digits[:9]):
+                total += int(ch) * (10 - i)
+            last = digits[9].upper()
+            check_val = 10 if last == "X" else int(last)
+            total += check_val
+            if total % 11 == 0:
+                # Convert to ISBN-13
+                base = "978" + digits[:9]
+                t = sum(int(d) * (1 if i % 2 == 0 else 3) for i, d in enumerate(base))
+                c = (10 - (t % 10)) % 10
+                return True, base + str(c)
+            return False, None
+        return False, None
+
+    def lookup_openlibrary(title, author):
+        """Search Open Library API for ISBNs by title and author."""
+        import urllib.request
+        import urllib.parse
+        query = f"{title} {author}"
+        url = f"https://openlibrary.org/search.json?q={urllib.parse.quote(query)}&limit=5"
+        try:
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                data = json.loads(resp.read().decode())
+            results = []
+            for doc in data.get("docs", []):
+                isbns = doc.get("isbn", [])
+                if isbns:
+                    results.append({
+                        "title": doc.get("title", ""),
+                        "author": ", ".join(doc.get("author_name", [])),
+                        "isbn": isbns[0],
+                        "all_isbns": isbns[:5],
+                    })
+            return results
+        except Exception as e:
+            st.error(f"Open Library lookup failed: {e}")
+            return []
+
+    if os.path.exists(ISBN_GEOJSON_PATH):
+        books_dict, full_geojson = load_geojson_books()
+        isbn_all_books = list(books_dict.values())
+
+        # Classify each book
+        for b in isbn_all_books:
+            isbn_val = b["isbn"]
+            if not isbn_val or str(isbn_val).strip().lower() in ("na", "none", "null", ""):
+                b["status"] = "Missing"
+            else:
+                valid, _ = validate_isbn(isbn_val)
+                b["status"] = "Valid" if valid else "Invalid"
+
+        total = len(isbn_all_books)
+        valid_count = sum(1 for b in isbn_all_books if b["status"] == "Valid")
+        missing_count = sum(1 for b in isbn_all_books if b["status"] == "Missing")
+        invalid_count = sum(1 for b in isbn_all_books if b["status"] == "Invalid")
+
+        # Summary stats
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Books", total)
+        col2.metric("Valid ISBN", valid_count)
+        col3.metric("Missing ISBN", missing_count)
+        col4.metric("Invalid ISBN", invalid_count)
+
+        # Filter
+        filter_opt = st.selectbox("Filter", ["All", "Missing ISBN only", "Invalid ISBN only"], key="isbn_filter")
+        if filter_opt == "Missing ISBN only":
+            display_books = [b for b in isbn_all_books if b["status"] == "Missing"]
+        elif filter_opt == "Invalid ISBN only":
+            display_books = [b for b in isbn_all_books if b["status"] == "Invalid"]
+        else:
+            display_books = isbn_all_books
+
+        st.write(f"Showing {len(display_books)} books")
+
+        # Initialize session state for ISBN edits
+        if "isbn_edits" not in st.session_state:
+            st.session_state.isbn_edits = {}
+
+        # Display books in an editable table
+        for i, book in enumerate(display_books):
+            bid = book["bookId"]
+            status_icon = {"Valid": "✅", "Missing": "❌", "Invalid": "⚠️"}.get(book["status"], "")
+
+            with st.expander(f"{status_icon} {book['title']} — {book['author']}"):
+                st.write(f"**Book ID:** `{bid}`")
+                st.write(f"**Current ISBN:** `{book['isbn']}`")
+                st.write(f"**Status:** {book['status']}")
+
+                # Editable ISBN input
+                current_val = st.session_state.isbn_edits.get(bid, str(book["isbn"] or ""))
+                new_isbn = st.text_input("ISBN", value=current_val, key=f"isbn_input_{bid}")
+
+                if new_isbn != current_val:
+                    st.session_state.isbn_edits[bid] = new_isbn
+
+                # Real-time validation
+                if new_isbn:
+                    valid, normalized = validate_isbn(new_isbn)
+                    if valid:
+                        st.success(f"Valid ISBN-13: {normalized}")
+                        st.session_state.isbn_edits[bid] = new_isbn
+                    else:
+                        st.error("Invalid ISBN check digit")
+
+                # Goodreads search link
+                goodreads_query = urllib.parse.quote(f"{book['title']} {book['author']}")
+                goodreads_url = f"https://www.goodreads.com/search?q={goodreads_query}"
+                st.link_button("📚 Look at the Book on Goodreads", goodreads_url, key=f"goodreads_{bid}")
+
+                # Open Library lookup button
+                if st.button(f"Lookup on Open Library", key=f"lookup_{bid}"):
+                    results = lookup_openlibrary(book["title"], book["author"])
+                    if results:
+                        for r in results:
+                            st.write(f"  **{r['title']}** by {r['author']}")
+                            st.code(r["isbn"])
+                            if len(r["all_isbns"]) > 1:
+                                st.write(f"  Other ISBNs: {', '.join(r['all_isbns'][1:])}")
+                    else:
+                        st.info("No results found on Open Library")
+
+        # Save button
+        st.divider()
+        if st.session_state.isbn_edits:
+            st.write(f"**{len(st.session_state.isbn_edits)} books with pending ISBN changes**")
+            if st.button("Save Changes to GeoJSON", type="primary"):
+                edits = st.session_state.isbn_edits
+                updated = 0
+                for feat in full_geojson["features"]:
+                    bid = feat["properties"].get("bookId", "")
+                    if bid in edits and edits[bid]:
+                        feat["properties"]["isbn"] = edits[bid]
+                        updated += 1
+
+                with open(ISBN_GEOJSON_PATH, "w") as f:
+                    json.dump(full_geojson, f, indent=2)
+
+                st.success(f"Saved {updated} ISBN updates to GeoJSON")
+                st.session_state.isbn_edits = {}
+                st.rerun()
+        else:
+            st.info("No pending ISBN changes. Edit ISBNs above to make changes.")
+    else:
+        st.error(f"GeoJSON file not found at {ISBN_GEOJSON_PATH}")
 
 
 # Help Tab
@@ -2216,4 +2334,4 @@ if st.sidebar.button("Clear All Tabs"):
     print('clear')
     placeholder_viewer.empty()
     placeholder_db.empty()
-    placeholder_h.empty()   
+    placeholder_h.empty()

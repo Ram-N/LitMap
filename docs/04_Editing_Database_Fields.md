@@ -1,10 +1,10 @@
 # Editing Database Fields using Streamlit
 
-This guide explains how to edit book records in the Firebase/Firestore database using the Streamlit admin interface.
+This guide explains how to edit book records in the LitMap GeoJSON database using the Streamlit admin interface.
 
 ## Overview
 
-The Streamlit admin interface provides a comprehensive multi-field editor that allows you to update book records safely and efficiently without the need to export, delete, and re-import data.
+The Streamlit admin interface provides a comprehensive multi-field editor that allows you to update book records safely and efficiently. All changes are saved directly to `litmap-data.geojson` — no Firebase connection is needed.
 
 ## Prerequisites
 
@@ -24,8 +24,7 @@ The Streamlit admin interface provides a comprehensive multi-field editor that a
 ## Accessing the Book Editor
 
 1. Navigate to the **"DB-Manage"** tab
-2. Select **"Edit Book Field"** from the action dropdown menu
-3. Choose your collection from the sidebar (books/midbooks/newbooks)
+2. Select **"Edit Book"** from the action dropdown menu
 
 ## Editing Workflow
 
@@ -39,12 +38,11 @@ The editor uses a three-step process:
    - Author name
    - Book title
    - Genre
-3. The search results will display matching books with their IDs
+3. Click the **✏️ Edit** button next to the book you want to edit
 
-**Selecting the Book:**
-1. Copy the Book ID from the search results
-2. Paste it into the "Enter Book ID to Edit" field
-3. The system will confirm the book was found and display:
+**Using Book ID directly:**
+1. Enter a Book ID in the "Enter Book ID to Edit" field
+2. The system will confirm the book was found and display:
    - Book title and author
    - An expandable section with complete current data
 
@@ -69,27 +67,42 @@ Once a book is selected, a comprehensive edit form appears with all fields organ
 - **Cover Image URL**: URL to book cover image
 - **Goodreads Link**: Link to Goodreads page
 
-#### Locations Array Editor
-- **Locations (JSON format)**: Edit the locations array directly as JSON
-  - Each location should include: `place` or `city`, `lat`, `lng`, and optionally `country`
-  - The editor validates JSON syntax
-  - Example format:
-    ```json
-    [
-      {
-        "city": "Paris",
-        "lat": 48.8566,
-        "lng": 2.3522,
-        "country": "France"
-      },
-      {
-        "place": "Eiffel Tower",
-        "lat": 48.8584,
-        "lng": 2.2945,
-        "country": "France"
-      }
-    ]
-    ```
+#### Location Management
+
+The location editor provides three ways to manage book locations:
+
+**A. Editable Table:**
+- View and edit all locations in a data table
+- Add or delete rows directly
+- Columns: City, Country, Latitude, Longitude, Description
+
+**B. Quick Add Form:**
+- Enter city and country
+- Use **🔍 Auto-Geocode** to automatically look up coordinates via OpenStreetMap
+- Manually adjust latitude/longitude if needed
+- Click **➕ Add Location** to append
+
+**C. Advanced JSON Editor (collapsible):**
+- Edit the locations array directly as JSON
+- Example format:
+  ```json
+  [
+    {
+      "city": "Paris",
+      "country": "France",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "description": "Main setting of the novel"
+    },
+    {
+      "city": "London",
+      "country": "United Kingdom",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "description": "Opening chapters"
+    }
+  ]
+  ```
 
 **Making Changes:**
 1. Edit any fields you want to update
@@ -109,7 +122,7 @@ After clicking "Preview Changes", the system shows:
   - Short values shown in code blocks
 
 **Confirmation Options:**
-- **✅ Confirm and Save Changes**: Applies all changes to Firebase
+- **✅ Confirm and Save Changes**: Applies all changes to the GeoJSON file
 - **❌ Cancel Changes**: Discards all edits and returns to form
 
 **After Saving:**
@@ -117,12 +130,26 @@ After clicking "Preview Changes", the system shows:
 - Celebration animation (balloons!)
 - Option to refresh and edit another book
 
+## Edit Existing JSON (Advanced)
+
+For power users, the **"Edit Existing JSON"** action provides direct JSON editing:
+
+1. **Search** for a book by title, author, or ID
+2. **Select** the book to load its full JSON
+3. **Edit** the JSON directly in a text area
+4. **Validate & Preview** — the system parses the JSON and shows a structured diff:
+   - Added fields
+   - Removed fields
+   - Changed fields (old → new)
+   - Unchanged fields (collapsible)
+5. **Confirm & Save** to write changes to GeoJSON
+
 ## Features and Capabilities
 
 ### Smart Change Detection
-- Only modified fields are sent to Firebase
+- Only modified fields are updated in the GeoJSON
 - Unchanged fields are ignored
-- Efficient updates with minimal database writes
+- Location changes are normalized to avoid false positives
 
 ### Field Type Handling
 - **Text fields**: Standard text input
@@ -135,19 +162,20 @@ After clicking "Preview Changes", the system shows:
 - **Required fields**: Title and author must have values
 - **Number ranges**: Year, page count, and rating have validation
 - **JSON syntax**: Location array is validated before saving
+- **Coordinate validation**: Latitude (-90 to 90), Longitude (-180 to 180)
 - **Error messages**: Clear feedback if validation fails
 
 ### Safety Features
 - **Preview before save**: Always review changes before committing
 - **Cancellation**: Can cancel at any time before final save
 - **Error handling**: Failed updates don't corrupt existing data
-- **Preserves document ID**: Updates in place, no ID changes
+- **Preserves book ID**: Updates in place, no ID changes
 
 ## Common Use Cases
 
 ### Use Case 1: Fix a Typo
 1. Search for the book by title
-2. Copy the book ID
+2. Click ✏️ Edit on the search result
 3. Correct the typo in the appropriate field
 4. Preview → Confirm → Done!
 
@@ -160,12 +188,12 @@ After clicking "Preview Changes", the system shows:
 
 **Example**: Adding ISBN 978-0743273565, publisher "Scribner", and page count 180 to a book
 
-### Use Case 3: Update Location Coordinates
+### Use Case 3: Add or Update Locations
 1. Select the book
-2. Edit the locations JSON array to add/remove/modify coordinates
+2. Use the Quick Add form with Auto-Geocode, or edit the locations table
 3. Preview → Confirm → Location data updated
 
-**Example**: Adding a new location or correcting latitude/longitude values
+**Example**: Adding a new city where part of the book takes place
 
 ### Use Case 4: Update Tags and Genre
 1. Change genre (e.g., "Fiction" → "Historical Fiction")
@@ -174,40 +202,28 @@ After clicking "Preview Changes", the system shows:
 
 **Example**: Reclassifying a book with more specific genre and adding relevant tags
 
-## Advantages Over Export-Delete-Reimport
-
-| Aspect | Old Method (Export/Delete/Import) | New Method (Streamlit Editor) |
-|--------|-----------------------------------|-------------------------------|
-| **Speed** | Slow (3 steps) | Fast (direct update) |
-| **Safety** | Risky (can lose data) | Safe (uses Firestore update) |
-| **Document ID** | May change on reimport | Preserved |
-| **Preview** | No preview | Full before/after view |
-| **Multiple fields** | Edit entire JSON | Visual form with widgets |
-| **Validation** | Manual | Automatic |
-| **Error recovery** | Can lose data | No data loss on error |
-| **User experience** | Technical (JSON editing) | User-friendly (forms) |
-
 ## Technical Details
 
 ### Backend Implementation
 
-**Batch Update Method**: `update_multiple_fields()`
-- Located in: `database/main.py` (FirebaseClient class, lines 112-137)
-- Uses Firestore's `update()` method (not `set()`)
-- Only modifies specified fields
-- Returns success/failure status
-- Built-in error handling
+**GeoJSONClient class** in `database/main.py`:
+- `update_book(book_id, changes)` — updates properties on all features matching the bookId, saves the file
+- `_update_locations(book_id, new_locations)` — replaces all features for a book when locations change
+- `save()` — writes the full GeoJSON back to disk
 
 **Session State Management**:
 - `edit_selected_book`: Currently selected book data
 - `edit_show_preview`: Whether to display change preview
 - `edit_changes`: Dictionary of field changes to apply
+- `edit_locations_data`: Current state of the location editor
+- `edit_current_book_id`: Tracks which book's locations are loaded
 
 **Change Detection Algorithm**:
 1. Compare each form field value with original book data
 2. Build dictionary of only changed fields
 3. Special handling for type conversions (tags string → array)
-4. Preserve unchanged fields completely
+4. Normalize locations to avoid false positives from empty fields or type differences
+5. Preserve unchanged fields completely
 
 ### Error Handling
 
@@ -215,7 +231,7 @@ The editor includes comprehensive error handling:
 
 1. **Book not found**: Clear message if book ID doesn't exist
 2. **Invalid JSON**: Validation for locations array with error message
-3. **Firebase errors**: Try-catch block with user-friendly error display
+3. **Save errors**: Try-catch block with user-friendly error display
 4. **Number validation**: Min/max ranges enforced by Streamlit widgets
 5. **Console logging**: Detailed logs for debugging
 
@@ -225,8 +241,8 @@ The editor includes comprehensive error handling:
 **Problem**: "No book found with ID: xyz"
 **Solution**:
 - Verify the book ID is correct
-- Check you're searching in the right collection (books/midbooks/newbooks)
 - Use the search function to find the correct ID
+- Book IDs are either ISBN-13 numbers or title-author slugs (e.g., `the-great-gatsby-fitzgerald`)
 
 ### Invalid JSON in Locations
 **Problem**: "❌ Invalid JSON in locations field"
@@ -239,9 +255,8 @@ The editor includes comprehensive error handling:
 **Problem**: Update appears to fail
 **Solution**:
 - Check console output for detailed error messages
-- Verify Firebase credentials are valid
-- Ensure you have write permissions to the collection
-- Check internet connection
+- Verify the GeoJSON file is writable
+- Ensure the file path is correct
 
 ### Form Fields Not Pre-populating
 **Problem**: Form shows empty fields
@@ -253,22 +268,16 @@ The editor includes comprehensive error handling:
 ## Best Practices
 
 1. **Always preview changes** before confirming to catch mistakes
-2. **Use the search function** to find book IDs rather than guessing
-3. **Make backups** of collections before major edit sessions
-4. **Validate coordinates** when editing location arrays (lat: -90 to 90, lng: -180 to 180)
-5. **Use consistent formatting** for tags and genres
-6. **Test with a single book** before performing similar edits on multiple books
+2. **Use the search function** to find books rather than guessing IDs
+3. **Make backups** before major edit sessions (use "Export Collection" in DB-Manage)
+4. **Use Auto-Geocode** when adding locations to get accurate coordinates
+5. **Validate coordinates** when editing location arrays (lat: -90 to 90, lng: -180 to 180)
+6. **Use consistent formatting** for tags and genres
 7. **Check the expanded book data** if unsure about current field values
+8. **Commit changes** to git after editing to deploy updates
 
 ## Related Documentation
 
-- [About LitMap Database](02_About_LitMap_Database.md) - Database structure and Firebase setup
-- [Maintaining the Database](3_Maintaining_the_database.md) - General maintenance procedures
+- [About LitMap Database](02_About_LitMap_Database.md) - Database structure and data format
+- [Maintaining the Database](03_Maintaining_the_database.md) - General maintenance procedures
 - [Workflow](Workflow.md) - Overall development workflow
-
-## Support
-
-If you encounter issues not covered in this guide:
-1. Check the Streamlit console output for error messages
-2. Review the Firebase console for database-level issues
-3. Consult the [Firebase documentation](https://firebase.google.com/docs/firestore) for Firestore-specific questions
