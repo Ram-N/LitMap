@@ -2144,8 +2144,32 @@ with isbn_tab:
                     "title": props.get("title", ""),
                     "author": props.get("author", ""),
                     "isbn": props.get("isbn"),
+                    "isbn10": props.get("isbn10"),
+                    "asin": props.get("asin"),
                 }
         return books, data
+
+    def parse_goodreads_text(text):
+        """Parse pasted Goodreads edition details to extract ISBN, ISBN10, and ASIN.
+
+        Handles text like:
+            ISBN 9780618155477 (ISBN10: 0618155473)
+            ASIN 0618155473
+        """
+        result = {}
+        # ISBN-13: look for 13-digit number, possibly after "ISBN"
+        isbn13_match = re.search(r'\b(97[89]\d{10})\b', text)
+        if isbn13_match:
+            result['isbn'] = isbn13_match.group(1)
+        # ISBN-10: look for "(ISBN10: ...)" pattern
+        isbn10_match = re.search(r'ISBN10[:\s]+([0-9Xx]{10})', text)
+        if isbn10_match:
+            result['isbn10'] = isbn10_match.group(1)
+        # ASIN: look for "ASIN" followed by alphanumeric code
+        asin_match = re.search(r'ASIN[:\s]+([A-Z0-9]{10})', text)
+        if asin_match:
+            result['asin'] = asin_match.group(1)
+        return result
 
     def validate_isbn(isbn_str):
         """Validate an ISBN using check digit algorithm. Returns (is_valid, normalized)."""
@@ -2237,6 +2261,18 @@ with isbn_tab:
         # Initialize session state for ISBN edits
         if "isbn_edits" not in st.session_state:
             st.session_state.isbn_edits = {}
+        if "isbn10_edits" not in st.session_state:
+            st.session_state.isbn10_edits = {}
+        if "asin_edits" not in st.session_state:
+            st.session_state.asin_edits = {}
+
+        # Show pending changes count and save button at the top (so it's always visible)
+        _all_edited_top = set(st.session_state.isbn_edits) | set(st.session_state.isbn10_edits) | set(st.session_state.asin_edits)
+        if _all_edited_top:
+            st.info(f"**{len(_all_edited_top)} book(s) with pending changes** — scroll down or use the Save button below.")
+            if st.button("💾 Save Changes to GeoJSON", type="primary", key="save_top"):
+                st.session_state['_isbn_save_triggered'] = True
+                st.rerun()
 
         # Display books in an editable table
         for i, book in enumerate(display_books):
@@ -2245,12 +2281,56 @@ with isbn_tab:
 
             with st.expander(f"{status_icon} {book['title']} — {book['author']}"):
                 st.write(f"**Book ID:** `{bid}`")
-                st.write(f"**Current ISBN:** `{book['isbn']}`")
+                st.write(f"**Current ISBN:** `{book['isbn']}`  |  **ISBN-10:** `{book.get('isbn10')}`  |  **ASIN:** `{book.get('asin')}`")
                 st.write(f"**Status:** {book['status']}")
+
+                # --- Paste from Goodreads ---
+                st.markdown("---")
+                st.markdown("##### 📋 Paste from Goodreads")
+                pasted = st.text_area(
+                    "Paste edition details from Goodreads",
+                    key=f"paste_{bid}",
+                    height=100,
+                    placeholder="ISBN\n9780618155477 (ISBN10: 0618155473)\nASIN\n0618155473"
+                )
+                # Show parse result message from previous run (survives rerun)
+                parse_msg_key = f"parse_msg_{bid}"
+                if parse_msg_key in st.session_state:
+                    msg_type, msg_text = st.session_state.pop(parse_msg_key)
+                    if msg_type == "success":
+                        st.success(msg_text)
+                    elif msg_type == "warning":
+                        st.warning(msg_text)
+
+                if st.button("Parse & Fill", key=f"parse_{bid}"):
+                    parsed = parse_goodreads_text(pasted)
+                    if parsed:
+                        if 'isbn' in parsed:
+                            st.session_state.isbn_edits[bid] = parsed['isbn']
+                            st.session_state[f"isbn_input_{bid}"] = parsed['isbn']
+                        if 'isbn10' in parsed:
+                            st.session_state.setdefault('isbn10_edits', {})[bid] = parsed['isbn10']
+                            st.session_state[f"isbn10_input_{bid}"] = parsed['isbn10']
+                        if 'asin' in parsed:
+                            st.session_state.setdefault('asin_edits', {})[bid] = parsed['asin']
+                            st.session_state[f"asin_input_{bid}"] = parsed['asin']
+                        # Build a readable summary
+                        found = [f"**{k}**: `{v}`" for k, v in parsed.items()]
+                        not_found = [f for f in ('isbn', 'isbn10', 'asin') if f not in parsed]
+                        msg = "Found: " + " | ".join(found)
+                        if not_found:
+                            msg += f"  \nNot found in text: {', '.join(not_found)}"
+                        st.session_state[parse_msg_key] = ("success", msg)
+                        st.rerun()
+                    else:
+                        st.session_state[parse_msg_key] = ("warning", "Could not parse any ISBN or ASIN from the pasted text. Expected lines like 'ISBN 9780618155477 (ISBN10: 0618155473)' or 'ASIN B01MQIPIT5'.")
+                        st.rerun()
+
+                st.markdown("---")
 
                 # Editable ISBN input
                 current_val = st.session_state.isbn_edits.get(bid, str(book["isbn"] or ""))
-                new_isbn = st.text_input("ISBN", value=current_val, key=f"isbn_input_{bid}")
+                new_isbn = st.text_input("ISBN-13", value=current_val, key=f"isbn_input_{bid}")
 
                 if new_isbn != current_val:
                     st.session_state.isbn_edits[bid] = new_isbn
@@ -2263,6 +2343,18 @@ with isbn_tab:
                         st.session_state.isbn_edits[bid] = new_isbn
                     else:
                         st.error("Invalid ISBN check digit")
+
+                # Editable ISBN-10 input
+                current_isbn10 = st.session_state.get('isbn10_edits', {}).get(bid, str(book.get("isbn10") or ""))
+                new_isbn10 = st.text_input("ISBN-10", value=current_isbn10, key=f"isbn10_input_{bid}")
+                if new_isbn10 != current_isbn10:
+                    st.session_state.setdefault('isbn10_edits', {})[bid] = new_isbn10
+
+                # Editable ASIN input
+                current_asin = st.session_state.get('asin_edits', {}).get(bid, str(book.get("asin") or ""))
+                new_asin = st.text_input("ASIN", value=current_asin, key=f"asin_input_{bid}")
+                if new_asin != current_asin:
+                    st.session_state.setdefault('asin_edits', {})[bid] = new_asin
 
                 # Goodreads search link
                 goodreads_query = urllib.parse.quote(f"{book['title']} {book['author']}")
@@ -2283,25 +2375,43 @@ with isbn_tab:
 
         # Save button
         st.divider()
-        if st.session_state.isbn_edits:
-            st.write(f"**{len(st.session_state.isbn_edits)} books with pending ISBN changes**")
-            if st.button("Save Changes to GeoJSON", type="primary"):
-                edits = st.session_state.isbn_edits
+        isbn_edits = st.session_state.get('isbn_edits', {})
+        isbn10_edits = st.session_state.get('isbn10_edits', {})
+        asin_edits = st.session_state.get('asin_edits', {})
+        all_edited_bids = set(isbn_edits) | set(isbn10_edits) | set(asin_edits)
+
+        # Check if save was triggered from the top button
+        save_from_top = st.session_state.pop('_isbn_save_triggered', False)
+
+        if all_edited_bids:
+            st.write(f"**{len(all_edited_bids)} book(s) with pending changes**")
+            if save_from_top or st.button("💾 Save Changes to GeoJSON", type="primary", key="save_bottom"):
                 updated = 0
                 for feat in full_geojson["features"]:
                     bid = feat["properties"].get("bookId", "")
-                    if bid in edits and edits[bid]:
-                        feat["properties"]["isbn"] = edits[bid]
+                    changed = False
+                    if bid in isbn_edits and isbn_edits[bid]:
+                        feat["properties"]["isbn"] = isbn_edits[bid]
+                        changed = True
+                    if bid in isbn10_edits and isbn10_edits[bid]:
+                        feat["properties"]["isbn10"] = isbn10_edits[bid]
+                        changed = True
+                    if bid in asin_edits and asin_edits[bid]:
+                        feat["properties"]["asin"] = asin_edits[bid]
+                        changed = True
+                    if changed:
                         updated += 1
 
                 with open(ISBN_GEOJSON_PATH, "w") as f:
                     json.dump(full_geojson, f, indent=2)
 
-                st.success(f"Saved {updated} ISBN updates to GeoJSON")
+                st.success(f"Saved updates across {updated} feature(s) to GeoJSON")
                 st.session_state.isbn_edits = {}
+                st.session_state.isbn10_edits = {}
+                st.session_state.asin_edits = {}
                 st.rerun()
         else:
-            st.info("No pending ISBN changes. Edit ISBNs above to make changes.")
+            st.info("No pending changes. Edit ISBNs above to make changes.")
     else:
         st.error(f"GeoJSON file not found at {ISBN_GEOJSON_PATH}")
 
