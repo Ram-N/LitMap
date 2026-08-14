@@ -23,7 +23,6 @@ const mapInstance = ref(null)
 const markerClusterGroup = ref(null)
 const markerLayer = ref(null) // plain layer group for unclustered mode
 const markers = ref([]) // all individual markers
-let updatingFromMap = false // guard to prevent moveend → watcher → setView loop
 
 // Stadia Maps — Stamen Watercolor tiles for vintage aesthetic
 const STADIA_KEY = import.meta.env.VITE_STADIA_API_KEY || ''
@@ -109,14 +108,11 @@ function initializeMap() {
     }).addTo(map)
   }
 
-  // Sync map state back to store (guarded to prevent feedback loop)
+  // Sync map state back to store
   map.on('zoomend', () => {
-    updatingFromMap = true
     uiStore.setMapZoom(map.getZoom())
-    updatingFromMap = false
   })
   map.on('moveend', () => {
-    updatingFromMap = true
     const c = map.getCenter()
     uiStore.setMapCenter({ lat: c.lat, lng: c.lng })
     const b = map.getBounds()
@@ -126,7 +122,6 @@ function initializeMap() {
       east: b.getEast(),
       west: b.getWest(),
     })
-    updatingFromMap = false
   })
 
   mapInstance.value = map
@@ -269,21 +264,20 @@ watch(() => bookMarkers.value.length, () => {
 })
 
 // Watch map center/zoom from store (for preset locations, geocoding, etc.)
-// Skip when the change originated from map events (prevents infinite loop)
+// Compare with current map position to avoid moveend → watcher → setView loop
 watch(() => uiStore.mapCenter, (newCenter) => {
-  if (updatingFromMap) return
-  if (newCenter && mapInstance.value) {
-    console.log('[LeafletMap] Store mapCenter changed externally, calling setView')
-    mapInstance.value.setView([newCenter.lat, newCenter.lng], uiStore.mapZoom, { animate: true })
-  }
+  if (!newCenter || !mapInstance.value) return
+  const current = mapInstance.value.getCenter()
+  if (Math.abs(current.lat - newCenter.lat) < 0.0001 && Math.abs(current.lng - newCenter.lng) < 0.0001) return
+  console.log('[LeafletMap] Store mapCenter changed externally, calling setView')
+  mapInstance.value.setView([newCenter.lat, newCenter.lng], uiStore.mapZoom, { animate: true })
 }, { deep: true })
 
 watch(() => uiStore.mapZoom, (newZoom) => {
-  if (updatingFromMap) return
-  if (newZoom && mapInstance.value && mapInstance.value.getZoom() !== newZoom) {
-    console.log('[LeafletMap] Store mapZoom changed externally, calling setZoom')
-    mapInstance.value.setZoom(newZoom)
-  }
+  if (!newZoom || !mapInstance.value) return
+  if (mapInstance.value.getZoom() === newZoom) return
+  console.log('[LeafletMap] Store mapZoom changed externally, calling setZoom')
+  mapInstance.value.setZoom(newZoom)
 })
 
 // Watch for fitBounds trigger
