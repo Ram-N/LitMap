@@ -55,6 +55,14 @@
       <h2 class="font-serif text-xl font-semibold text-text-primary mb-3">
         Journey Locations
       </h2>
+      <router-link
+        v-if="book.locations.length >= 2"
+        :to="{ name: 'book-journey', params: { id: book.id } }"
+        class="flex items-center gap-2 text-sm text-teal-deep hover:text-copper-warm transition-colors mb-3 underline decoration-dotted underline-offset-2"
+      >
+        <Navigation class="w-4 h-4 flex-shrink-0" />
+        <span>View Journey Map</span>
+      </router-link>
       <div class="bg-parchment-50 rounded-xl p-4 border border-parchment-200">
         <div class="space-y-2">
           <button
@@ -99,7 +107,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { MapPin, Calendar, BookOpen as BookOpenIcon } from 'lucide-vue-next'
+import { MapPin, Calendar, BookOpen as BookOpenIcon, Navigation } from 'lucide-vue-next'
 import { BookOpen } from 'lucide-vue-next'
 import GenreBadge from '../shared/GenreBadge.vue'
 import { useUIStore } from '@/stores/ui'
