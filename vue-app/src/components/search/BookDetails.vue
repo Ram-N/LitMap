@@ -57,14 +57,15 @@
       </h2>
       <div class="bg-parchment-50 rounded-xl p-4 border border-parchment-200">
         <div class="space-y-2">
-          <div
+          <button
             v-for="(location, index) in book.locations"
             :key="index"
-            class="flex items-center gap-2 text-sm text-text-secondary"
+            class="flex items-center gap-2 text-sm text-teal-deep hover:text-copper-warm transition-colors cursor-pointer w-full text-left"
+            @click="goToLocation(location)"
           >
-            <MapPin class="w-4 h-4 text-teal-deep" />
-            <span>{{ formatLocation(location) }}</span>
-          </div>
+            <MapPin class="w-4 h-4 flex-shrink-0" />
+            <span class="underline decoration-dotted underline-offset-2">{{ formatLocation(location) }}</span>
+          </button>
         </div>
       </div>
     </section>
@@ -101,6 +102,7 @@ import { useRouter } from 'vue-router'
 import { MapPin, Calendar, BookOpen as BookOpenIcon } from 'lucide-vue-next'
 import { BookOpen } from 'lucide-vue-next'
 import GenreBadge from '../shared/GenreBadge.vue'
+import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
   book: {
@@ -110,12 +112,24 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const uiStore = useUIStore()
 
 const showCover = ref(props.book.hasCover)
 
 const coverSrc = computed(() => {
   return `${import.meta.env.BASE_URL}covers/${props.book.id}.jpg`
 })
+
+function goToLocation(location) {
+  const lat = location.lat || location.latitude
+  const lng = location.lng || location.longitude
+  if (lat && lng) {
+    uiStore.setMapCenter({ lat, lng })
+    uiStore.setMapZoom(12)
+    uiStore.hideBottomSheet()
+    router.push({ name: 'map' })
+  }
+}
 
 function navigateToAuthor() {
   if (props.book.author) {

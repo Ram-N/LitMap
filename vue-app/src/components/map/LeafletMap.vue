@@ -114,6 +114,13 @@ function initializeMap() {
   map.on('moveend', () => {
     const c = map.getCenter()
     uiStore.setMapCenter({ lat: c.lat, lng: c.lng })
+    const b = map.getBounds()
+    uiStore.setMapBounds({
+      north: b.getNorth(),
+      south: b.getSouth(),
+      east: b.getEast(),
+      west: b.getWest(),
+    })
   })
 
   mapInstance.value = map

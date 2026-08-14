@@ -18,6 +18,7 @@ export const useUIStore = defineStore('ui', () => {
   const mapCenter = ref(null)
   const mapZoom = ref(3)
   const shouldFitBounds = ref(0) // Counter to trigger fitBounds (increment to trigger)
+  const mapBounds = ref(null) // { north, south, east, west }
 
   // Getters
   const hasSearchResults = computed(() => searchResults.value.length > 0)
@@ -115,6 +116,10 @@ export const useUIStore = defineStore('ui', () => {
     mapZoom.value = zoom
   }
 
+  function setMapBounds(bounds) {
+    mapBounds.value = bounds
+  }
+
   function triggerFitBounds() {
     shouldFitBounds.value++
   }
@@ -134,6 +139,7 @@ export const useUIStore = defineStore('ui', () => {
     mapCenter,
     mapZoom,
     shouldFitBounds,
+    mapBounds,
     // Getters
     hasSearchResults,
     isBottomSheetVisible,
@@ -156,6 +162,7 @@ export const useUIStore = defineStore('ui', () => {
     clearSearch,
     setMapCenter,
     setMapZoom,
+    setMapBounds,
     triggerFitBounds,
   }
 })
