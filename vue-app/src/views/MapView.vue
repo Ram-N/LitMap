@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen pb-20">
+  <div class="min-h-screen pb-20 overflow-hidden h-screen">
     <!-- Top Bar -->
     <TopBar />
 

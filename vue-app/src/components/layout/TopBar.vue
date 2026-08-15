@@ -1,9 +1,9 @@
 <template>
   <header class="h-16 bg-parchment-50 px-6 flex items-center border-b border-parchment-200 relative" style="z-index: 9200;">
     <!-- Logo/Title with Georgia serif -->
-    <h1 class="font-serif text-2xl font-semibold text-text-primary tracking-tight">
+    <router-link to="/" class="font-serif text-2xl font-semibold text-text-primary tracking-tight no-underline">
       LitMap
-    </h1>
+    </router-link>
 
     <!-- Search Button -->
     <button
