@@ -4,6 +4,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
+    name: 'home',
+    component: () => import('@/views/HomeView.vue'),
+    meta: { tab: 'home' }
+  },
+  {
+    path: '/map',
     name: 'map',
     component: () => import('@/views/MapView.vue'),
     meta: { tab: 'map' }
@@ -40,6 +46,17 @@ const routes = [
     path: '/author/:name',
     name: 'author-profile',
     component: () => import('@/views/AuthorProfileView.vue'),
+  },
+  {
+    path: '/place/:placeName',
+    name: 'place',
+    component: () => import('@/views/PlaceView.vue'),
+  },
+  {
+    path: '/discover',
+    name: 'discover',
+    component: () => import('@/views/DiscoverView.vue'),
+    meta: { tab: 'discover' }
   }
 ]
 

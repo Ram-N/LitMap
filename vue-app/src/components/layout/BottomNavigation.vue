@@ -29,7 +29,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Map, List, BookmarkCheck, Plus } from 'lucide-vue-next';
+import { Home, Map, List, BookmarkCheck, Plus } from 'lucide-vue-next';
 
 const props = defineProps({
   activeTab: {
@@ -41,6 +41,7 @@ const props = defineProps({
 const emit = defineEmits(['navigate']);
 
 const tabs = [
+  { id: 'home', label: 'Home', icon: Home },
   { id: 'map', label: 'Map', icon: Map },
   { id: 'list', label: 'List', icon: List },
   { id: 'library', label: 'Library', icon: BookmarkCheck },

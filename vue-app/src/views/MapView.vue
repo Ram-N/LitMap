@@ -53,13 +53,24 @@ import FAB from '@/components/shared/FAB.vue'
 import FloatingLocationSelector from '@/components/shared/FloatingLocationSelector.vue'
 import FloatingZoomControls from '@/components/shared/FloatingZoomControls.vue'
 import LoadingSpinner from '@/components/shared/LoadingSpinner.vue'
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useBooksStore } from '@/stores/books'
 import { useUIStore } from '@/stores/ui'
 import { useMap } from '@/composables/useMap'
 
+const route = useRoute()
 const booksStore = useBooksStore()
 const uiStore = useUIStore()
 const { goToRandomLocation } = useMap()
+
+onMounted(() => {
+  const { lat, lng, zoom } = route.query
+  if (lat && lng) {
+    uiStore.setMapCenter({ lat: parseFloat(lat), lng: parseFloat(lng) })
+    uiStore.setMapZoom(zoom ? parseInt(zoom, 10) : 6)
+  }
+})
 
 function handleRandomLocation() {
   const location = goToRandomLocation()
