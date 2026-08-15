@@ -2356,13 +2356,23 @@ with isbn_tab:
                 if new_asin != current_asin:
                     st.session_state.setdefault('asin_edits', {})[bid] = new_asin
 
-                # Goodreads search link
-                goodreads_query = urllib.parse.quote(f"{book['title']} {book['author']}")
-                goodreads_url = f"https://www.goodreads.com/search?q={goodreads_query}"
-                st.link_button("📚 Look at the Book on Goodreads", goodreads_url, key=f"goodreads_{bid}")
+                # Action buttons row: Goodreads, Open Library, Save
+                col_gr, col_ol, col_save = st.columns(3)
+
+                with col_gr:
+                    goodreads_query = urllib.parse.quote(f"{book['title']} {book['author']}")
+                    goodreads_url = f"https://www.goodreads.com/search?q={goodreads_query}"
+                    st.link_button("📚 Goodreads", goodreads_url, key=f"goodreads_{bid}")
+
+                with col_save:
+                    if st.button("💾 Save", key=f"save_{bid}", type="primary"):
+                        st.session_state['_isbn_save_triggered'] = True
+                        st.rerun()
 
                 # Open Library lookup button
-                if st.button(f"Lookup on Open Library", key=f"lookup_{bid}"):
+                with col_ol:
+                    lookup_clicked = st.button("🔍 Open Library", key=f"lookup_{bid}")
+                if lookup_clicked:
                     results = lookup_openlibrary(book["title"], book["author"])
                     if results:
                         for r in results:

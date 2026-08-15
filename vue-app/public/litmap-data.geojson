@@ -2430,7 +2430,7 @@
         "genre": "Travel",
         "rating": null,
         "pageCount": null,
-        "isbn": null,
+        "isbn": "9780593420256",
         "language": "English",
         "publisher": null,
         "publicationDate": "2023",
@@ -2445,7 +2445,9 @@
         "bookId": "2YuZdYXtTCbipHjsBQwk",
         "locationCity": "Kyoto",
         "locationCountry": "Japan",
-        "locationDescription": "Iyer visits Kyoto, a city he has lived in and written about extensively, to explore the concept of paradise in Japanese culture and reflect on his own experiences of the city's serene landscapes and temples."
+        "locationDescription": "Iyer visits Kyoto, a city he has lived in and written about extensively, to explore the concept of paradise in Japanese culture and reflect on his own experiences of the city's serene landscapes and temples.",
+        "isbn10": "059342025X",
+        "asin": "059342025X"
       }
     },
     {
@@ -2465,7 +2467,7 @@
         "genre": "Travel",
         "rating": null,
         "pageCount": null,
-        "isbn": null,
+        "isbn": "9780593420256",
         "language": "English",
         "publisher": null,
         "publicationDate": "2023",
@@ -2480,7 +2482,9 @@
         "bookId": "2YuZdYXtTCbipHjsBQwk",
         "locationCity": "Varanasi",
         "locationCountry": "India",
-        "locationDescription": "Iyer travels to Varanasi, one of the oldest continuously inhabited cities in the world, to experience the vibrant spiritual landscape of India and contemplate the idea of paradise in Hinduism."
+        "locationDescription": "Iyer travels to Varanasi, one of the oldest continuously inhabited cities in the world, to experience the vibrant spiritual landscape of India and contemplate the idea of paradise in Hinduism.",
+        "isbn10": "059342025X",
+        "asin": "059342025X"
       }
     },
     {
@@ -2500,7 +2504,7 @@
         "genre": "Travel",
         "rating": null,
         "pageCount": null,
-        "isbn": null,
+        "isbn": "9780593420256",
         "language": "English",
         "publisher": null,
         "publicationDate": "2023",
@@ -2515,7 +2519,9 @@
         "bookId": "2YuZdYXtTCbipHjsBQwk",
         "locationCity": "Hawaii",
         "locationCountry": "United States",
-        "locationDescription": "Iyer visits the Hawaiian islands, often regarded as a modern-day paradise, to examine the complexities of human experience and the tensions between paradise as a physical place and a state of mind."
+        "locationDescription": "Iyer visits the Hawaiian islands, often regarded as a modern-day paradise, to examine the complexities of human experience and the tensions between paradise as a physical place and a state of mind.",
+        "isbn10": "059342025X",
+        "asin": "059342025X"
       }
     },
     {
@@ -6142,7 +6148,8 @@
         "bookId": "7zSIXeGn1YBdGyKU3e6x",
         "locationCity": "Hebrides",
         "locationCountry": "",
-        "locationDescription": "Johnson's reflections on the rugged landscape of the Hebrides."
+        "locationDescription": "Johnson's reflections on the rugged landscape of the Hebrides.",
+        "asin": "B0BCL2BV9J"
       }
     },
     {
