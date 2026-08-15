@@ -197,7 +197,7 @@
         "publisher": "Houghton Mifflin Harcourt",
         "publicationDate": "2011-04-21",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -232,7 +232,7 @@
         "publisher": "Houghton Mifflin Harcourt",
         "publicationDate": "2011-04-21",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -267,7 +267,7 @@
         "publisher": "Houghton Mifflin Harcourt",
         "publicationDate": "2011-04-21",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -302,7 +302,7 @@
         "publisher": "Houghton Mifflin Harcourt",
         "publicationDate": "2011-04-21",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -337,7 +337,7 @@
         "publisher": "Arrow Books",
         "publicationDate": "1977-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -373,7 +373,7 @@
         "publisher": "Arrow Books",
         "publicationDate": "1977-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -409,7 +409,7 @@
         "publisher": "Arrow Books",
         "publicationDate": "1977-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "adventure",
@@ -445,7 +445,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1998-06-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Adventure",
@@ -480,7 +480,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1998-06-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Adventure",
@@ -515,7 +515,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1998-06-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Adventure",
@@ -550,7 +550,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1998-06-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Adventure",
@@ -588,7 +588,7 @@
         "publisher": null,
         "publicationDate": "1996",
         "coverImageUrl": "",
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Nature Writing",
           "Environmental Advocacy"
@@ -621,7 +621,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -657,7 +657,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -693,7 +693,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -729,7 +729,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -765,7 +765,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -801,7 +801,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -837,7 +837,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -873,7 +873,7 @@
         "publisher": "Vintage Books",
         "publicationDate": "1985",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Japan",
@@ -909,7 +909,7 @@
         "publisher": "Penguin Books",
         "publicationDate": "2011-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Travel",
@@ -945,7 +945,7 @@
         "publisher": "Penguin Books",
         "publicationDate": "2011-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Travel",
@@ -981,7 +981,7 @@
         "publisher": "Penguin Books",
         "publicationDate": "2011-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Travel",
@@ -1017,7 +1017,7 @@
         "publisher": "Penguin Books",
         "publicationDate": "2011-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Travel",
@@ -1053,7 +1053,7 @@
         "publisher": "Penguin Books",
         "publicationDate": "2011-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Travel",
@@ -1165,7 +1165,7 @@
         "publisher": null,
         "publicationDate": "2003-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Memoir",
           "Cultural Immersion",
@@ -1201,7 +1201,7 @@
         "publisher": null,
         "publicationDate": "2003-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Memoir",
           "Cultural Immersion",
@@ -1315,7 +1315,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1351,7 +1351,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1387,7 +1387,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1423,7 +1423,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1459,7 +1459,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1495,7 +1495,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1531,7 +1531,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1567,7 +1567,7 @@
         "publisher": "Scribner",
         "publicationDate": "1964-12-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Paris",
           "Expatriate",
@@ -1603,7 +1603,7 @@
         "publisher": "Penguin",
         "publicationDate": "1982",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Hinduism",
@@ -1639,7 +1639,7 @@
         "publisher": "Penguin",
         "publicationDate": "1982",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Hinduism",
@@ -1675,7 +1675,7 @@
         "publisher": "Penguin",
         "publicationDate": "1982",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "India",
           "Hinduism",
@@ -1852,7 +1852,7 @@
         "publisher": "University of California Press",
         "publicationDate": "2010-11-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "San Francisco",
           "Atlas",
@@ -1887,7 +1887,7 @@
         "publisher": "University of California Press",
         "publicationDate": "2010-11-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "San Francisco",
           "Atlas",
@@ -1922,7 +1922,7 @@
         "publisher": "University of California Press",
         "publicationDate": "2010-11-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "San Francisco",
           "Atlas",
@@ -1957,7 +1957,7 @@
         "publisher": "University of California Press",
         "publicationDate": "2010-11-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "San Francisco",
           "Atlas",
@@ -1992,7 +1992,7 @@
         "publisher": "University of California Press",
         "publicationDate": "2010-11-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "San Francisco",
           "Atlas",
@@ -2027,7 +2027,7 @@
         "publisher": "",
         "publicationDate": "",
         "coverImageUrl": "",
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Bolivia",
           "Short Stories",
@@ -2061,7 +2061,7 @@
         "publisher": "",
         "publicationDate": "",
         "coverImageUrl": "",
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Bolivia",
           "Short Stories",
@@ -2290,7 +2290,7 @@
         "publisher": "Drawn and Quarterly",
         "publicationDate": "2012-04-17",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2326,7 +2326,7 @@
         "publisher": "Drawn and Quarterly",
         "publicationDate": "2012-04-17",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2362,7 +2362,7 @@
         "publisher": "Drawn and Quarterly",
         "publicationDate": "2012-04-17",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2658,7 +2658,7 @@
         "publisher": "Viking Adult",
         "publicationDate": "2006-03-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2695,7 +2695,7 @@
         "publisher": "Viking Adult",
         "publicationDate": "2006-03-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2732,7 +2732,7 @@
         "publisher": "Viking Adult",
         "publicationDate": "2006-03-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2769,7 +2769,7 @@
         "publisher": "Viking Adult",
         "publicationDate": "2006-03-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2806,7 +2806,7 @@
         "publisher": "Viking Adult",
         "publicationDate": "2006-03-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Memoir",
@@ -2843,7 +2843,7 @@
         "publisher": "Dutton",
         "publicationDate": "1991-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Middle East",
@@ -2878,7 +2878,7 @@
         "publisher": "Dutton",
         "publicationDate": "1991-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Middle East",
@@ -2913,7 +2913,7 @@
         "publisher": "Dutton",
         "publicationDate": "1991-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Middle East",
@@ -2948,7 +2948,7 @@
         "publisher": "Dutton",
         "publicationDate": "1991-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Middle East",
@@ -2983,7 +2983,7 @@
         "publisher": "Dutton",
         "publicationDate": "1991-01-01",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "Middle East",
@@ -6211,7 +6211,7 @@
         "publisher": "Atlantic Monthly Press",
         "publicationDate": "1987",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "China",
@@ -6246,7 +6246,7 @@
         "publisher": "Atlantic Monthly Press",
         "publicationDate": "1987",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "China",
@@ -6281,7 +6281,7 @@
         "publisher": "Atlantic Monthly Press",
         "publicationDate": "1987",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "China",
@@ -6316,7 +6316,7 @@
         "publisher": "Atlantic Monthly Press",
         "publicationDate": "1987",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "China",
@@ -6351,7 +6351,7 @@
         "publisher": "Atlantic Monthly Press",
         "publicationDate": "1987",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Travel",
           "China",
@@ -19271,7 +19271,7 @@
         "publisher": "HarperCollins",
         "publicationDate": "2001",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "food",
@@ -19306,7 +19306,7 @@
         "publisher": "HarperCollins",
         "publicationDate": "2001",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "food",
@@ -19341,7 +19341,7 @@
         "publisher": "HarperCollins",
         "publicationDate": "2001",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "food",
@@ -19376,7 +19376,7 @@
         "publisher": "HarperCollins",
         "publicationDate": "2001",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "food",
@@ -19411,7 +19411,7 @@
         "publisher": "HarperCollins",
         "publicationDate": "2001",
         "coverImageUrl": null,
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "travel",
           "food",
@@ -19703,7 +19703,7 @@
         "publisher": "Penguin",
         "publicationDate": "1979",
         "coverImageUrl": "",
-        "hasCover": false,
+        "hasCover": true,
         "tags": [
           "Sudan",
           "Africa",
