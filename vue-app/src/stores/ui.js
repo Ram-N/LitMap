@@ -20,6 +20,9 @@ export const useUIStore = defineStore('ui', () => {
   const shouldFitBounds = ref(0) // Counter to trigger fitBounds (increment to trigger)
   const mapBounds = ref(null) // { north, south, east, west }
 
+  // Place collection (cluster click)
+  const selectedPlace = ref(null) // { name, books }
+
   // Getters
   const hasSearchResults = computed(() => searchResults.value.length > 0)
   const isBottomSheetVisible = computed(() => bottomSheetState.value !== 'hidden')
@@ -73,11 +76,15 @@ export const useUIStore = defineStore('ui', () => {
     clearHighlightedMarker()
     // Clear content after animation
     const wasBookDetails = bottomSheetContent.value === 'book-details'
+    const wasPlaceCollection = bottomSheetContent.value === 'place-collection'
     setTimeout(() => {
       console.log('Clearing bottom sheet content after animation')
       bottomSheetContent.value = null
       if (wasBookDetails) {
         selectedBook.value = null
+      }
+      if (wasPlaceCollection) {
+        selectedPlace.value = null
       }
     }, 300)
   }
@@ -124,6 +131,12 @@ export const useUIStore = defineStore('ui', () => {
     shouldFitBounds.value++
   }
 
+  function showPlaceCollection(placeName, books) {
+    selectedPlace.value = { name: placeName, books }
+    bottomSheetContent.value = 'place-collection'
+    bottomSheetState.value = 'half'
+  }
+
   return {
     // State
     isMenuOpen,
@@ -140,6 +153,7 @@ export const useUIStore = defineStore('ui', () => {
     mapZoom,
     shouldFitBounds,
     mapBounds,
+    selectedPlace,
     // Getters
     hasSearchResults,
     isBottomSheetVisible,
@@ -164,5 +178,6 @@ export const useUIStore = defineStore('ui', () => {
     setMapZoom,
     setMapBounds,
     triggerFitBounds,
+    showPlaceCollection,
   }
 })

@@ -77,6 +77,26 @@ function createBookIcon(book) {
   })
 }
 
+// Determine the most common place name from a set of locations
+function getDominantPlace(locations) {
+  const counts = {}
+  locations.forEach(loc => {
+    // Prefer city, fall back to country
+    const name = loc.city || loc.place || loc.country || 'Unknown'
+    counts[name] = (counts[name] || 0) + 1
+  })
+  // Return the most frequent place name
+  let dominant = 'Books'
+  let maxCount = 0
+  for (const [name, count] of Object.entries(counts)) {
+    if (count > maxCount) {
+      maxCount = count
+      dominant = name
+    }
+  }
+  return dominant
+}
+
 function initializeMap() {
   console.log('[LeafletMap] initializeMap called')
   if (!mapContainer.value) return
@@ -142,6 +162,7 @@ function createMarkers() {
     spiderfyOnMaxZoom: true,
     showCoverageOnHover: false,
     chunkedLoading: true,
+    zoomToBoundsOnClick: false, // We handle cluster clicks ourselves
     iconCreateFunction: (cluster) => {
       const count = cluster.getChildCount()
       let size = 'small'
@@ -155,15 +176,45 @@ function createMarkers() {
     },
   })
 
+  // Intercept cluster clicks to show place collection
+  markerClusterGroup.value.on('clusterclick', (e) => {
+    const cluster = e.layer
+    const childMarkers = cluster.getAllChildMarkers()
+
+    // Collect unique books from the cluster's markers
+    const booksInCluster = []
+    const seenIds = new Set()
+    const locations = []
+
+    childMarkers.forEach(marker => {
+      if (marker._bookData) {
+        const { book, location } = marker._bookData
+        locations.push(location)
+        if (!seenIds.has(book.id)) {
+          seenIds.add(book.id)
+          booksInCluster.push(book)
+        }
+      }
+    })
+
+    // Determine the dominant place name
+    const placeName = getDominantPlace(locations)
+
+    uiStore.showPlaceCollection(placeName, booksInCluster)
+  })
+
   // Plain layer group for unclustered mode
   markerLayer.value = L.layerGroup()
 
-  // Create all markers
+  // Create all markers, storing book and location data on each
   markers.value = bookMarkers.value.map(({ book, location, lat, lng }) => {
     const marker = L.marker([lat, lng], {
       icon: createBookIcon(book),
       title: `${book.title} by ${book.author}`,
     })
+
+    // Attach book and location data for cluster lookups
+    marker._bookData = { book, location }
 
     // Popup with book info
     marker.bindPopup(`

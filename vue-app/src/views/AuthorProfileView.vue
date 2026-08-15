@@ -106,7 +106,7 @@ const router = useRouter()
 const authorsStore = useAuthorsStore()
 
 const authorName = computed(() => decodeURIComponent(route.params.name))
-const author = computed(() => authorsStore.getAuthorByName.value(authorName.value))
+const author = computed(() => authorsStore.getAuthorByName(authorName.value))
 
 function viewBook(book) {
   router.push({ name: 'book-detail', params: { id: book.id } })

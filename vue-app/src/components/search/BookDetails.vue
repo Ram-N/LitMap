@@ -91,7 +91,7 @@
     </section>
 
     <!-- Goodreads Link -->
-    <div v-if="book.isbn" class="px-6">
+    <div v-if="book.isbn" class="px-6 mb-6">
       <a
         :href="goodreadsUrl"
         target="_blank"
@@ -101,16 +101,31 @@
         View on Goodreads
       </a>
     </div>
+
+    <!-- You Might Also Like -->
+    <section v-if="relatedBooks.length > 0" class="px-6 mb-6">
+      <h2 class="font-serif text-xl font-semibold text-text-primary mb-3">
+        You Might Also Like
+      </h2>
+      <div class="space-y-3">
+        <div v-for="rec in relatedBooks" :key="rec.book.id">
+          <p class="text-xs text-text-tertiary mb-1 italic">{{ rec.reason }}</p>
+          <BookCard :book="rec.book" @click="uiStore.showBookDetails(rec.book)" />
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { MapPin, Calendar, BookOpen as BookOpenIcon, Navigation } from 'lucide-vue-next'
 import { BookOpen } from 'lucide-vue-next'
 import GenreBadge from '../shared/GenreBadge.vue'
+import BookCard from './BookCard.vue'
 import { useUIStore } from '@/stores/ui'
+import { useRecommendations } from '@/composables/useRecommendations'
 
 const props = defineProps({
   book: {
@@ -121,6 +136,9 @@ const props = defineProps({
 
 const router = useRouter()
 const uiStore = useUIStore()
+
+const bookRef = toRef(props, 'book')
+const { relatedBooks } = useRecommendations(bookRef)
 
 const showCover = ref(props.book.hasCover)
 

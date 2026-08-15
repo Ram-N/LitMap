@@ -27,7 +27,7 @@
           <div class="w-12 h-1 bg-parchment-200 rounded-full" />
         </div>
         <button
-          v-if="uiStore.bottomSheetContent === 'book-details'"
+          v-if="uiStore.bottomSheetContent === 'book-details' || uiStore.bottomSheetContent === 'place-collection'"
           @click.stop.prevent="handleCollapse"
           @touchstart.stop.prevent="handleCollapse"
           class="text-text-tertiary hover:text-text-secondary transition-colors"
@@ -70,6 +70,12 @@
         <div v-else-if="uiStore.bottomSheetContent === 'book-details' && uiStore.selectedBook" class="p-4">
           <BookDetails :book="uiStore.selectedBook" />
         </div>
+
+        <!-- Place Collection (cluster click) -->
+        <PlaceCollectionSheet
+          v-else-if="uiStore.bottomSheetContent === 'place-collection' && uiStore.selectedPlace"
+          :place="uiStore.selectedPlace"
+        />
       </div>
     </div>
   </Transition>
@@ -80,6 +86,7 @@ import { ref, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BookCard from '../search/BookCard.vue'
 import BookDetails from '../search/BookDetails.vue'
+import PlaceCollectionSheet from '../map/PlaceCollectionSheet.vue'
 
 const uiStore = useUIStore()
 
