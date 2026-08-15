@@ -101,3 +101,7 @@ database/input_data
 database/output
 database/output_json
 
+# Batch covers working files
+database/covers_batch.csv
+database/covers_review.html
+
