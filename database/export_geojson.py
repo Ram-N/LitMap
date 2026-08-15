@@ -1,10 +1,13 @@
 """Export all Firebase book data to GeoJSON format for static site deployment."""
 
 import json
+from collections import Counter
 from pathlib import Path
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+
+from generate_book_id import generate_book_id
 
 SERVICE_ACCOUNT_KEY = "litmap-88358-firebase-adminsdk-9w1l9-73ca515ce7.json"
 COLLECTIONS = ["books", "newbooks"]
@@ -32,7 +35,27 @@ def fetch_all_books(db):
             key = (data.get("title", "").strip().lower(), data.get("author", "").strip().lower())
             if key not in seen:
                 seen.add(key)
+                # Generate human-readable ID
+                readable_id = generate_book_id(
+                    data.get("title", ""),
+                    data.get("author", ""),
+                    data.get("isbn"),
+                )
+                data["readable_id"] = readable_id if readable_id else data["id"]
                 books.append(data)
+
+    # Resolve collisions across all books
+    id_counts = Counter()
+    for book in books:
+        rid = book["readable_id"]
+        id_counts[rid] += 1
+
+    seen_ids = Counter()
+    for book in books:
+        rid = book["readable_id"]
+        seen_ids[rid] += 1
+        if id_counts[rid] > 1 and seen_ids[rid] > 1:
+            book["readable_id"] = f"{rid}-{seen_ids[rid]}"
 
     return books
 
@@ -63,9 +86,9 @@ def book_to_geojson_features(book):
         "publisher": book.get("publisher", ""),
         "publicationDate": book.get("publicationDate", ""),
         "coverImageUrl": book.get("cover", "") or book.get("coverImageUrl", ""),
-        "hasCover": (COVERS_DIR / f"{book.get('id', '')}.jpg").exists(),
+        "hasCover": (COVERS_DIR / f"{book.get('readable_id', book.get('id', ''))}.jpg").exists(),
         "tags": book.get("tags", []),
-        "bookId": book.get("id", ""),
+        "bookId": book.get("readable_id", book.get("id", "")),
     }
 
     for loc in locations:
