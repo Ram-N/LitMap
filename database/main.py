@@ -2459,7 +2459,7 @@ with covers_tab:
                     "has_cover_file": os.path.isfile(cover_path),
                     "cover_path": cover_path,
                 }
-        return books, data
+        return books
 
     def download_cover_from_url(url, book_id):
         """Download image from URL, validate, and save as JPEG."""
@@ -2473,7 +2473,7 @@ with covers_tab:
         img.save(save_path, "JPEG", quality=85)
         return True, save_path
 
-    def update_manifest_and_geojson(book_id, geojson_data):
+    def update_manifest_and_geojson(book_id):
         """Add entry to manifest.json and set hasCover=true in GeoJSON."""
         # Update manifest
         manifest = {}
@@ -2484,7 +2484,9 @@ with covers_tab:
         with open(MANIFEST_PATH, "w") as f:
             json.dump(manifest, f, indent=2)
 
-        # Update hasCover in GeoJSON
+        # Read fresh GeoJSON from disk (not from cache) to avoid overwriting other changes
+        with open(COVERS_GEOJSON_PATH) as f:
+            geojson_data = json.load(f)
         for feat in geojson_data["features"]:
             if feat["properties"].get("bookId") == book_id:
                 feat["properties"]["hasCover"] = True
@@ -2492,7 +2494,7 @@ with covers_tab:
             json.dump(geojson_data, f, indent=2)
 
     if os.path.isfile(COVERS_GEOJSON_PATH):
-        covers_books, covers_geojson_data = load_covers_books(st.session_state.covers_cache_key)
+        covers_books = load_covers_books(st.session_state.covers_cache_key)
         total = len(covers_books)
         has_cover = sum(1 for b in covers_books.values() if b["has_cover_file"])
         missing = total - has_cover
@@ -2555,19 +2557,28 @@ with covers_tab:
                 url_key = f"cover_url_{book['bookId']}"
                 cover_url = st.text_input("Paste Cover Image URL:", key=url_key)
 
+                preview_key = f"cover_preview_{book['bookId']}"
+                previewing = st.session_state.get(preview_key, False)
+
                 if cover_url:
-                    st.markdown(f'<p>Preview:</p><img src="{cover_url}" width="120">', unsafe_allow_html=True)
+                    if st.button("Preview", key=f"cover_prev_btn_{book['bookId']}"):
+                        st.session_state[preview_key] = True
+                        previewing = True
+
+                if previewing and cover_url:
+                    st.markdown(f'<img src="{cover_url}" width="120">', unsafe_allow_html=True)
 
                 # Download & Save button
                 btn_key = f"cover_save_{book['bookId']}"
-                if st.button("Download & Save", key=btn_key, disabled=not cover_url):
+                if st.button("Download & Save", key=btn_key, disabled=not (previewing and cover_url)):
                     try:
                         with st.spinner("Downloading cover..."):
                             success, result = download_cover_from_url(cover_url, book["bookId"])
                         if success:
-                            update_manifest_and_geojson(book["bookId"], covers_geojson_data)
+                            update_manifest_and_geojson(book["bookId"])
                             st.toast(f"Cover saved for {book['title']}", icon="✅")
                             st.session_state.covers_cache_key += 1
+                            st.session_state.pop(preview_key, None)
                             st.rerun()
                         else:
                             st.error(result)
